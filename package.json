@@ -1,0 +1,12 @@
+{
+  "name": "electron-gn-scripts",
+  "version": "0.0.0",
+  "main": "null",
+  "repository": "https://github.com/MarshallOfSound/electron-gn-scripts",
+  "author": "Samuel Attard <samuel.r.attard@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "yaml-js": "^0.2.3"
+  }
+}

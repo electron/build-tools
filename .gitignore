@@ -1,0 +1,4 @@
+node_modules
+config.yml
+
+generated.env.*
