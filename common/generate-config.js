@@ -18,6 +18,10 @@ if (process.platform === 'win32') {
 
 envVars.CHROMIUM_BUILDTOOLS_PATH = path.resolve(envVars.ELECTRON_GN_ROOT, 'src', 'buildtools');
 
+envVars.SCCACHE_TWO_TIER = 'true';
+envVars.SCCACHE_CACHE_SIZE = '20G';
+envVars.SCCACHE_BUCKET = 'electronjs-sccache';
+
 if (process.platform === 'win32') {
   fs.writeFileSync(
     path.resolve(__dirname, '../generated.env.bat'),
@@ -29,7 +33,7 @@ rem |------------------------------------------------------------|
 
 ${Object.keys(envVars).map(key => `set ${key}=${envVars[key]}`).join('\n')}
 `,
-  )
+  );
 } else {
   const envFile = path.resolve(__dirname, '../generated.env.sh');
   fs.writeFileSync(
@@ -42,5 +46,11 @@ ${Object.keys(envVars).map(key => `set ${key}=${envVars[key]}`).join('\n')}
 
 ${Object.keys(envVars).map(key => `${key}=${envVars[key]}`).join('\n')}
 `
-  )
+  );
+  fs.chmodSync(
+    envFile,
+    fs.constants.S_IRUSR | fs.constants.S_IRGRP | fs.constants.S_IROTH |
+    fs.constants.S_IWUSR |
+    fs.constants.S_IXUSR | fs.constants.S_IXGRP | fs.constants.S_IXOTH
+  );
 }

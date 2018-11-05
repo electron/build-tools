@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -e
+
+command=$1
+basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+
+args="${@:2}"
+
+# Functions
+missing_command() {
+  echo Usage: e [command] [...args]
+  echo You must provide a valid command, must be one of 'generate-config', 'sync', 'bootstrap', 'build', 'start' or 'test'
+  exit 1
+}
+
+run_command() {
+  script_path="$basedir/commands/$1.sh"
+  if [ ! -f "$script_path" ]; then
+    echo Invalid Command: \"$1\"
+    echo ""
+    missing_command
+  else
+    $script_path $args
+  fi
+}
+
+run_command $command
