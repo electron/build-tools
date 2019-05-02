@@ -8,7 +8,17 @@ source $basedir/__load-config.sh
 
 cd $ELECTRON_GN_ROOT/src
 
+ensure_sccache () {
+  SCCACHE_PATH=$ELECTRON_GN_ROOT/src/electron/external_binaries/sccache
+  $SCCACHE_PATH --stop-server &> /dev/null || true
+  until $SCCACHE_PATH --start-server
+  do
+    echo Failed to start sccache, trying again...
+  done
+}
+
 build_target() {
+  ensure_sccache
   echo Running \"ninja\" in \"$ELECTRON_GN_ROOT/src\" with target \"$1\"
   ninja -C "out/$ELECTRON_OUT_DIR" $1
 }
