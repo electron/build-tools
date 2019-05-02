@@ -96,3 +96,18 @@ e test
 # My personal preference is to run with `--ci`
 e test --ci
 ```
+
+## Multiple Configs
+
+If you're doing a lot of Electron development and constantly switching targets or branches it is a good idea to
+have multiple configurations with different out directories or `buildType`'s.  You can easily switch between configs
+using `evm`.
+
+If you copy your `config.yml` and name the copy `config.debug.yml` you can switch to that config using
+
+```bash
+evm debug
+e build
+```
+
+You can have as many config files as you want and switch to them at any time using `evm $CONFIG_NAME`.

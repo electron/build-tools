@@ -8,3 +8,9 @@ gitCachePath: .git-cache
 
 # (Optional): The name of the "out/X" directory to use, default is "Debug"
 # electronOutDir: Debug
+
+# (Optional): The name of the build config to use, default is "debug".  Possible values are debug, testing and release
+# buildType: debug
+
+# (Optional): Any extra arguments to pass to GN, useful for setting up a MAS build
+# extraGnArgs:

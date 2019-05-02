@@ -1,4 +1,6 @@
 node_modules
 config.yml
+config.*.yml
+!config.example.yml
 
 generated.env.*

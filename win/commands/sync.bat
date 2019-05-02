@@ -7,7 +7,7 @@ echo Running "gclient sync" in "%ELECTRON_GN_ROOT%\src"
 
 cd "%ELECTRON_GN_ROOT%\src" || exit /B 1
 
-call gclient sync --with_branch_heads --with_tags %*
+call gclient sync --with_branch_heads --with_tags -D %*
 if %errorlevel%=="1" goto :fail
 
 echo Updating git remotes

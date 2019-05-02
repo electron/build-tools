@@ -8,4 +8,4 @@ source $basedir/__load-config.sh
 
 cd $ELECTRON_GN_ROOT/src/electron
 
-node ./script/spec-runner.js electron/spec "$@"
+ELECTRON_OUT_DIR=$ELECTRON_OUT_DIR node ./script/spec-runner.js "$@"

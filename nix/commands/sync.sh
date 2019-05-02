@@ -9,7 +9,7 @@ source $basedir/__load-config.sh
 echo Running \"gclient sync\" in \"$ELECTRON_GN_ROOT/src\"
 cd $ELECTRON_GN_ROOT/src
 
-gclient sync --with_branch_heads --with_tags "$@"
+gclient sync --with_branch_heads --with_tags -D "$@"
 
 echo Updating Git Remotes
 

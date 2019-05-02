@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { configPath, resolveConfiguredPath } = require('./util');
+const { resolveConfiguredPath } = require('./util');
 
 const { config } = require('./validate-env');
 
@@ -21,6 +21,9 @@ envVars.CHROMIUM_BUILDTOOLS_PATH = path.resolve(envVars.ELECTRON_GN_ROOT, 'src',
 envVars.SCCACHE_TWO_TIER = 'true';
 envVars.SCCACHE_CACHE_SIZE = '20G';
 envVars.SCCACHE_BUCKET = 'electronjs-sccache';
+
+envVars.EXTRA_GN_ARGS = `"${config.extraGnArgs || ''}"`
+envVars.GN_IMPORT_NAME = config.buildType || 'debug'
 
 if (process.platform === 'win32') {
   fs.writeFileSync(
