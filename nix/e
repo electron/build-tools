@@ -10,7 +10,7 @@ args="${@:2}"
 # Functions
 missing_command() {
   echo Usage: e [command] [...args]
-  echo You must provide a valid command, must be one of 'generate-config', 'sync', 'bootstrap', 'build', 'start' or 'test'
+  echo You must provide a valid command, must be one of 'generate-config', 'sync', 'bootstrap', 'build', 'start', 'test' or 'pr'
   exit 1
 }
 
