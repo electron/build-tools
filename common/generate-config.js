@@ -16,6 +16,13 @@ if (process.platform === 'win32') {
   envVars.GYP_MSVS_VERSION = '2017';
 }
 
+envVars.ELECTRON_GIT_ORIGIN = 'git@github.com:electron/electron.git';
+envVars.NODE_GIT_ORIGIN = 'git@github.com:electron/node.git';
+if (config.gitUseHttps) {
+  envVars.NODE_GIT_ORIGIN = 'https://github.com/electron/node';
+  envVars.ELECTRON_GIT_ORIGIN = 'https://github.com/electron/electron';
+}
+
 envVars.CHROMIUM_BUILDTOOLS_PATH = path.resolve(envVars.ELECTRON_GN_ROOT, 'src', 'buildtools');
 
 envVars.SCCACHE_TWO_TIER = 'true';

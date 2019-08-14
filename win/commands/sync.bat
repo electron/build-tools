@@ -13,17 +13,17 @@ if %errorlevel%=="1" goto :fail
 echo Updating git remotes
 
 cd electron
-call git remote set-url origin git@github.com:electron/electron.git
+call git remote set-url origin %ELECTRON_GIT_ORIGIN%
 if %errorlevel%=="1" goto :fail
 
-call git remote set-url origin --push git@github.com:electron/electron.git
+call git remote set-url origin --push %ELECTRON_GIT_ORIGIN%
 if %errorlevel%=="1" goto :fail
 
 cd ..\third_party\electron_node
-call git remote set-url origin git@github.com:electron/node.git
+call git remote set-url origin %NODE_GIT_ORIGIN%
 if %errorlevel%=="1" goto :fail
 
-call git remote set-url origin --push git@github.com:electron/node.git
+call git remote set-url origin --push %NODE_GIT_ORIGIN%
 if %errorlevel%=="1" goto :fail
 
 exit /B 0

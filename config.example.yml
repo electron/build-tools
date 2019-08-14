@@ -12,5 +12,8 @@ gitCachePath: .git-cache
 # (Optional): The name of the build config to use, default is "debug".  Possible values are debug, testing and release
 # buildType: debug
 
+# (Optional): Whether or not git should use HTTPS or SSH; uses SSH by default
+# gitUseHttps: true
+
 # (Optional): Any extra arguments to pass to GN, useful for setting up a MAS build
 # extraGnArgs:
