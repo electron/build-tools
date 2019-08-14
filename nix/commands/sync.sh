@@ -14,11 +14,11 @@ gclient sync --with_branch_heads --with_tags "$@"
 echo Updating Git Remotes
 
 cd $ELECTRON_GN_ROOT/src/electron
-git remote set-url origin git@github.com:electron/electron.git
-git remote set-url origin --push git@github.com:electron/electron.git
+git remote set-url origin $ELECTRON_GIT_ORIGIN
+git remote set-url origin --push $ELECTRON_GIT_ORIGIN
 
 cd $ELECTRON_GN_ROOT/src/third_party/electron_node
-git remote set-url origin git@github.com:electron/node.git
-git remote set-url origin --push git@github.com:electron/node.git
+git remote set-url origin $NODE_GIT_ORIGIN
+git remote set-url origin --push $NODE_GIT_ORIGIN
 
 echo Done Syncing
