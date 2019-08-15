@@ -1,7 +1,11 @@
 const chalk = require('chalk').default;
 const fs = require('fs');
-const path = require('path');
 const yaml = require('yaml-js');
+
+const fail = (message) => {
+  console.error(chalk.red(message));
+  process.exit(1);
+};
 
 const { configPath, resolveConfiguredPath } = require('./util');
 
@@ -23,11 +27,6 @@ if (!fs.existsSync(configPath)) {
 }
 
 const config = yaml.load(fs.readFileSync(configPath))
-
-const fail = (message) => {
-  console.error(chalk.red(message));
-  process.exit(1);
-};
 
 for (const prop of REQUIRED_CONFIG_PROPERTIES) {
   const value = config[prop.name];
