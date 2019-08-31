@@ -97,6 +97,25 @@ e test
 e test --ci
 ```
 
+### `e debug`
+
+Initializes [lldb](https://lldb.llvm.org/) (on macOS) or [gdb](https://www.gnu.org/software/gdb/) (on Linux) with the debug target set to your local Electron build.
+
+```bash
+e debug
+
+# You should then see (on macOS, for example):
+# (lldb) target create "/Users/codebytere/Developer/electron-gn/src/out/Testing/Electron.app/Contents/MacOS/Electron"
+#Current executable set to '/Users/codebytere/Developer/electron-gn/src/out/Testing/Electron.app/Contents/MacOS/Electron' (x86_64).
+# (lldb) < you can now run debug commands here>
+```
+
+Debugging Resources:
+* `lldb` [Tutorial](https://lldb.llvm.org/use/tutorial.html)
+* `gdb` [Tutorial](https://web.eecs.umich.edu/~sugih/pointers/summary.html)
+
+**Nota Bene:** This works on macOS and Linux only.
+
 ## Multiple Configs
 
 If you're doing a lot of Electron development and constantly switching targets or branches it is a good idea to
