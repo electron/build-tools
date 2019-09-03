@@ -116,6 +116,18 @@ Debugging Resources:
 
 **Nota Bene:** This works on macOS and Linux only.
 
+### `e export-patches [patch-dir]`
+
+Exports patches to the desired patch folder in Electron source tree.
+
+Valid patch directories include:
+* `node`
+* `v8`
+* `boringssl`
+* `chromium`
+
+**Nota Bene:** You need to be running at least Bash v4 to use this command.
+
 ## Multiple Configs
 
 If you're doing a lot of Electron development and constantly switching targets or branches it is a good idea to
