@@ -32,6 +32,8 @@ envVars.SCCACHE_BUCKET = 'electronjs-sccache';
 envVars.EXTRA_GN_ARGS = `"${config.extraGnArgs || ''}"`
 envVars.GN_IMPORT_NAME = config.buildType || 'debug'
 
+const shouldExport = (key) => key === 'CHROMIUM_BUILDTOOLS_PATH';
+
 if (process.platform === 'win32') {
   fs.writeFileSync(
     path.resolve(__dirname, '../generated.env.bat'),
@@ -54,7 +56,7 @@ ${Object.keys(envVars).map(key => `set ${key}=${envVars[key]}`).join('\n')}
 # | This file is auto-generated, please do not modify manually |
 # |------------------------------------------------------------|
 
-${Object.keys(envVars).map(key => `${key}=${envVars[key]}`).join('\n')}
+${Object.keys(envVars).map(key => `${shouldExport(key) ? 'export ' : ''}${key}=${envVars[key]}`).join('\n')}
 `
   );
   fs.chmodSync(
