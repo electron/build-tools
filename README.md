@@ -28,16 +28,20 @@ set PATH="%PATH%;"
 This toolset does not yet have the ability to initialize an Electron GN setup from scratch so you'll have to
 do the initial work.  These steps are outlined in the [GN Build Instructions](https://github.com/electron/electron/blob/master/docs/development/build-instructions-gn.md) and summarized below.
 
-1. [Setup `depot_tools`]() for your system, ensure it's added to your path
-  i) Don't worry about setting `DEPOT_TOOLS_WIN_TOOLCHAIN=0` on Windows
-2. Initialize a repository with `gclient config`
-  i) `mkdir electron-gn && cd electron-gn && gclient config --name "src/electron" --unmanaged https://github.com/electron/electron`
-3. That's it, yup, `e` will take over from here
+1. [Setup `depot_tools`](https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up) for your system, ensure it's added to your path
+2. That's it, yup, `e` will take over from here
 
-Once you've set up `depot_tools` and run `gclient config` you just need to create a `config.*.yml` file in the root of this repository.  Replace `*` with the name of your config.  Something like `config.master.yml` is normally a good idea, or `config.6.yml` for a config specific to Electron 6.
-You can see `config.example.yml` for what information you need to fill out.  Once that file is ready just run `evm {config_name}`.  I.e. `evm master`
+## First Run
 
-You're now ready to go!!
+```bash
+cd my-projects-folder
+# This will create a new "electron" folder in the current directory
+# It will set up a new evm config
+# Sync down all the required code and bootstrap the output directory
+e fetch
+
+# Once run you just have to use `e build` and friends to actually build your newly cloned Electron setup.
+```
 
 ## Just make it go
 

@@ -2,6 +2,5 @@ node_modules
 config.yml
 config.*.yml
 !config.example.yml
-!config.master.yml
 
 generated.env.*
