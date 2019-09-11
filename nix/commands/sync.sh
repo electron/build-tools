@@ -7,7 +7,12 @@ basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 source $basedir/__load-config.sh
 
 echo Running \"gclient sync\" in \"$ELECTRON_GN_ROOT/src\"
-cd $ELECTRON_GN_ROOT/src
+if [ -d "$ELECTRON_GN_ROOT/src" ] 
+then
+  cd $ELECTRON_GN_ROOT/src
+else
+  cd $ELECTRON_GN_ROOT
+fi
 
 gclient sync --with_branch_heads --with_tags "$@"
 
