@@ -1,6 +1,6 @@
 # Electron GN Scripts
 
-This repository contains some helper / wrapper scripts I've written to make working with GN easier, especially on Windows.
+This repository contains some helper/wrapper scripts to make working with GN easier, especially on Windows.
 
 ## Installation
 
@@ -28,29 +28,39 @@ set PATH="%PATH%;"
 This toolset does not yet have the ability to initialize an Electron GN setup from scratch so you'll have to
 do the initial work.  These steps are outlined in the [GN Build Instructions](https://github.com/electron/electron/blob/master/docs/development/build-instructions-gn.md) and summarized below.
 
-1. [Setup `depot_tools`](https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up) for your system, ensure it's added to your path
-2. That's it, yup, `e` will take over from here
+## Install Depot Tools
 
-## First Run
+You'll need to install [`depot_tools`](https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up)  to your system.
+
+**On macOS:**
+
+```sh
+# Ensure you're in your home directory
+cd ~
+git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+```
+
+Add `depot_tools` to the end of your PATH (you will probably want to put this in your `~/.bashrc` or `~/.zshrc`).
+
+**On Windows:**
+
+1) Download the `depot_tools` [bundle](https://storage.googleapis.com/chrome-infra/depot_tools.zip) and extract it to `C:\workspace\depot_tools`
+2) Add `depot_tools` to the start of your `PATH` (must be ahead of any installs of Python)
+3) From a cmd.exe shell, run the command `gclient` (with **no** arguments)
+
+## Initial Electron Setup
+
+After you've set up `depot_tools`, you'll only need to use the `e` command to perform initial setup.
 
 ```bash
-cd my-projects-folder
+cd /path/to/your/developer/folder
 # This will create a new "electron" folder in the current directory
 # It will set up a new evm config
 # Sync down all the required code and bootstrap the output directory
 e fetch
-
-# Once run you just have to use `e build` and friends to actually build your newly cloned Electron setup.
 ```
 
-## Just make it go
-
-```bash
-e sync
-e bootstrap
-e build
-e start
-```
+Following this, you just have to use `e build` and friends to actually build your newly cloned Electron setup.
 
 ## Usage
 
@@ -58,15 +68,43 @@ The main command is just called `e`, all sub-commands are `git` sub-command styl
 
 ### `e sync`
 
-Equivilent of `gclient sync`, any addition args passed to this command are appended to the sync command
+**If you ran `e fetch`, you can skip this step.**
+
+This command is the equivalent to `gclient sync`. Any addition args passed to this command are appended to the sync command.
+
+Some possible extra arguments include:
+
+* `--output-json` - Output a json document to this path containing summary information about the sync.
+* `--no-history` - Reduces the size/time of the checkout at the cost of no history.
+* `--ignore_locks` - Ignore cache locks.
+
+Basic Usage:
+
+```sh
+e sync
+```
+
+Example Usage with extra arguments:
+
+```sh
+e sync --ignore_locks
+```
 
 ### `e bootstrap`
 
-Equivilent of `gn gen`, generated required output directories and ninja configurations.`
+**If you ran `e fetch`, you can skip this step.**
+
+This command is the equivalent of `gn gen`: it generates required output directories and ninja configurations.
+
+```sh
+e bootstrap
+```
 
 ### `e build`
 
-Runs `ninja` in your out directory, defaults to building Electron.  You can pass a single argument to this command to change what gets build.
+This command runs `ninja` in your `out` directory.
+
+It defaults to building Electron, but you can pass a single argument to this command to change what gets built.
 
 * `electron`: Builds the Electron binary
 * `electron:dist`: Builds the Electron binary and generates a dist zip file
@@ -74,6 +112,40 @@ Runs `ninja` in your out directory, defaults to building Electron.  You can pass
 * `chromedriver`: Builds the `chromedriver` binary
 * `node:headers`: Builds the node headers `.tar.gz` file
 * `breakpad`: Builds the breakpad `dump_syms` binary
+
+**You probably only want to run the default command with no apppended arguments**
+
+Example Usage:
+
+```sh
+# Default - build Electron itself
+e build
+```
+
+```sh
+# Build the Electron binary and generates a dist zip file
+e build electron:dist
+```
+
+```sh
+# Build the mksnapshot binary
+e build mksnapshot
+```
+
+```sh
+# Build the chromedriver binary
+e build chromedriver
+```
+
+```sh
+# Build the node headers .tar.gz file
+e build node:headers
+```
+
+```sh
+# Build the breakpad `dump_syms` binary
+e build breakpad
+```
 
 ### `e start`
 
@@ -87,13 +159,24 @@ e start --version
 
 ### `e test`
 
-Runs the Electron tests using the generated Electron binary, passes all extra arguments directly to the spec runner. E.g.
+This commands runs the Electron tests using the generated Electron binary. It passes all extra arguments directly to the spec runner.
 
-```bash
+Possible Extra Arguments:
+* `--ci` - Runs Electron's tests in CI mode.
+* `--runners=remote` - Only runs Electron's tests in the Renderer Process (found in the [`spec`](https://github.com/electron/electron/tree/master/spec)).
+* `--runners=main` - Only runs Electron's tests in the Main Process (found in the [`spec-main`](https://github.com/electron/electron/tree/master/spec-main)).
+
+Basic Usage:
+
+```sh
 e test
+```
 
-# My personal preference is to run with `--ci`
-e test --ci
+Example Extra Arguments:
+
+```sh
+# Run Main Process tests in CI mode 
+e test --ci --runners=main
 ```
 
 ### `e debug`
