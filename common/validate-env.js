@@ -1,5 +1,5 @@
 const chalk = require('chalk').default;
-const fs = require('fs');
+const fs = require('fs-extra');
 const yaml = require('yaml-js');
 
 const fail = (message) => {
@@ -19,6 +19,7 @@ const REQUIRED_CONFIG_PROPERTIES = [
     name: 'gitCachePath',
     info: 'This property must be an absolute path to the directory you want to use as your chromium git cache.  This directory must exist.',
     type: 'path',
+    autoCreate: true,
   },
 ];
 
@@ -38,7 +39,11 @@ for (const prop of REQUIRED_CONFIG_PROPERTIES) {
   switch (prop.type) {
     case 'path': {
       if (!fs.existsSync(resolveConfiguredPath(value))) {
-        fail(`The config property "${prop.name}" must be a path that exists, but "${resolveConfiguredPath(value)}" does not exist :(`);
+        if (prop.autoCreate) {
+          fs.mkdirpSync(resolveConfiguredPath(value));
+        } else {
+          fail(`The config property "${prop.name}" must be a path that exists, but "${resolveConfiguredPath(value)}" does not exist :(`);
+        }
       }
       break;
     }
