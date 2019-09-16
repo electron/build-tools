@@ -29,4 +29,4 @@ if [ "x$node_headers_need_rebuild" != 'xno' ]; then
 fi
 
 cd "$ELECTRON_GN_ROOT/src/electron"
-ELECTRON_OUT_DIR="$ELECTRON_OUT_DIR" node ./script/spec-runner.js $@
+ELECTRON_OUT_DIR="$ELECTRON_OUT_DIR" node ./script/spec-runner.js "$@"

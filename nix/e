@@ -2,27 +2,28 @@
 
 set -e
 
-command=$1
+command="$1"
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-
-args="${@:2}"
 
 # Functions
 missing_command() {
-  echo Usage: e [command] [...args]
-  echo You must provide a valid command, must be one of 'generate-config', 'sync', 'bootstrap', 'build', 'start', 'test', 'testnode', 'debug', 'export-patches' or 'pr'
+  echo "Usage: e [command] [...args]"
+  echo "Please provide a valid command: 'bootstrap', 'build', 'debug', 'exec', 'export-patches', 'pr', 'src', 'start', 'sync', 'test', or 'testnode'."
   exit 1
 }
 
 run_command() {
-  script_path="$basedir/commands/$1.sh"
+  cmd="$1"
+  shift
+  script_path="$basedir/commands/$cmd.sh"
   if [ ! -f "$script_path" ]; then
-    echo Invalid Command: \"$1\"
+    echo Invalid Command: \""$cmd"\"
     echo ""
     missing_command
   else
-    $script_path $args
+    "$script_path" "$@"
   fi
 }
 
-run_command $command
+shift
+run_command "$command" "$@"

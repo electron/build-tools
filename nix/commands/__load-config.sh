@@ -9,7 +9,7 @@ if [[ ! -f "$config_path" ]]; then
   exit 1
 fi
 
-source $config_path
+source "$config_path"
 
 if [[ "$OSTYPE" = "linux-gnu" ]]; then
   ELECTRON_EXEC="$ELECTRON_GN_ROOT/src/out/$ELECTRON_OUT_DIR/electron"

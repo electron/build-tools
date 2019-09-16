@@ -2,8 +2,7 @@
 
 set -e
 
-basedir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-
-source $basedir/__load-config.sh
+basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+source "$basedir/__load-config.sh"
 
 echo "$ELECTRON_EXEC"

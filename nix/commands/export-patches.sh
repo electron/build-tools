@@ -3,8 +3,7 @@
 set -e
 
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-
-source $basedir/__load-config.sh
+source "$basedir/__load-config.sh"
 
 # wrapper fn to check if a key exists in a hashmap
 function array_key_exists() {
@@ -26,8 +25,8 @@ patch_dirs["boringssl"]="third_party/boringssl"
 SRC_DIR=$ELECTRON_GN_ROOT/src
 
 if [[ "$(array_key_exists 'patch_dirs' "$1"; echo $?)" = "0" ]]; then
-  cd $SRC_DIR/${patch_dirs[$@]}
-  $SRC_DIR/electron/script/git-export-patches -o $SRC_DIR/electron/patches/"$1"
+  cd "$SRC_DIR/${patch_dirs[$@]}"
+  "$SRC_DIR/electron/script/git-export-patches" -o "$SRC_DIR/electron/patches/$1"
 else
   echo "Error: invalid patch directory passed."
 fi

@@ -20,14 +20,14 @@ echo
 echo "Running 'gclient config'"
 gclient config --name "src/electron" --unmanaged https://github.com/electron/electron
 
-new_config=$(node $basedir/../../common/new-config-for-fetch.js $target_dir)
+new_config=$(node "$basedir/../../common/new-config-for-fetch.js" "$target_dir")
 
 echo
 echo
 echo "Running 'evm $new_config'"
 evm "$new_config"
 
-source $basedir/__load-config.sh
+source "$basedir/__load-config.sh"
 
 echo
 echo
