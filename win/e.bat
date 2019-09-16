@@ -18,11 +18,13 @@ goto collect
 
 :parse-command
 if "%command%"=="" goto :missing-command
-if "%command%"=="generate-config" goto :generate-config
-if "%command%"=="sync" goto :sync
 if "%command%"=="bootstrap" goto :bootstrap
 if "%command%"=="build" goto :build
+if "%command%"=="exec" goto :exec
+if "%command%"=="generate-config" goto :generate-config
+if "%command%"=="src" goto :src
 if "%command%"=="start" goto :start
+if "%command%"=="sync" goto :sync
 if "%command%"=="test" goto :test
 
 echo Unknown Electron Command: \"%1\"
@@ -30,16 +32,8 @@ exit /B 0
 
 :missing-command
 echo Usage: e [command] [...args]
-echo You must provide a command, must be one of 'generate-config', 'sync', 'bootstrap', 'build', 'start' or 'test'
+echo You must provide a command, must be one of 'bootstrap', 'build', 'exec', 'generate-config', 'src', 'start' 'sync', or 'test'
 exit /B 0
-
-:generate-config
-call "%basedir%"\commands\generate-config.bat
-exit /B %errorlevel%
-
-:sync
-call "%basedir%"\commands\sync.bat %args%
-exit /B %errorlevel%
 
 :bootstrap
 call "%basedir%"\commands\bootstrap.bat
@@ -49,8 +43,24 @@ exit /B %errorlevel%
 call "%basedir%"\commands\build.bat %args%
 exit /B %errorlevel%
 
+:exec
+call "%basedir%"\commands\exec.bat %args%
+exit /B %errorlevel%
+
+:generate-config
+call "%basedir%"\commands\generate-config.bat
+exit /B %errorlevel%
+
+:src
+call "%basedir%"\commands\src.bat %args%
+exit /B %errorlevel%
+
 :start
 call "%basedir%"\commands\start.bat %args%
+exit /B %errorlevel%
+
+:sync
+call "%basedir%"\commands\sync.bat %args%
 exit /B %errorlevel%
 
 :test
