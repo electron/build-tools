@@ -5,7 +5,7 @@ set -e
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 source "$basedir/__load-config.sh"
 
-echo Running \"gclient sync\" in \""$ELECTRON_GN_ROOT/src"\"
+echo "Running '$(which gclient) sync' in '$ELECTRON_GN_ROOT/src'"
 mkdir -p "$ELECTRON_GN_ROOT/src"
 cd "$ELECTRON_GN_ROOT/src"
 
