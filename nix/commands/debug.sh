@@ -7,7 +7,7 @@ basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 source $basedir/__load-config.sh
 
 if [ "$(uname)" == "Darwin" ]; then
-  lldb "$ELECTRON_GN_ROOT/src/out/$ELECTRON_OUT_DIR/Electron.app/Contents/MacOS/Electron"
+  lldb "$ELECTRON_EXEC"
 else
-  gdb "$ELECTRON_GN_ROOT/src/out/$ELECTRON_OUT_DIR/electron" -q -ex "source $ELECTRON_GN_ROOT/src/tools/gdb/gdbinit" $@
+  gdb "$ELECTRON_EXEC" -q -ex "source $ELECTRON_GN_ROOT/src/tools/gdb/gdbinit" $@
 fi
