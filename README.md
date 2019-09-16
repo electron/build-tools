@@ -210,6 +210,41 @@ Valid patch directories include:
 
 **Nota Bene:** You need to be running at least Bash v4 to use this command.
 
+### `e exec`
+
+Returns the path to the current configuration's Electron executable.
+Useful in combination other shell tools.
+
+Example Usage:
+
+```sh
+$ uname
+Linux
+$ e exec
+/home/username/electron-gn-root/src/out/Testing/electron
+
+$ uname
+Darwin
+$ e exec
+/Users/username/electron-gn-root/src/out/Testing/Electron.app/Contents/MacOS/Electron
+```
+
+### `e src`
+
+Returns the path to the current configuration's specified source directory.
+Useful in combination other shell tools.
+
+Example Usage:
+
+```sh
+$ e src
+/path/to/electron/src/electron
+$ cd `e src base`
+$ echo $PWD
+/path/to/electron/src/base
+$ ripgrep --t h TakeHeapSnapshot `e src`
+```
+
 ## Multiple Configs
 
 If you're doing a lot of Electron development and constantly switching targets or branches it is a good idea to
