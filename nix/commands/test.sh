@@ -22,10 +22,7 @@ else
 fi
 
 if [ "x$node_headers_need_rebuild" != 'xno' ]; then
-  ninja -C "${build_dir}" third_party/electron_node:headers
-  # install the test modules with the generated headers
-  (cd "${electron_spec_dir}" && npm i --nodedir="${node_headers_dir}")
-  touch "${node_headers_dir}"
+  e build node:headers
 fi
 
 cd "$ELECTRON_GN_ROOT/src/electron"
