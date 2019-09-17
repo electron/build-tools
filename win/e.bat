@@ -20,9 +20,8 @@ goto collect
 if "%command%"=="" goto :missing-command
 if "%command%"=="bootstrap" goto :bootstrap
 if "%command%"=="build" goto :build
-if "%command%"=="exec" goto :exec
 if "%command%"=="generate-config" goto :generate-config
-if "%command%"=="src" goto :src
+if "%command%"=="get" goto :get
 if "%command%"=="start" goto :start
 if "%command%"=="sync" goto :sync
 if "%command%"=="test" goto :test
@@ -43,16 +42,12 @@ exit /B %errorlevel%
 call "%basedir%"\commands\build.bat %args%
 exit /B %errorlevel%
 
-:exec
-call "%basedir%"\commands\exec.bat %args%
-exit /B %errorlevel%
-
 :generate-config
 call "%basedir%"\commands\generate-config.bat
 exit /B %errorlevel%
 
-:src
-call "%basedir%"\commands\src.bat %args%
+:get
+call "%basedir%"\commands\get.bat %args%
 exit /B %errorlevel%
 
 :start
