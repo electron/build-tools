@@ -4,9 +4,9 @@ set -e
 
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
-source $basedir/__load-config.sh
+source "$basedir/__load-config.sh"
 
-cd $ELECTRON_GN_ROOT/src
+cd "$ELECTRON_GN_ROOT/src"
 
 ensure_sccache () {
   SCCACHE_PATH=$ELECTRON_GN_ROOT/src/electron/external_binaries/sccache
@@ -19,8 +19,8 @@ ensure_sccache () {
 
 build_target() {
   ensure_sccache
-  echo Running \"ninja\" in \"$ELECTRON_GN_ROOT/src\" with target \"$1\"
-  ninja -C "out/$ELECTRON_OUT_DIR" $1
+  echo Running \"ninja\" in \""$ELECTRON_GN_ROOT/src"\" with target \""$1"\"
+  ninja -C "out/$ELECTRON_OUT_DIR" "$1"
 }
 
 bad_build_target() {
@@ -55,7 +55,7 @@ case "$pretty_target" in
 esac
 
 if [ "$target" == '__bad__' ]; then
-  bad_build_target $pretty_target
+  bad_build_target "$pretty_target"
 fi
 
 build_target $target
