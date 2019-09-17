@@ -210,39 +210,34 @@ Valid patch directories include:
 
 **Nota Bene:** You need to be running at least Bash v4 to use this command.
 
-### `e exec`
+### `e get`
 
-Returns the path to the current configuration's Electron executable.
+Returns information about the current build.
 Useful in combination other shell tools.
+ * `e get exe`: the path of the built Electron executable
+ * `e get out`: the 'out' directory name
+ * `e get src [code]`: the path to the source of the specified code (default:electron)
 
 Example Usage:
 
 ```sh
-$ uname
-Linux
-$ e exec
-/home/username/electron-gn-root/src/out/Testing/electron
-
 $ uname
 Darwin
-$ e exec
+$ e get exe
 /Users/username/electron-gn-root/src/out/Testing/Electron.app/Contents/MacOS/Electron
-```
 
-### `e src`
-
-Returns the path to the current configuration's specified source directory.
-Useful in combination other shell tools.
-
-Example Usage:
-
-```sh
-$ e src
-/path/to/electron/src/electron
-$ cd `e src base`
-$ echo $PWD
-/path/to/electron/src/base
-$ ripgrep --t h TakeHeapSnapshot `e src`
+$ uname
+Linux
+$ e get exe
+/home/username/electron-gn-root/src/out/Testing/electron
+$ e get out
+Testing
+$ e get src
+/home/username/electron-gn-root/src/electron
+$ cd `e get src base`
+$ pwd
+/home/username/electron-gn-root/src/base
+$ ripgrep --t h TakeHeapSnapshot `e get src`
 ```
 
 ## Multiple Configs
