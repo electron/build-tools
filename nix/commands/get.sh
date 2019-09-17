@@ -8,10 +8,10 @@ source "${basedir}/__load-config.sh"
 readonly command="$1"
 case $command in
   --help)
-    echo rUse: e get [exe | out | src [name]]'
-    echo 'exe: the path to built Electron executable'
-    echo 'out: the outdir, e.g. "Testing"'
-    echo 'src: the path to the "name" (default:electron) source directory, e.g. "/path/to/electron/src/electron"'
+    echo "Usage: e get [exe | out | src [name]]"
+    echo "exe: the path to built Electron executable"
+    echo "out: the outdir, e.g. \"Testing\""
+    echo "src: the path to the named source directory (default:electron) e.g. \"/path/to/electron/src/electron\""
     exit 0
     ;;
   exe)
