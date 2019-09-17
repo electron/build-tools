@@ -8,7 +8,7 @@ basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 # Functions
 missing_command() {
   echo "Usage: e [command] [...args]"
-  echo "Please provide a valid command: 'bootstrap', 'build', 'debug', 'exec', 'export-patches', 'pr', 'src', 'start', 'sync', 'test', or 'testnode'."
+  echo "Please provide a valid command: 'bootstrap', 'build', 'debug', 'export-patches', 'get', 'pr', 'start', 'sync', 'test', or 'testnode'."
   exit 1
 }
 

@@ -31,7 +31,7 @@ exit /B 0
 
 :missing-command
 echo Usage: e [command] [...args]
-echo You must provide a command, must be one of 'bootstrap', 'build', 'exec', 'generate-config', 'src', 'start' 'sync', or 'test'
+echo You must provide a command, must be one of 'bootstrap', 'build', 'generate-config', 'get', 'start' 'sync', or 'test'
 exit /B 0
 
 :bootstrap
