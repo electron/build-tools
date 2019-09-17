@@ -14,14 +14,14 @@ if "%2"=="" (
   SET SRC=%2
 )
 
-if "%CMD%"=="exe" (
+if /i "%CMD%"=="exe" (
   echo | set /p dummyName=%ELECTRON_GN_ROOT%/src/out/%ELECTRON_OUT_DIR%/electron.exe
-) else if "%CMD%"=="out" (
+) else if /i "%CMD%"=="out" (
   echo | set /p dummyName=%ELECTRON_OUT_DIR%
-) else if "%CMD%"=="src" (
+) else if /i "%CMD%"=="src" (
   echo | set /p dummyName=%ELECTRON_GN_ROOT%/src/%SRC%
 ) else (
-  echo Usage: e get [exe ^| out ^| src [name]]
+  echo Usage: e show {exe ^| out ^| src [name]}
   echo exe: the path to built Electron executable
   echo out: the outdir, e.g. "Testing"
   echo src: the path to the "name" [default:electron] source directory, e.g. "/path/to/electron/src/electron"

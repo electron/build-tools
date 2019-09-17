@@ -2,28 +2,39 @@
 
 set -e
 
-command="$1"
-basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+readonly basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 # Functions
-missing_command() {
-  echo "Usage: e [command] [...args]"
-  echo "Please provide a valid command: 'bootstrap', 'build', 'debug', 'export-patches', 'get', 'pr', 'start', 'sync', 'test', or 'testnode'."
+usage() {
+  echo -n 'Usage: e {'
+  local -r -a scripts=($basedir/commands/[a-z]*\.sh)
+  local -r n=${#scripts[@]}
+  for i in "${!scripts[@]}"; do
+    echo -n "$(basename -s '.sh' "${scripts[$i]}")"
+    if (( $i+1 < $n )); then
+      echo -n ' | '
+    fi
+  done
+  echo '} [...args]'
   exit 1
 }
 
 run_command() {
-  cmd="$1"
+  local -r cmd="$1"
   shift
-  script_path="$basedir/commands/$cmd.sh"
-  if [ ! -f "$script_path" ]; then
+  local -r script_path="$basedir/commands/$cmd.sh"
+  if [[ ! -f "$script_path" ]]; then
     echo Invalid Command: \""$cmd"\"
     echo ""
-    missing_command
+    usage
   else
     "$script_path" "$@"
   fi
 }
 
-shift
-run_command "$command" "$@"
+if (( $# == 0 )); then
+  usage
+else
+  run_command "$@"
+fi
+

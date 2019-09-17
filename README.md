@@ -210,34 +210,34 @@ Valid patch directories include:
 
 **Nota Bene:** You need to be running at least Bash v4 to use this command.
 
-### `e get`
+### `e show`
 
 Returns information about the current build.
 Useful in combination other shell tools.
- * `e get exe`: the path of the built Electron executable
- * `e get out`: the 'out' directory name
- * `e get src [code]`: the path to the source of the specified code (default:electron)
+ * `e show exe`: the path of the built Electron executable
+ * `e show out`: the 'out' directory name
+ * `e show src [code]`: the path to the source of the specified code (default:electron)
 
 Example Usage:
 
 ```sh
 $ uname
 Darwin
-$ e get exe
+$ e show exe
 /Users/username/electron-gn-root/src/out/Testing/Electron.app/Contents/MacOS/Electron
 
 $ uname
 Linux
-$ e get exe
+$ e show exe
 /home/username/electron-gn-root/src/out/Testing/electron
-$ e get out
+$ e show out
 Testing
-$ e get src
+$ e show src
 /home/username/electron-gn-root/src/electron
-$ cd `e get src base`
+$ cd `e show src base`
 $ pwd
 /home/username/electron-gn-root/src/base
-$ ripgrep --t h TakeHeapSnapshot `e get src`
+$ ripgrep --t h TakeHeapSnapshot `e show src`
 ```
 
 ## Multiple Configs

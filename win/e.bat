@@ -21,7 +21,7 @@ if "%command%"=="" goto :missing-command
 if "%command%"=="bootstrap" goto :bootstrap
 if "%command%"=="build" goto :build
 if "%command%"=="generate-config" goto :generate-config
-if "%command%"=="get" goto :get
+if "%command%"=="show" goto :get
 if "%command%"=="start" goto :start
 if "%command%"=="sync" goto :sync
 if "%command%"=="test" goto :test
@@ -31,7 +31,7 @@ exit /B 0
 
 :missing-command
 echo Usage: e [command] [...args]
-echo You must provide a command, must be one of 'bootstrap', 'build', 'generate-config', 'get', 'start' 'sync', or 'test'
+echo You must provide a command, must be one of 'bootstrap', 'build', 'generate-config', 'show', 'start' 'sync', or 'test'
 exit /B 0
 
 :bootstrap
@@ -47,7 +47,7 @@ call "%basedir%"\commands\generate-config.bat
 exit /B %errorlevel%
 
 :get
-call "%basedir%"\commands\get.bat %args%
+call "%basedir%"\commands\show.bat %args%
 exit /B %errorlevel%
 
 :start
