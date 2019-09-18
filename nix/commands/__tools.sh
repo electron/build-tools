@@ -39,8 +39,8 @@ ensure_depot_tools() {
 ensure_node_modules() {
   # if it's missing, install it
   if [[ ! -d "${ELECTRON_GN_SCRIPTS_ROOT}/node_modules" ]]; then
-    echo -e "\n\nRunning '${COLOR_CMD}yarn install${COLOR_OFF}' in '${COLOR_DIR}$top${COLOR_OFF}'"
-    npx yarn --cwd "$top" install --frozen-lockfile
+    echo -e "\n\nRunning '${COLOR_CMD}yarn install${COLOR_OFF}' in '${COLOR_DIR}${ELECTRON_GN_SCRIPTS_ROOT}${COLOR_OFF}'"
+    npx yarn --cwd "${ELECTRON_GN_SCRIPTS_ROOT}" install --frozen-lockfile
     if [[ $? -ne 0 ]]; then
       exit $?
     fi

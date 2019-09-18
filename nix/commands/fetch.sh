@@ -3,7 +3,6 @@
 set -e
 
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-source "$basedir/__load-config.sh"
 source "$basedir/__tools.sh"
 ensure_depot_tools
 ensure_node_modules
