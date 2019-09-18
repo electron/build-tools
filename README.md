@@ -7,19 +7,19 @@ This repository contains some helper/wrapper scripts to make working with GN eas
 ### macOS / Linux
 
 ```sh
-$ git clone https://github.com/MarshallOfSound/electron-gn-scripts.git
-$ export PATH="$PATH:$PWD/electron-gn-scripts/nix"
+git clone https://github.com/MarshallOfSound/electron-gn-scripts.git
+export PATH="$PATH:$PWD/electron-gn-scripts/nix"
 
 # You should probably add this to your `~/.profile` too:
-$ export PATH="$PATH:/path/to/electron-gn-scripts/nix"
+export PATH="$PATH:/path/to/electron-gn-scripts/nix"
 ```
 
 ### Windows
 
 ```batch
-PS> git clone https://github.com/MarshallOfSound/electron-gn-scripts.git
-PS> cd electron-gn-scripts\win
-PS> set PATH="%PATH%;%CD%"
+git clone https://github.com/MarshallOfSound/electron-gn-scripts.git
+cd electron-gn-scripts\win
+set PATH="%PATH%;%CD%"
 ```
 
 On Windows, you'll also need to install [`depot_tools`](https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up) as outlined in the [GN Build Instructions](https://github.com/electron/electron/blob/master/docs/development/build-instructions-gn.md) and summarized here:
@@ -33,12 +33,14 @@ On Windows, you'll also need to install [`depot_tools`](https://commondatastorag
 Getting and building Electron only requires the `e` command:
 
 ```sh
-$ cd /path/to/your/developer/folder
+cd /path/to/your/developer/folder
+
 # This will create a new "electron" folder in the current directory
 # It will set up a new evm config
 # Sync down all the required code and bootstrap the output directory
-$ e fetch
-$ e build
+e fetch
+
+e build
 ```
 
 ## Usage
@@ -60,13 +62,13 @@ Some possible extra arguments include:
 Basic Usage:
 
 ```sh
-$ e sync
+e sync
 ```
 
 Example Usage with extra arguments:
 
 ```sh
-$ e sync --ignore_locks
+e sync --ignore_locks
 ```
 
 ### `e bootstrap`
@@ -76,7 +78,7 @@ $ e sync --ignore_locks
 This command is the equivalent of `gn gen`: it generates required output directories and ninja configurations.
 
 ```sh
-$ e bootstrap
+e bootstrap
 ```
 
 ### `e build`
@@ -98,32 +100,32 @@ Example Usage:
 
 ```sh
 # Default - build Electron itself
-$ e build
+e build
 ```
 
 ```sh
 # Build the Electron binary and generates a dist zip file
-$ e build electron:dist
+e build electron:dist
 ```
 
 ```sh
 # Build the mksnapshot binary
-$ e build mksnapshot
+e build mksnapshot
 ```
 
 ```sh
 # Build the chromedriver binary
-$ e build chromedriver
+e build chromedriver
 ```
 
 ```sh
 # Build the node headers .tar.gz file
-$ e build node:headers
+e build node:headers
 ```
 
 ```sh
 # Build the breakpad `dump_syms` binary
-$ e build breakpad
+e build breakpad
 ```
 
 ### `e start`
@@ -131,8 +133,8 @@ $ e build breakpad
 Starts the generated Electron binary, passes all extra arguments directly through to Electron.  E.g.
 
 ```sh
-$ e start --version
-$ e start path/to/my/app
+e start --version
+e start path/to/my/app
 ```
 
 ### `e test`
@@ -147,14 +149,14 @@ Possible Extra Arguments:
 Basic Usage:
 
 ```sh
-$ e test
+e test
 ```
 
 Example Extra Arguments:
 
 ```sh
 # Run Main Process tests in CI mode 
-$ e test --ci --runners=main
+e test --ci --runners=main
 ```
 
 ### `e debug`
@@ -162,7 +164,7 @@ $ e test --ci --runners=main
 Initializes [lldb](https://lldb.llvm.org/) (on macOS) or [gdb](https://www.gnu.org/software/gdb/) (on Linux) with the debug target set to your local Electron build.
 
 ```sh
-$ e debug
+e debug
 
 # You should then see (on macOS, for example):
 # (lldb) target create "/Users/codebytere/Developer/electron-gn/src/out/Testing/Electron.app/Contents/MacOS/Electron"
@@ -227,8 +229,8 @@ using `evm`.
 If you copy your `config.yml` and name the copy `config.debug.yml` you can switch to that config using
 
 ```sh
-$ evm debug
-$ e build
+evm debug
+e build
 ```
 
 You can have as many config files as you want and switch to them at any time using `evm $CONFIG_NAME`.
