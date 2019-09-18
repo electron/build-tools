@@ -30,7 +30,8 @@ On Windows, you'll also need to install [`depot_tools`](https://commondatastorag
 
 ## Initial Electron Setup
 
-Getting and building Electron only requires the `e` command:
+After the installation steps above, getting and building Electron only
+takes the `e` command:
 
 ```sh
 cd /path/to/your/developer/folder
