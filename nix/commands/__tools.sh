@@ -38,7 +38,7 @@ ensure_node_modules() {
   local -r top="$(git -C "$(dirname "$(readlink -f "$0")")" rev-parse --show-toplevel)"
   if [[ ! -d "$top/node_modules" ]]; then
     echo -e "\n\nRunning '${COLOR_CMD}yarn install${COLOR_OFF}' in '${COLOR_DIR}$top${COLOR_OFF}'"
-    yarn --cwd "$top" install
+    npx yarn --cwd "$top" install --frozen-lockfile
     if [[ $? -ne 0 ]]; then
       exit $?
     fi
