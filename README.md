@@ -6,61 +6,43 @@ This repository contains some helper/wrapper scripts to make working with GN eas
 
 ### macOS / Linux
 
-```bash
+```sh
 git clone https://github.com/MarshallOfSound/electron-gn-scripts.git
-cd electron-gn-scripts
-yarn
-# You could also use `npm install` here
-# You should probably add this to your path in your `.zshrc` or `.bashrc`
-export PATH="$PATH:$(pwd)/nix"
+export PATH="$PATH:$PWD/electron-gn-scripts/nix"
+
+# You should probably add this to your `~/.profile` too:
+export PATH="$PATH:/path/to/electron-gn-scripts/nix"
 ```
 
 ### Windows
 
 ```batch
 git clone https://github.com/MarshallOfSound/electron-gn-scripts.git
-cd electron-gn-scripts
-set PATH="%PATH%;"
+cd electron-gn-scripts\win
+set PATH="%PATH%;%CD%"
 ```
 
-## Setup
+On Windows, you'll also need to install [`depot_tools`](https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up) as outlined in the [GN Build Instructions](https://github.com/electron/electron/blob/master/docs/development/build-instructions-gn.md) and summarized here:
 
-This toolset does not yet have the ability to initialize an Electron GN setup from scratch so you'll have to
-do the initial work.  These steps are outlined in the [GN Build Instructions](https://github.com/electron/electron/blob/master/docs/development/build-instructions-gn.md) and summarized below.
-
-## Install Depot Tools
-
-You'll need to install [`depot_tools`](https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up)  to your system.
-
-**On macOS:**
-
-```sh
-# Ensure you're in your home directory
-cd ~
-git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-```
-
-Add `depot_tools` to the end of your PATH (you will probably want to put this in your `~/.bashrc` or `~/.zshrc`).
-
-**On Windows:**
-
-1) Download the `depot_tools` [bundle](https://storage.googleapis.com/chrome-infra/depot_tools.zip) and extract it to `C:\workspace\depot_tools`
-2) Add `depot_tools` to the start of your `PATH` (must be ahead of any installs of Python)
-3) From a cmd.exe shell, run the command `gclient` (with **no** arguments)
+ 1. Download the `depot_tools` [bundle](https://storage.googleapis.com/chrome-infra/depot_tools.zip) and extract it to `C:\workspace\depot_tools`
+ 2. Add `depot_tools` to the start of your `PATH` (must be ahead of any installs of Python)
+ 3. From a cmd.exe shell, run the command `gclient` (with **no** arguments)
 
 ## Initial Electron Setup
 
-After you've set up `depot_tools`, you'll only need to use the `e` command to perform initial setup.
+After the installation steps above, getting and building Electron only
+takes the `e` command:
 
-```bash
+```sh
 cd /path/to/your/developer/folder
+
 # This will create a new "electron" folder in the current directory
 # It will set up a new evm config
 # Sync down all the required code and bootstrap the output directory
 e fetch
-```
 
-Following this, you just have to use `e build` and friends to actually build your newly cloned Electron setup.
+e build
+```
 
 ## Usage
 
@@ -151,10 +133,9 @@ e build breakpad
 
 Starts the generated Electron binary, passes all extra arguments directly through to Electron.  E.g.
 
-```bash
-e start path/to/my/app
-
+```sh
 e start --version
+e start path/to/my/app
 ```
 
 ### `e test`
@@ -183,7 +164,7 @@ e test --ci --runners=main
 
 Initializes [lldb](https://lldb.llvm.org/) (on macOS) or [gdb](https://www.gnu.org/software/gdb/) (on Linux) with the debug target set to your local Electron build.
 
-```bash
+```sh
 e debug
 
 # You should then see (on macOS, for example):
@@ -248,7 +229,7 @@ using `evm`.
 
 If you copy your `config.yml` and name the copy `config.debug.yml` you can switch to that config using
 
-```bash
+```sh
 evm debug
 e build
 ```

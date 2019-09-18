@@ -3,5 +3,8 @@
 set -e
 
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+source "$basedir/commands/__tools.sh"
+
+ensure_node_modules
 
 node "$basedir/../common/switch.js" "$1"

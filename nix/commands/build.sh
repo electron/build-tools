@@ -3,8 +3,8 @@
 set -e
 
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-source "$basedir/__constants.sh"
 source "$basedir/__load-config.sh"
+source "$basedir/__tools.sh"
 
 cd "$ELECTRON_GN_ROOT/src"
 
@@ -19,8 +19,9 @@ ensure_sccache () {
 
 build_target() {
   ensure_sccache
+  ensure_depot_tools
   echo -e "Running '${COLOR_CMD}ninja${COLOR_OFF}' in '${COLOR_DIR}$ELECTRON_GN_ROOT/src${COLOR_OFF}' with target '$1'"
-  ninja -C "out/$ELECTRON_OUT_DIR" "$1"
+  PATH="$DEPOT_TOOLS_PATH:$PATH" ninja -C "out/$ELECTRON_OUT_DIR" "$1"
 }
 
 bad_build_target() {

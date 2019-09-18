@@ -4,6 +4,8 @@ set -e
 
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 source "$basedir/__load-config.sh"
+source "$basedir/__tools.sh"
+ensure_node_modules
 
 # to run the tests, you'll first need to build the test modules
 # against the same version of Node.js that was built as part of
