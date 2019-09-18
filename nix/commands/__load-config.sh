@@ -2,7 +2,7 @@
 
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
-config_path=$(realpath "$basedir/../../generated.env.sh")
+config_path="$basedir/../../generated.env.sh"
 
 if [[ ! -f "$config_path" ]]; then
   echo "Configuration '$config_path' not found. (Do you need to run 'evm' or 'e fetch'?)"
