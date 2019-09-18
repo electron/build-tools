@@ -3,7 +3,7 @@
 set -e
 
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-
+source "$basedir/__constants.sh"
 source "$basedir/__load-config.sh"
 
 cd "$ELECTRON_GN_ROOT/src"
@@ -13,18 +13,18 @@ ensure_sccache () {
   $SCCACHE_PATH --stop-server &> /dev/null || true
   until $SCCACHE_PATH --start-server
   do
-    echo Failed to start sccache, trying again...
+    echo -e "${COLOR_WARN}Failed to start sccache, trying again...${COLOR_OFF}"
   done
 }
 
 build_target() {
   ensure_sccache
-  echo Running \"ninja\" in \""$ELECTRON_GN_ROOT/src"\" with target \""$1"\"
+  echo -e "Running '${COLOR_CMD}ninja${COLOR_OFF}' in '${COLOR_DIR}$ELECTRON_GN_ROOT/src${COLOR_OFF}' with target '$1'"
   ninja -C "out/$ELECTRON_OUT_DIR" "$1"
 }
 
 bad_build_target() {
-  echo "Unknown build target \"$1\", please check the README for possible targets"
+  echo -e "${COLOR_ERR}Unknown build target \"$1\", please check the README for possible targets${COLOR_OFF}"
   exit 1
 }
 
