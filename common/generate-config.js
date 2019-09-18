@@ -27,7 +27,7 @@ envVars.CHROMIUM_BUILDTOOLS_PATH = path.resolve(envVars.ELECTRON_GN_ROOT, 'src',
 
 envVars.SCCACHE_TWO_TIER = 'true';
 envVars.SCCACHE_CACHE_SIZE = '20G';
-envVars.SCCACHE_BUCKET = 'electronjs-sccache';
+envVars.SCCACHE_BUCKET = 'electronjs-sccache-ci';
 
 envVars.EXTRA_GN_ARGS = `"${config.extraGnArgs || ''}"`
 envVars.GN_IMPORT_NAME = config.buildType || 'debug'
