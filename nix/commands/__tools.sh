@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# colors
+# constants
 
 declare -r COLOR_CMD='\033[0;33m' # yellow
 declare -r COLOR_DIR='\033[0;36m' # cyan -- same as chalk use in common/
@@ -9,9 +9,12 @@ declare -r COLOR_OFF='\033[0m' # no-color
 declare -r COLOR_OK='\033[0;32m' # green
 declare -r COLOR_WARN='\033[1;31m' # light red
 
-# functions
+declare __basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+declare -r ELECTRON_GN_SCRIPTS_ROOT="$(git -C "${__basedir}" rev-parse --show-toplevel)"
+declare -r DEPOT_TOOLS_PATH="${ELECTRON_GN_SCRIPTS_ROOT}/third_party/depot_tools"
+unset __basedir
 
-declare -r DEPOT_TOOLS_PATH="$(git -C "$(dirname "$(readlink -f "$0")")" rev-parse --show-toplevel)/third_party/depot_tools"
+# functions
 
 ensure_depot_tools() {
   # if it's missing, install it
@@ -35,8 +38,7 @@ ensure_depot_tools() {
 
 ensure_node_modules() {
   # if it's missing, install it
-  local -r top="$(git -C "$(dirname "$(readlink -f "$0")")" rev-parse --show-toplevel)"
-  if [[ ! -d "$top/node_modules" ]]; then
+  if [[ ! -d "${ELECTRON_GN_SCRIPTS_ROOT}/node_modules" ]]; then
     echo -e "\n\nRunning '${COLOR_CMD}yarn install${COLOR_OFF}' in '${COLOR_DIR}$top${COLOR_OFF}'"
     npx yarn --cwd "$top" install --frozen-lockfile
     if [[ $? -ne 0 ]]; then
