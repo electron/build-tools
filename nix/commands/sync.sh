@@ -3,14 +3,15 @@
 set -e
 
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-source "$basedir/__constants.sh"
 source "$basedir/__load-config.sh"
+source "$basedir/__tools.sh"
+ensure_depot_tools
 
 readonly src_path="$ELECTRON_GN_ROOT/src"
 echo -e "Running '${COLOR_CMD}gclient sync${COLOR_OFF}' in '${COLOR_DIR}$src_path${COLOR_OFF}'"
 mkdir -p "$src_path"
 cd "$src_path"
-gclient sync --with_branch_heads --with_tags "$@"
+PATH="$DEPOT_TOOLS_PATH:$PATH" gclient sync --with_branch_heads --with_tags "$@"
 
 echo -e "${COLOR_OK}Updating Git Remotes${COLOR_OFF}"
 

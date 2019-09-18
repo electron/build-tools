@@ -3,10 +3,12 @@
 set -e
 
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-source "$basedir/__constants.sh"
+source "$basedir/__load-config.sh"
+source "$basedir/__tools.sh"
+ensure_depot_tools
+ensure_node_modules
 
 readonly target_dir=$(pwd)/electron
-
 if [ -d "electron" ]; then
   echo -e "${COLOR_ERR}'$target_dir' already exists. Please remove it or cd to a different directory.${COLOR_OFF}"
   exit 1
@@ -21,7 +23,7 @@ cd "$target_dir"
 echo
 echo
 echo -e "Running '${COLOR_CMD}gclient config${COLOR_OFF}' in '${COLOR_DIR}$target_dir${COLOR_OFF}'"
-gclient config --name 'src/electron' --unmanaged 'https://github.com/electron/electron'
+PATH="$DEPOT_TOOLS_PATH:$PATH" gclient config --name 'src/electron' --unmanaged 'https://github.com/electron/electron'
 
 new_config=$(node "$basedir/../../common/new-config-for-fetch.js" "$target_dir")
 
