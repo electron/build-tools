@@ -8,9 +8,10 @@ This repository contains some helper/wrapper scripts to make working with GN eas
 
 ```sh
 $ git clone https://github.com/MarshallOfSound/electron-gn-scripts.git
-$ cd electron-gn-scripts
+$ export PATH="$PATH:$PWD/electron-gn-scripts/nix"
+
+# You should probably add this to your `~/.profile` too:
 $ export PATH="$PATH:/path/to/electron-gn-scripts/nix"
-# ^ You should probably add this to your `~/.profile`
 ```
 
 ### Windows
