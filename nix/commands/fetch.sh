@@ -31,7 +31,7 @@ echo
 echo -e "Running '${COLOR_CMD}evm $new_config${COLOR_OFF}'"
 evm "$new_config"
 
-source "$basedir/__load-config.sh"
+source "$basedir/__load-env.sh"
 
 echo
 echo
