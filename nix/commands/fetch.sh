@@ -7,9 +7,14 @@ source "$basedir/__tools.sh"
 ensure_depot_tools
 ensure_node_modules
 
-readonly target_dir=$(pwd)/electron
-if [ -d "electron" ]; then
-  echo -e "${COLOR_ERR}'$target_dir' already exists. Please remove it or cd to a different directory.${COLOR_OFF}"
+# Get the target directory (default: $PWD/electron)
+target_dir="${1-"$PWD/electron"}"
+if [[ "$target_dir" != /* ]]; then
+  target_dir="$PWD/$target_dir"
+fi
+
+if [[ -d "$target_dir" ]]; then
+  echo -e "${COLOR_ERR}'${COLOR_DIR}$target_dir${COLOR_ERR}' already exists. Please select a new directory.${COLOR_OFF}"
   exit 1
 fi
 
