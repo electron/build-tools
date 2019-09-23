@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2086,SC2124
 
 set -e
 
@@ -9,9 +10,13 @@ source "$basedir/__load-env.sh"
 function array_key_exists() {
   local _array_name="$1"
   local _key="$2"
-  local _cmd='echo ${!'$_array_name'[@]}'
-  local _array_keys=($(eval $_cmd))
-  local _key_exists=$(echo " ${_array_keys[@]} " | grep " $_key " &>/dev/null; echo $?)
+  local _cmd="echo ${!"$_array_name"[@]}"
+  local _array_keys
+  mapfile -t _array_keys < <(eval $_cmd)
+
+  local _key_exists
+  _key_exists=$(echo "${_array_keys[@]}" | grep " $_key " &>/dev/null; echo $?)
+
   [[ "$_key_exists" = "0" ]] && return 0 || return 1
 }
 
@@ -28,5 +33,5 @@ if [[ "$(array_key_exists 'patch_dirs' "$1"; echo $?)" = "0" ]]; then
   cd "$SRC_DIR/${patch_dirs[$@]}"
   "$SRC_DIR/electron/script/git-export-patches" -o "$SRC_DIR/electron/patches/$1"
 else
-  echo "Error: invalid patch directory passed."
+  echo "Error: $1 is not a valid patch directory."
 fi

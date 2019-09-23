@@ -7,11 +7,11 @@ readonly basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 # Functions
 usage() {
   echo -n 'Usage: e {'
-  local -r -a scripts=($basedir/commands/[a-z]*\.sh)
+  local -r -a scripts="($basedir/commands/[a-z]*\.sh)"
   local -r n=${#scripts[@]}
   for i in "${!scripts[@]}"; do
     echo -n "$(basename -s '.sh' "${scripts[$i]}")"
-    if (( $i+1 < $n )); then
+    if (( i+1 < n )); then
       echo -n ' | '
     fi
   done
