@@ -3,5 +3,6 @@ config.yml
 config.*.yml
 !config.example.yml
 third_party
+package-lock.json
 
 generated.env.*
