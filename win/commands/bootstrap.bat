@@ -1,7 +1,7 @@
 @echo off
 
-call "%~dp0"\..\..\generated.env.bat
-if %errorlevel%=="1" goto :no-config
+call __load-env.bat
+if %errorlevel% gtr 0 exit /B %errorlevel%
 
 echo Running "gn gen" in "%ELECTRON_GN_ROOT%\src"
 
@@ -13,10 +13,6 @@ call gn gen "out/%ELECTRON_OUT_DIR%" --args="import(\"//electron/build/args/debu
 if %errorlevel%=="1" goto :fail
 
 exit /B 0
-
-:no-config
-echo You configuration has not been generated, please run "generate-config"
-exit /B 1
 
 :fail
 exit /B 1

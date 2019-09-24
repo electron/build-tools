@@ -1,10 +1,7 @@
 @echo off
 
-call "%~dp0"\..\..\generated.env.bat
-if %errorlevel%=="1" (
-  echo Your configuration has not been generated. Please run "generate-config"
-  exit /B 1
-)
+call __load-env.bat
+if %errorlevel% gtr 0 exit /B %errorlevel%
 
 SET CMD=%1
 

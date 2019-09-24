@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { getConfigFile } = require('./util');
 
 if (!process.argv[2]) {
   throw new Error('Missing path for new config file');
@@ -14,11 +15,11 @@ buildType: testing
 
 let configName = 'master';
 let n = 0;
-while (fs.existsSync(path.resolve(__dirname, '..', `config.${configName}.yml`))) {
+while (fs.existsSync(getConfigFile(configName))) {
   n++;
   configName = `master${n}`;
 }
 
-fs.writeFileSync(path.resolve(__dirname, '..', `config.${configName}.yml`), content);
+fs.writeFileSync(getConfigFile(configName), content);
 
 process.stdout.write(configName);

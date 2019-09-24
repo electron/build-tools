@@ -1,7 +1,7 @@
 @echo off
 
-call "%~dp0"\..\..\generated.env.bat
-if %errorlevel%=="1" goto :no-config
+call __load-env.bat
+if %errorlevel% gtr 0 exit /B %errorlevel%
 
 cd "%ELECTRON_GN_ROOT%\src" || exit /B 1
 
@@ -48,10 +48,6 @@ exit /B 0
 
 :bad-arg
 echo Unknown build target "%command%", please check the README for possible targets
-exit /B 1
-
-:no-config
-echo You configuration has not been generated, please run "generate-config"
 exit /B 1
 
 :fail

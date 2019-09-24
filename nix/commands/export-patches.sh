@@ -3,7 +3,7 @@
 set -e
 
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-source "$basedir/__load-config.sh"
+source "$basedir/__load-env.sh"
 
 # wrapper fn to check if a key exists in a hashmap
 function array_key_exists() {

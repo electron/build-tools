@@ -2,7 +2,5 @@
 
 setlocal
 
-set basedir=%~dp0
-
-call "%basedir%"\..\common\switch.js %1
+call %~dp0\..\common\switch.js %1
 exit /B %errorlevel%

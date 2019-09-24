@@ -1,6 +1,8 @@
 const chalk = require('chalk').default;
 const fs = require('fs');
 const path = require('path');
+const { getConfigFile } = require('./util');
+const generateEnv = require('./generate-env');
 
 const switchTarget = process.argv[2];
 
@@ -9,15 +11,13 @@ if (switchTarget === 'example') {
   process.exit(1);
 }
 
-const configPath = path.resolve(__dirname, '..', `config.${switchTarget}.yml`);
+const configFile = getConfigFile(switchTarget);
 
-if (!fs.existsSync(configPath)) {
-  console.error(chalk.red(`Config file: ${configPath} not found`));
+if (!fs.existsSync(configFile)) {
+  console.error(chalk.red(`Config file: ${configFile} not found`));
   process.exit(1);
 }
 
-global.CONFIG_PATH_OVERRIDE = configPath;
+generateEnv(configFile);
 
-require('./generate-config');
-
-console.log('Switched to:', chalk.cyan(path.basename(configPath)));
+console.log('Switched to:', chalk.cyan(path.basename(configFile)));
