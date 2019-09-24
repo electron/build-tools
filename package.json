@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "main": "null",
   "scripts": {
-    "lint": "for file in $(find nix -type f); do shellcheck --format=gcc $file; done;"
+    "lint": "find nix -type f | xargs shellcheck -f gcc -a"
   },
   "repository": "https://github.com/electron/build-tools",
   "author": "Electron Authors",
