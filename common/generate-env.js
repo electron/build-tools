@@ -11,6 +11,9 @@ function createEnv(configFile) {
     GIT_CACHE_PATH: resolveConfiguredPath(config.gitCachePath),
     ELECTRON_GN_ROOT: resolveConfiguredPath(config.electronRoot),
     ELECTRON_OUT_DIR: config.electronOutDir || 'Debug',
+
+    // '/path/to/config.foo.yml' -> 'foo'
+    CONFIG_NAME: path.basename(configFile).match(/^config\.(.*)\.yml$/)[1]
   };
 
   if (process.platform === 'win32') {
@@ -53,19 +56,19 @@ function main (configFile) {
   rem | This file is auto-generated, please do not modify manually |
   rem |------------------------------------------------------------|
 
-  ${Object.keys(envVars).map(key => `set ${key}=${envVars[key]}`).join('\n')}
+  ${Object.entries(envVars).map(([key, val]) => `set ${key}=${val}`).sort().join('\n')}
   `,
     );
   } else {
     fs.writeFileSync(envFile,
-  `#!/usr/bin/env bash
+`#!/usr/bin/env bash
 
-  # |-------------------- !!!! WARNING !!!! ---------------------|
-  # | This file is auto-generated, please do not modify manually |
-  # |------------------------------------------------------------|
+# |-------------------- !!!! WARNING !!!! ---------------------|
+# | This file is auto-generated, please do not modify manually |
+# |------------------------------------------------------------|
 
-  ${Object.keys(envVars).map(key => `${shouldExport(key) ? 'export ' : ''}${key}=${envVars[key]}`).join('\n')}
-  `
+${Object.entries(envVars).map(([key, val]) => `${shouldExport(key) ? 'export ' : ''}${key}=${val}`).sort().join('\n')}
+`
     );
     fs.chmodSync(
       envFile,

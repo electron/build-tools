@@ -46,7 +46,18 @@ e build
 
 ## Usage
 
-The main command is just called `e`, all sub-commands are `git` sub-command style.  I.e. `e command ...args`
+The main command is just called `e`, all sub-commands are `git` sub-command style.  I.e. `e command ...args`. You can also run `e --help` to get a summary of commands.
+
+### `e fetch`
+
+All-in-one tool for setting up GN + `e sync` + `e bootstrap`. For getting and building Electron, this + `e build` are likely the two commands you want.
+
+Basic Usage:
+
+```sh
+e fetch
+e fetch --help
+```
 
 ### `e sync`
 
@@ -66,20 +77,24 @@ Basic Usage:
 e sync
 ```
 
-Example Usage with extra arguments:
+Fetch sources / synchronize source directories. In GN terms `e sync` is a `gclient sync` wrapper. Any extra arguments are passed along to `gclient sync`. That includes `--help`, so `e sync --help` will show `gclient sync`'s options.
 
 ```sh
-e sync --ignore_locks
+e sync
+
+e sync --ignore_locks -v
+e sync --help
 ```
 
 ### `e bootstrap`
 
 **If you ran `e fetch`, you can skip this step.**
 
-This command is the equivalent of `gn gen`: it generates required output directories and ninja configurations.
+Creates the output directories and ninja build files. In GN terms, `e fetch` is a `gn gen` wrapper.
 
 ```sh
 e bootstrap
+e bootstrap --help
 ```
 
 ### `e build`

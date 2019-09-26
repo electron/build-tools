@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "chalk": "^2.4.1",
+    "commander": "^3.0.2",
     "fs-extra": "^8.1.0",
     "yaml-js": "^0.2.3"
   },

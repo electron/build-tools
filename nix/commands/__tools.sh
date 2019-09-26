@@ -41,12 +41,17 @@ ensure_depot_tools() {
 }
 
 ensure_node_modules() {
-  # if it's missing, install it
-  if [[ ! -d "${ELECTRON_GN_SCRIPTS_ROOT}/node_modules" ]]; then
-    echo -e "\n\nRunning '${COLOR_CMD}yarn install${COLOR_OFF}' in '${COLOR_DIR}${ELECTRON_GN_SCRIPTS_ROOT}${COLOR_OFF}'"
-    if ! npx yarn --cwd "${ELECTRON_GN_SCRIPTS_ROOT}" install --frozen-lockfile; then
+  local -r pwd="$PWD"
+  local -r root="$ELECTRON_GN_SCRIPTS_ROOT"
+  local -r shafile='package.json.sha'
+  cd "$root" || exit
+  if ! shasum --status --check "$shafile"; then
+    echo -e "\\n\\nRunning '${COLOR_CMD}yarn install${COLOR_OFF}' in '${COLOR_DIR}${root}${COLOR_OFF}'"
+    if ! npx yarn install --frozen-lockfile; then
       echo -e "${COLOR_ERR}Failed to install node modules!${COLOR_OFF}"
       exit 1
     fi
+    shasum package.json > "$shafile"
   fi
+  cd "$pwd"
 }

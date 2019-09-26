@@ -2,39 +2,42 @@
 
 set -e
 
-readonly basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-
 # Functions
 usage() {
-  echo -n 'Usage: e {'
-  local -r -a scripts="($basedir/commands/[a-z]*\.sh)"
-  local -r n=${#scripts[@]}
-  for i in "${!scripts[@]}"; do
-    echo -n "$(basename -s '.sh' "${scripts[$i]}")"
-    if (( i+1 < n )); then
-      echo -n ' | '
-    fi
-  done
-  echo '} [...args]'
-  exit 1
+  echo -e "Usage:
+
+  e {command} [-h | --help]
+
+Commands:
+
+  fetch           All-in-one tool for setting up GN + \`e sync\` + \`e bootstrap\`
+  sync            Fetch source / synchronize repository checkouts
+  bootstrap       Generate build commands
+  build           Build electron
+
+  start           Run Electron
+  node            Run Electron as Node
+  debug           Run Electron in a debugger
+  test            Run Electron's spec runner
+  testnode        Run Electron's node spec runner
+
+  export-patches  Geneate patches from a development branch
+  pr              Submit a pull request
+
+  show            Query the build-tools config
+"
 }
 
-run_command() {
-  local -r cmd="$1"
-  shift
-  local -r script_path="$basedir/commands/$cmd.sh"
-  if [[ ! -f "$script_path" ]]; then
-    echo Invalid Command: \""$cmd"\"
-    echo ""
-    usage
-  else
-    "$script_path" "$@"
-  fi
-}
+readonly cmd="$1"
+readonly basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
-if (( $# == 0 )); then
+if [[ "$cmd" = '-h' || "$cmd" = '--help' ]]; then
   usage
+  exit 0
+elif [[ "$cmd" = '' || ! -f "$basedir/commands/$cmd.sh" ]]; then
+  echo "Unrecognized command: \"$cmd\". See \`e --help\` for usage information."
+  exit 1
 else
-  run_command "$@"
+  shift
+  "$basedir/commands/$cmd.sh" "$@"
 fi
-
