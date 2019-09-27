@@ -13,19 +13,20 @@ ensure_sccache () {
   $SCCACHE_PATH --stop-server &> /dev/null || true
   until $SCCACHE_PATH --start-server
   do
-    echo -e "${COLOR_WARN}Failed to start sccache, trying again...${COLOR_OFF}"
+    echo -e "$(log_warn) Failed to start sccache. Trying again..."
   done
 }
 
 build_target() {
   ensure_sccache
   ensure_depot_tools
-  echo -e "Running '${COLOR_CMD}ninja${COLOR_OFF}' in '${COLOR_DIR}$ELECTRON_GN_ROOT/src${COLOR_OFF}' with target '$1'"
-  PATH="$DEPOT_TOOLS_PATH:$PATH" ninja -C "out/$ELECTRON_OUT_DIR" "$1"
+  local -r build_dir="${ELECTRON_GN_ROOT}/src/out/${ELECTRON_OUT_DIR}"
+  echo -e "Running $(log_cmd 'ninja') in $(log_dir "$build_dir") with target '$1'"
+  PATH="$DEPOT_TOOLS_PATH:$PATH" ninja -C "$build_dir" "$1"
 }
 
 bad_build_target() {
-  echo -e "${COLOR_ERR}Unknown build target \"$1\", please check the README for possible targets${COLOR_OFF}"
+  echo -e "$(log_err) Unknown build target '$1'. Please check the README for possible targets."
   exit 1
 }
 

@@ -46,7 +46,7 @@ for arg in "$@"; do
       buildType="${arg:2}"
       ;;
     *)
-      echo -e "${COLOR_ERR}Unrecognized command '${COLOR_CMD}${arg}${COLOR_ERR}'. See \`${COLOR_CMD}e bootstrap --help${COLOR_ERR}\` for usage information."
+      echo -e "$(log_error) Unrecognized command $(log_cmd "$arg"). See $(log_cmd 'e bootstrap --help') for usage information."
       exit 1
       ;;
   esac
@@ -55,7 +55,7 @@ done
 # if user is changing the outDir or buildType,
 # update our config files and restart
 if [[ "$outDir" != "$ELECTRON_OUT_DIR" || "$buildType" != "$GN_IMPORT_NAME" ]]; then
-  echo -e "Updating '${COLOR_DIR}${CONFIG_NAME}${COLOR_OFF}'"
+  echo -e "Updating $(log_dir "$CONFIG_NAME")"
   ensure_node_modules
   node "$basedir/../../common/edit-evm-config" "$CONFIG_NAME" "--electronOutDir=$outDir" "--buildType=$buildType"
   evm "$CONFIG_NAME" 
@@ -64,6 +64,6 @@ if [[ "$outDir" != "$ELECTRON_OUT_DIR" || "$buildType" != "$GN_IMPORT_NAME" ]]; 
 fi
 
 readonly src_path="$ELECTRON_GN_ROOT/src"
-echo -e "Running '${COLOR_CMD}gn gen${COLOR_OFF}' in '${COLOR_DIR}$src_path${COLOR_OFF}'"
+echo -e "Running $(log_cmd 'gn gen') in $(log_dir "$src_path")"
 cd "$src_path"
 PATH="$DEPOT_TOOLS_PATH:$PATH" gn gen "out/$outDir" --args="import(\"//electron/build/args/$buildType.gn\") cc_wrapper=\"$ELECTRON_GN_ROOT/src/electron/external_binaries/sccache\" $EXTRA_GN_ARGS"

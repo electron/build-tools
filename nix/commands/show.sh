@@ -36,7 +36,7 @@ case $command in
     exit 0
     ;;
   *)
-    echo -e "${COLOR_ERR}Unrecognized subcommand '${COLOR_CMD}$1${COLOR_ERR}'. See \`${COLOR_CMD}e show --help${COLOR_ERR}\` for usage details."
+    echo -e "$(log_error) Unrecognized subcommand $(log_cmd "$1"). See $(log_cmd 'e show --help') for usage details."
     exit 1
     ;;
 esac

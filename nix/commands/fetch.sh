@@ -54,17 +54,15 @@ elif [[ "$gn_root" != /* ]]; then
   gn_root="$PWD/$gn_root"
 fi
 
-# create $gn_root
-echo -e "\\n\\nCreating '${COLOR_DIR}${gn_root}${COLOR_OFF}' for Electron checkout"
+echo -e "\\n\\nCreating $(log_dir "$gn_root") for Electron checkout"
 if [[ -d "$gn_root" ]]; then
-  echo -e "${COLOR_ERR}'${COLOR_DIR}${gn_root}${COLOR_ERR}' already exists. Please select a new directory.${COLOR_OFF}"
+  echo -e "$(log_error) $(log_dir "$gn_root") already exists. Please select a new directory."
   exit 1
 fi
 mkdir -p "$gn_root"
 cd "$gn_root"
 
-# run gclient config
-echo -e "\\n\\nRunning '${COLOR_CMD}gclient config${COLOR_OFF}' in '${COLOR_DIR}$gn_root${COLOR_OFF}'"
+echo -e "\\n\\nRunning $(log_cmd 'gclient config') in $(log_dir "$gn_root")"
 PATH="$DEPOT_TOOLS_PATH:$PATH" gclient config --name 'src/electron' --unmanaged 'https://github.com/electron/electron'
 args=( "--root=$gn_root" )
 if [[ "$evm_name" != "" ]]; then
@@ -72,22 +70,25 @@ if [[ "$evm_name" != "" ]]; then
 fi
 new_config=$(node "$basedir/../../common/create-evm-config" "${args[@]}")
 
-# run evm
-echo -e "\\n\\nRunning '${COLOR_CMD}evm $new_config${COLOR_OFF}'"
+echo -e "\\n\\nRunning $(log_cmd "evm ${new_config}")"
 evm "$new_config"
 
 # run e sync
 source "$basedir/__load-env.sh" 
 if [[ "$verbose" != '' ]]; then
-  echo -e "\\n\\nRunning '${COLOR_CMD}e sync ${verbose}${COLOR_OFF}'"
+  echo -e "Running $(log_cmd "e sync $verbose")"
   e sync "$verbose"
 else
-  echo -e "\\n\\nRunning '${COLOR_CMD}e sync${COLOR_OFF}'"
+  echo -e "Running $(log_cmd 'e sync')"
   e sync
 fi
 
 # run e bootstrap
-echo -e "\\n\\nRunning '${COLOR_CMD}e bootstrap ${bootstrap_args[*]}${COLOR_OFF}'"
+echo -e "\\n\\nRunning $(log_cmd 'e bootstrap')"
 e bootstrap "${bootstrap_args[@]}"
 
-echo -e "\\n\\nYou should be all set! Try running '${COLOR_CMD}e build${COLOR_OFF}' to build Electron now."
+echo -e "\\n\\nRunning $(log_cmd 'e bootstrap')"
+e bootstrap
+
+echo -e "\\n\\nYou should be all set! Try running $(log_cmd 'e build') to build Electron now."
+
