@@ -32,14 +32,11 @@ log_ok() {
   echo -n "${color}${text}${__current_color}"
 }
 
-declare __basedir
-__basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-
-ELECTRON_GN_SCRIPTS_ROOT="$(git -C "${__basedir}" rev-parse --show-toplevel)"
-declare -r ELECTRON_GN_SCRIPTS_ROOT
-
-declare -r DEPOT_TOOLS_PATH="${ELECTRON_GN_SCRIPTS_ROOT}/third_party/depot_tools"
-unset __basedir
+declare __root
+__root="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../../" >/dev/null && pwd )"
+declare -r ELECTRON_GN_SCRIPTS_ROOT="$__root"
+declare -r DEPOT_TOOLS_PATH="$__root/third_party/depot_tools"
+unset __root
 
 # functions
 
