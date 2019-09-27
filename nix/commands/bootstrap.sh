@@ -9,19 +9,20 @@ ensure_depot_tools
 
 usage() {
   echo -e "Usage:
-  e bootstrap [--help | -h]
-              [--type={debug | release | testing}]
+  e bootstrap [--type={debug | release | testing}]
               [--asan] [--lsan] [--msan] [--tsan]
-              [--out=NAME]
+              [--out=NAME] [--help | -h]
 
 Options:
+  --type=NAME  Generate makefiles that follow the build type
+  --out=NAME   Place generated files in \`src/out/\$NAME\`
+
   --asan       Enable clang's address sanitizer
-  --h|--help   Print this help page
   --lsan       Enable clang's leak sanitizer
   --msan       Enable clang's memory sanitizer
-  --out=NAME   Place generated files in \`src/out/\$NAME\`
   --tsan       Enable clang's thread sanitizer
-  --type=NAME  Generate makefiles that follow the build type"
+
+  --h|--help   Print this help page"
 }
 
 # parse the command line

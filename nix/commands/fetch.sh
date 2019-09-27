@@ -9,7 +9,8 @@ ensure_node_modules
 
 usage() {
   echo -e "Usage:
-  e fetch [-h|--help] [-v|-vv|-vvv] [--name=STRING] [--root=PATH] [...bootstrap-args]
+  e fetch [--name=STRING] [--root=PATH] [-v|-vv|-vvv] [-h|--help]
+          [...bootstrap-args]
 
 Options:
   --name=STRING      Arbitrary user-chosen evm config name. Used when invoking \`evm\`.
