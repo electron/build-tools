@@ -9,7 +9,7 @@ usage() {
 Options:
   -h, --help  Shows this usage message
 
-Subcommands:
+Commands:
   exe  The path to built Electron executable
   out  The outdir, e.g. \"Testing\"
   src  The path to the named source directory (default:electron) e.g. \"/path/to/electron/src/electron\""

@@ -75,7 +75,7 @@ ensure_node_modules() {
   if ! shasum --status --check "$shafile" 2> /dev/null; then
     echo -e "Running $(log_cmd 'yarn install') in $(log_dir "$root")"
     if ! npx yarn install --frozen-lockfile; then
-      echo -e "$(log_err) Failed to install node modules!"
+      echo -e "$(log_error) Failed to install node modules!"
       exit 1
     fi
     shasum package.json > "$shafile"
