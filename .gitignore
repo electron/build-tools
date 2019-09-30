@@ -3,7 +3,8 @@ config.yml
 config.*.yml
 !config.example.yml
 third_party
-package.json.sha
 package-lock.json
+evm.*.json
+evm-current.json
 
 generated.env.*
