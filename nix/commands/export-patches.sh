@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2086,SC2124
+# shellcheck disable=SC2086,SC2124,SC2016
 
 set -e
 
@@ -10,7 +10,7 @@ source "$basedir/__load-env.sh"
 function array_key_exists() {
   local _array_name="$1"
   local _key="$2"
-  local _cmd="echo ${!"$_array_name"[@]}"
+  local _cmd='echo ${!'$_array_name'[@]}'
   local _array_keys
   mapfile -t _array_keys < <(eval $_cmd)
 
