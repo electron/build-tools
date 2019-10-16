@@ -145,7 +145,7 @@ const color = {
 };
 
 function fatal(e) {
-  console.error(`${color.err} ${e}${e.stack ? e.stack : ''}`);
+  console.error(`${color.err} ${e.stack ? e.stack : e.message}`);
   process.exit(1);
 }
 

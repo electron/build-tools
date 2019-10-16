@@ -24,9 +24,10 @@ program
   .alias('run')
   .allowUnknownOption()
   .description('Run the Electron build')
-  .action(args => {
+  .action(() => {
     try {
       const exec = evmConfig.execOf(evmConfig.current());
+      const args = program.parseOptions(program.rawArgs.slice(2)).unknown;
       const opts = { stdio: ['ignore', 'inherit', 'ignore'] };
       console.log(color.childExec(exec, args, opts));
       childProcess.execFileSync(exec, args, opts);
@@ -39,9 +40,10 @@ program
   .command('node [electronArgs...]')
   .allowUnknownOption()
   .description('Run the Electron build as Node')
-  .action(args => {
+  .action(() => {
     try {
       const exec = evmConfig.execOf(evmConfig.current());
+      const args = program.parseOptions(program.rawArgs.slice(2)).unknown;
       const opts = {
         env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
         stdio: ['ignore', 'inherit', 'ignore'],

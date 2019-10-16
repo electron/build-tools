@@ -9,22 +9,24 @@ const evmConfig = require('./evm-config');
 const { fatal } = require('./util');
 
 function guessPRTarget(config) {
-  const package = require(path.resolve(config.root, 'src', 'electron', 'package.json'));
+  const filename = path.resolve(config.root, 'src', 'electron', 'package.json');
+  const package = require(filename);
   if (package.version.includes('nightly')) {
     return 'master';
   }
-  const match = /^([0-9]+)\.([0-9]+)\.[0-9]+.*$/.exec(package.version);
+  const pattern = /^([0-9]+)\.([0-9]+)\.[0-9]+.*$/;
+  const match = pattern.exec(package.version);
   if (match) {
     return `${match[1]}-${match[2]}-x`;
   }
-  throw `Failed to determine target PR branch`;
+  throw Error(`Failed to determine target PR branch! ${filename}'s version '${package.version}' should include 'nightly' or match ${pattern}`)
 }
 
 function guessHead(config) {
-  const cmd = 'git rev-parse --abbrev-ref HEAD';
+  const command = 'git rev-parse --abbrev-ref HEAD';
   const cwd = path.resolve(config.root, 'src', 'electron');
-  const opts = { cwd, encoding: 'utf8' };
-  return childProcess.execSync(cmd, opts).trim();
+  const options = { cwd, encoding: 'utf8' };
+  return childProcess.execSync(command, options).trim();
 }
 
 function getCompareURL(config) {

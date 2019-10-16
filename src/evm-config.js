@@ -3,7 +3,7 @@ const os = require('os');
 const path = require('path');
 const { color, ensureDir } = require('./util');
 
-const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..');
+const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
 const currentFile = path.resolve(configRoot, 'evm-current.json');
 
 function pathOf(name) {
@@ -25,12 +25,12 @@ function save(name, o) {
 function setCurrent(name) {
   const filename = pathOf(name);
   if (!fs.existsSync(filename)) {
-    throw `Build config ${color.config(name)} not found. (Tried ${color.path(filename)}.)`;
+    throw Error(`Build config ${color.config(name)} not found. (Tried ${color.path(filename)}.)`);
   }
   try {
     fs.writeFileSync(currentFile, `${name}\n`);
   } catch (e) {
-    throw `Unable to set evm config ${color.config(name)} (${e})`;
+    throw Error(`Unable to set evm config ${color.config(name)} (${e})`);
   }
 }
 
@@ -44,7 +44,7 @@ function names() {
 
 function currentName() {
   if (process.env.EVM_CURRENT) return process.env.EVM_CURRENT;
-  if (!fs.existsSync(currentFile)) throw `No current build configuration`;
+  if (!fs.existsSync(currentFile)) throw Error('No current build configuration');
   return fs.readFileSync(currentFile, { encoding: 'utf8' }).trim();
 }
 

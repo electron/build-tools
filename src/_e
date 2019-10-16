@@ -1,0 +1,32 @@
+#!/usr/bin/env zsh
+
+# Usage:
+#   Put something like the following in your .zshrc:
+#   . $PATH_TO_ELECTRON_BUILD_TOOLS/src/e_completion.sh
+
+# autoload -U compinit
+# compinit
+
+#compdef _e e
+
+__e_commands () {
+  e -h | grep -A999 '^Commands:' | tail --lines=+2 | sed 's/^  //' | cut -f1 -d' ' | sed 's/[|\n]/ /'
+}
+
+# Caches variables in __e_all_commands.
+__e_compute_all_commands () {
+  test -n "$__e_all_commands" ||
+  __e_all_commands="$(__e_commands)"
+}
+
+_e () {
+  local line
+
+  _arguments -C \
+    "1: :(build debug help init make new node patches pr run show start sync test use)"
+    "*::arg:->args"
+
+  local completion_func="_e__${line[1]}"
+  echo "$completion_func" >> /tmp/foo.txt
+  [[ "$(type -t $function)" == 'function' ]] && $completion_func && $return
+}

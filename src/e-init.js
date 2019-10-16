@@ -95,7 +95,9 @@ function ensureRoot(config) {
     console.info(`${color.info} Root ${color.path(root)} already exists.`);
     console.info(`${color.info} (OK if you're using root for multiple build configs)`);
   } else if (fs.readdirSync(root).length > 0) {
-    throw `Root ${color.path(root)} exists and is not empty. Please choose a different root.`;
+    throw Error(
+      `Root ${color.path(root)} exists and is not empty. Please choose a different root.`,
+    );
   }
 }
 
@@ -104,7 +106,7 @@ function init(name, options) {
     // make sure it's new
     const filename = evmConfig.pathOf(name);
     if (!options.force && fs.existsSync(filename)) {
-      throw `Build config ${color.config(name)} already exists! (${color.path(filename)})`;
+      throw Error(`Build config ${color.config(name)} already exists! (${color.path(filename)})`);
     }
 
     // save it
