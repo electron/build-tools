@@ -46,4 +46,4 @@ program
   .option('-t, --target <target_branch>', 'Where the changes are going to', defaultTarget)
   .parse(process.argv);
 
-open(`https://github.com/electron/electron/compare/${program.source}...${program.target}?expand=1`);
+open(`https://github.com/electron/electron/compare/${program.target}...${program.source}?expand=1`);
