@@ -20,7 +20,7 @@ function ensureNodeHeaders(config) {
     const package_time = fs.lstatSync(package);
     const headers_time = fs.lstatSync(node_headers_dir);
     needs_build = package_time > headers_time;
-  } catch (e) {
+  } catch {
     needs_build = true;
   }
 

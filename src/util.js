@@ -108,7 +108,7 @@ function ensureSCCache(config) {
 
   try {
     childProcess.execFileSync(sccache, ['--stop-server'], opts);
-  } catch (e) {
+  } catch {
     // it's OK for this to fail -- maybe it wasn't running
   }
 
@@ -118,7 +118,7 @@ function ensureSCCache(config) {
       console.log(color.childExec(sccache, args, opts));
       childProcess.execFileSync(sccache, args, opts);
       break;
-    } catch (e) {
+    } catch {
       console.warn('Failed to start sccache. Trying again...');
     }
   }

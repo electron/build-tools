@@ -62,7 +62,7 @@ program
     let current;
     try {
       current = evmConfig.currentName();
-    } catch (e) {
+    } catch {
       // maybe there is no current config
     }
     try {
