@@ -16,7 +16,7 @@ function run_gdb(config) {
   const electron = evmConfig.execOf(config);
   const gdbinit = path.resolve(config.root, 'src', 'tools', 'gdb', 'gdbinit');
   const ex = `source ${gdbinit}`;
-  const args = [electron, '-quiet'/*skip copyright msg*/, '-ex', ex];
+  const args = [electron, '-quiet' /*skip copyright msg*/, '-ex', ex];
   childProcess.execFileSync('gdb', args, opts);
 }
 
@@ -27,18 +27,18 @@ function run_lldb(config) {
 }
 
 try {
-  const choices = [
-    { exec: 'gdb', runner: run_gdb },
-    { exec: 'lldb', runner: run_lldb }
-  ];
+  const choices = [{ exec: 'gdb', runner: run_gdb }, { exec: 'lldb', runner: run_lldb }];
 
   const choice = choices.find(choice => commandExistsSync(choice.exec));
   if (choice) {
     choice.runner(evmConfig.current());
   } else {
-    throw Error(`No debugger found in PATH! Looked for [${choices.map(choice => `'${choice.exec}'`).join(', ')}]`);
+    throw Error(
+      `No debugger found in PATH! Looked for [${choices
+        .map(choice => `'${choice.exec}'`)
+        .join(', ')}]`,
+    );
   }
-
 } catch (e) {
   fatal(e);
 }

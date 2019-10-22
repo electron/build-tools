@@ -71,7 +71,8 @@ program
   .command('pr [options]', 'Open a GitHub URL where you can PR your changes')
   .command('patches <basename>', 'Refresh the patches in $root/src/electron/patches/$basename');
 
-program.on('--help', () => {console.log(`
+program.on('--help', () => {
+  console.log(`
 See https://github.com/electron/build-tools/blob/master/README.md for usage.`);
 });
 

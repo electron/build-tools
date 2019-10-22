@@ -19,7 +19,9 @@ function guessPRTarget(config) {
   if (match) {
     return `${match[1]}-${match[2]}-x`;
   }
-  console.warn(`Unable to guess default target PR branch -- ${filename}'s version '${package.version}' should include 'nightly' or match ${pattern}`);
+  console.warn(
+    `Unable to guess default target PR branch -- ${filename}'s version '${package.version}' should include 'nightly' or match ${pattern}`,
+  );
 }
 
 function guessPRSource(config) {
@@ -28,7 +30,6 @@ function guessPRSource(config) {
   const options = { cwd, encoding: 'utf8' };
   return childProcess.execSync(command, options).trim();
 }
-
 
 let defaultTarget;
 let defaultSource;

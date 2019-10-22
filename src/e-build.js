@@ -54,7 +54,9 @@ const pretty_targets = {
 };
 
 if (program.listTargets) {
-  Object.keys(pretty_targets).sort().forEach((target) => console.log(target));
+  Object.keys(pretty_targets)
+    .sort()
+    .forEach(target => console.log(target));
   return;
 }
 
