@@ -19,26 +19,31 @@ function guessPRTarget(config) {
   if (match) {
     return `${match[1]}-${match[2]}-x`;
   }
-  throw Error(`Failed to determine target PR branch! ${filename}'s version '${package.version}' should include 'nightly' or match ${pattern}`)
+  console.warn(`Unable to guess default target PR branch -- ${filename}'s version '${package.version}' should include 'nightly' or match ${pattern}`);
 }
 
-function guessHead(config) {
+function guessPRSource(config) {
   const command = 'git rev-parse --abbrev-ref HEAD';
   const cwd = path.resolve(config.root, 'src', 'electron');
   const options = { cwd, encoding: 'utf8' };
   return childProcess.execSync(command, options).trim();
 }
 
-function getCompareURL(config) {
-  const base = guessPRTarget(config);
-  const head = guessHead(config);
-  return `https://github.com/electron/electron/compare/${base}...${head}?expand=1`;
-}
 
-program.description('Open a GitHub URL where you can PR your changes').parse(process.argv);
-
+let defaultTarget;
+let defaultSource;
 try {
-  open(getCompareURL(evmConfig.current()));
-} catch (e) {
-  fatal(e);
+  const config = evmConfig.current();
+  defaultSource = guessPRSource(config);
+  defaultTarget = guessPRTarget(config);
+} catch {
+  // we're just guessing defaults; it's OK to fail silently
 }
+
+program
+  .description('Open a GitHub URL where you can PR your changes')
+  .option('-s, --source <source_branch>', 'Where the changes are coming from', defaultSource)
+  .option('-t, --target <target_branch>', 'Where the changes are going to', defaultTarget)
+  .parse(process.argv);
+
+open(`https://github.com/electron/electron/compare/${program.source}...${program.target}?expand=1`);
