@@ -28,15 +28,16 @@ set PATH=%CD%;%PATH%
 
 ## Getting the Code and Building Electron
 
-After installation, you can run a new Electron build with this command:
+After installing build-tools, you can run a new Electron build with this command:
 
 ```sh
+# The 'Hello, World!' of build-tools: get and build `master`
+
 e init --root=/path/to/new/electron/directory --bootstrap testing
 ```
 
-That command's going to run for awhile. While you're waiting, why not
-grab a cup of hot caffeine and read a few paragraphs about what your
-computer is doing?
+That command's going to run for awhile. While you're waiting, grab a
+cup of hot caffeine and read about what your computer is doing:
 
 ### Concepts
 
@@ -44,38 +45,38 @@ Electron's build-tools command is named `e`. Like [nvm][nvm] and git,
 you'll invoke e with commands and subcommands. See `e --help` or `e help <cmd>`
 for many more details.
 
-`e` borrows inspiration from nvm in that you can have multiple setups
-that you can switch between so that one is the current, active setup.
-Many variables go into an Electron build:
+`e` also borrows another inspiration from nvm: having multiple configurations
+that you can switch between so that one is the current, active configuration.
+Many choices go into an Electron build:
 
 * Which [Electron branch](https://github.com/electron/electron/branches)
-  is used (e.g. `master`, `6-0-x`)
+  is used (e.g. `master`, `7-0-x`)
 * Which [.gn config file][gn-configs] is imported (e.g.
-  [testing](https://github.com/electron/electron/blob/master/build/args/testing.gn),
-  [release](https://github.com/electron/electron/blob/master/build/args/release.gn]))
+  [testing](https://github.com/electron/electron/blob/master/build/args/testing.gn) or
+  [release](https://github.com/electron/electron/blob/master/build/args/release.gn))
 * Any compile-time options (e.g. Clang's [asan or tsan][sanitizers])
 
-`e` holds all these variables together in a build config. You can have
-multiple build configs and manage them in a way similar to nvm:
+`e` holds all these variables together in a build configuration. You can
+have multiple build configurations and manage them in a way similar to nvm:
 
-| nvm                  | e                  |
-|:---------------------|:-------------------|
-| nvm ls               | e show configs     |
-| nvm current          | e show current     |
-| nvm use &lt;name&gt; | e use &lt;name&gt; |
+| nvm                  | e                  | Description                                    |
+|:---------------------|:-------------------|:-----------------------------------------------|
+| nvm ls               | e show configs     | Show the available configurations              |
+| nvm current          | e show current     | Show which configuration is currently in use   |
+| nvm use &lt;name&gt; | e use &lt;name&gt; | Change which configuration is currently in use |
 
 Getting the source code is a lot more than cloning `electron/electron`.
 Electron is built on top of Chromium (with Electron patches) and Node
 (with more Electron patches). A source tree needs to have all of the
 above **and** for their versions to be in sync with each other. Electron
 uses Chromium's [Depot Tools][depot-tools] and [GN][gn] for wrangling
-and building the code. `e` provides wrappers for these tools:
+and building the code. `e` wraps these tools:
 
-| Command | Description                                             |
-|:--------|:--------------------------------------------------------|
-| e init  | Create a new build config and initialize a GN directory |
-| e sync  | Get / synchronize source code                           |
-| e build | Build it!                                               |
+| Command | Description                                                    |
+|:--------|:---------------------------------------------------------------|
+| e init  | Create a new build config and initialize a GN directory        |
+| e sync  | Get / update / synchronize source code branches                |
+| e build | Build it!                                                      |
 
 ### e init
 
@@ -84,36 +85,40 @@ options to specify the build configuration, e.g. the path to the source
 code, compile-time options, and so on. See `e init --help` for in-depth
 details.
 
-Each build config must have a name. Names are chosen by you and are a
-mnemonic when switching between build configs with `e use <name>`.
+Each build config has a name, chosen by you to use as a mnemonic when
+switching between build configs with `e use <name>`. This is the name's
+only purpose, so choose whatever you find easiest to work with &mdash;
+whether it's `electron`, `6-1-x--testing`, or `chocolate-onion-popsicle`.
 
 Each build also needs a root directory. All the source code and built
-files will be stored somewhere inside root. The default is `$PWD/electron`;
-however, you can specify any directory with `--root=/some/path`. If you
-want to make multiple build types of the same branch, build configs can
-share a root.
+files will be stored somewhere beneath it. `e init` uses `$PWD/electron`
+by default, but you can choose your own with `--root=/some/path`. If you
+want to make multiple build types of the same branch, you can reuse
+an existing root to share it between build configs.
 
 As an example, let's say you're starting from scratch and want both
 testing and release builds of the master branch in `electron/electron`.
 You might do this:
 
 ```
+# making 'release' and 'testing' builds from master
+
 $ e init master-testing -i testing --root=~/src/electron
 Creating '~/src/electron'
 New build config 'master-testing' created
 Now using config 'master-testing'
 $ e show current
-'master-testing'
+master-testing
 
 $ e init master-release -i release --root=~/src/electron
 INFO Root '~/src/electron' already exists.
-INFO (OK if you're using $root for multiple build configs)
+INFO (OK if you are sharing $root between multiple build configs)
 New build config 'master-release' created
 Now using config 'master-release'
 
 $ e show configs
-master-release
-master-testing
+* master-release
+  master-testing
 
 $ e show current
 master-release
@@ -180,7 +185,7 @@ After you've built Electron, it's time to use it!
 | e debug | Run the Electron build in a debugger |
 | e test  | Run Electron's spec runner           |
 
-As usual, any extra ars are passed along to the executable. For example,
+As usual, any extra args are passed along to the executable. For example,
 `e node --version` will print out Electron's node version.
 
 ### `e debug`
@@ -220,15 +225,15 @@ e test --ci --runners=main
 
 `e show` shows information about the current build config.
 
-| Command           | Description                                           |
-|:------------------|:------------------------------------------------------|
-| e show current    | The name of the active build config                   |
-| e show configs    | Lists all build configs                               |
-| e show env        | Show the active build config's environment variables  |
-| e show exe        | The path of the built Electron executable             |
-| e show root       | The path of the root directory from `e init --root`.  |
-| e show src [name] | The path of the named (default: electron) source dir  |
-| e show stats      | SCCache build statistics                              |
+| Command           | Description                                                    |
+|:------------------|:---------------------------------------------------------------|
+| e show current    | The name of the active build config                            |
+| e show configs    | Lists all build configs                                        |
+| e show env        | Show environment variables injected by the active build config |
+| e show exe        | The path of the built Electron executable                      |
+| e show root       | The path of the root directory from `e init --root`.           |
+| e show src [name] | The path of the named (default: electron) source dir           |
+| e show stats      | SCCache build statistics                                       |
 
 Example usage:
 

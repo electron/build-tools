@@ -93,46 +93,24 @@ function ensureRoot(config) {
     runGClientConfig(config);
   } else if (fs.existsSync(path.resolve(root, '.gclient'))) {
     console.info(`${color.info} Root ${color.path(root)} already exists.`);
-    console.info(`${color.info} (OK if you're using root for multiple build configs)`);
+    console.info(`${color.info} (OK if you are sharing $root between multiple build configs)`);
   } else if (fs.readdirSync(root).length > 0) {
     throw Error(
-      `Root ${color.path(root)} exists and is not empty. Please choose a different root.`,
+      `Root ${color.path(root)} exists and is not empty. Please choose a different root directory.`,
     );
   }
 }
 
-function init(name, options) {
-  try {
-    // make sure it's new
-    const filename = evmConfig.pathOf(name);
-    if (!options.force && fs.existsSync(filename)) {
-      throw Error(`Build config ${color.config(name)} already exists! (${color.path(filename)})`);
-    }
-
-    // save it
-    const config = createConfig(name, options);
-    ensureRoot(config);
-    evmConfig.save(name, config);
-    console.log(`New build config ${color.config(name)} created in ${color.path(filename)}`);
-
-    // use it
-    const e = path.resolve(__dirname, 'e');
-    const opts = { stdio: 'inherit' };
-    childProcess.execFileSync('node', [e, 'use', name], opts);
-
-    // maybe bootstrap
-    if (program.bootstrap) {
-      childProcess.execFileSync('node', [e, 'sync', '-v'], opts);
-      childProcess.execFileSync('node', [e, 'build'], opts);
-    }
-  } catch (e) {
-    fatal(e);
-  }
-}
+let name;
+let options;
 
 program
   .arguments('<name>')
-  .description('Create a new build config')
+  .description('Create a new build configuration')
+  .action((name_in, options_in) => {
+    name = name_in;
+    options = options_in;
+  })
   .option(
     '-r, --root <path>',
     'Source and build files will be stored in this new directory',
@@ -143,7 +121,7 @@ program
     'Import build settings from $root/src/electron/build/args/$import.gn',
     'testing',
   )
-  .option('-o, --out <name>', 'Built files will be placed in $root/src/out/$out', 'Testing')
+  .option('-o, --out <name>', 'Built files will be placed in $root/src/out/$out')
   .option('-f, --force', 'Overwrite existing build config with that name', false)
   .option('--asan', `When building, enable clang's address sanitizer`, false)
   .option('--tsan', `When building, enable clang's thread sanitizer`, false)
@@ -155,5 +133,42 @@ program
     'During `e sync`, set remote origins with https://github... URLs instead of git@github...',
     false,
   )
-  .action(init)
   .parse(process.argv);
+
+if (!name) {
+  program.outputHelp();
+  process.exit(1);
+}
+
+if (options.import && !options.out) {
+  // e.g. the default out dir for a testing build is 'Testing'
+  options.out = options.import.charAt(0).toUpperCase() + options.import.substring(1);
+}
+
+try {
+  // make sure it's new
+  const filename = evmConfig.pathOf(name);
+  if (!options.force && fs.existsSync(filename)) {
+    throw Error(`Build config ${color.config(name)} already exists! (${color.path(filename)})`);
+  }
+
+  // save it
+  const config = createConfig(name, options);
+  ensureRoot(config);
+  evmConfig.save(name, config);
+  console.log(`New build config ${color.config(name)} created in ${color.path(filename)}`);
+
+  // use it
+  const e = path.resolve(__dirname, 'e');
+  const opts = { stdio: 'inherit' };
+  childProcess.execFileSync('node', [e, 'use', name], opts);
+
+  // maybe bootstrap
+  if (program.bootstrap) {
+    childProcess.execFileSync('node', [e, 'sync', '-v'], opts);
+    childProcess.execFileSync('node', [e, 'build'], opts);
+  }
+} catch (e) {
+  fatal(e);
+}
+

@@ -13,11 +13,7 @@ program
   .alias('new')
   .command('sync [gclientArgs...]', 'Get / update source code')
   .command('build [options]', 'Build Electron and other things')
-  .alias('make')
-  .command('show <subcommand>', 'Show info about the current build config')
-  .command('test [specRunnerArgs...]', `Run Electron's spec runner`)
-  .command('pr', 'Open a GitHub URL where you can PR your changes')
-  .command('patches <basename>', 'Refresh the patches in $root/src/electron/patches/$basename');
+  .alias('make');
 
 program
   .command('start [electronArgs...]')
@@ -68,5 +64,15 @@ program
       fatal(e);
     }
   });
+
+program
+  .command('show <subcommand>', 'Show info about the current build config')
+  .command('test [specRunnerArgs...]', `Run Electron's spec runner`)
+  .command('pr', 'Open a GitHub URL where you can PR your changes')
+  .command('patches <basename>', 'Refresh the patches in $root/src/electron/patches/$basename');
+
+program.on('--help', () => {console.log(`
+See https://github.com/electron/build-tools/blob/master/README.md for usage.`);
+});
 
 program.parse(process.argv);
