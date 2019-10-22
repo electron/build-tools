@@ -146,19 +146,19 @@ if (options.import && !options.out) {
 }
 
 try {
-  // make sure it's new
+  // make sure the config name is new
   const filename = evmConfig.pathOf(name);
   if (!options.force && fs.existsSync(filename)) {
     throw Error(`Build config ${color.config(name)} already exists! (${color.path(filename)})`);
   }
 
-  // save it
+  // save the new config
   const config = createConfig(name, options);
   ensureRoot(config);
   evmConfig.save(name, config);
   console.log(`New build config ${color.config(name)} created in ${color.path(filename)}`);
 
-  // use it
+  // `e use` the new config
   const e = path.resolve(__dirname, 'e');
   const opts = { stdio: 'inherit' };
   childProcess.execFileSync('node', [e, 'use', name], opts);

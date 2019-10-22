@@ -68,7 +68,7 @@ program
     try {
       const names = evmConfig.names();
       if (names.length === 0) {
-        console.log('No build configs found.');
+        console.log('No build configs found. (You can create one with `e init`)');
       } else {
         names
           .sort()

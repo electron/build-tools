@@ -23,7 +23,7 @@ function exportPatches(target) {
       process.exit(1);
     }
     childProcess.execFileSync(
-      path.resolve(srcdir, 'electron', 'script', 'git-export-packages'),
+      path.resolve(srcdir, 'electron', 'script', 'git-export-patches'),
       ['-o', path.resolve(srcdir, 'electron', 'patches', target)],
       { cwd: targets[target], stdio: 'inherit', encoding: 'utf8' },
     );

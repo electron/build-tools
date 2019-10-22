@@ -10,6 +10,8 @@
 # To force zsh to regenerate completions, you can `rm -f ~/.zcompdump`
 
 declare -a __e_options=()
+# call `cmd --help`, parse out the option names,
+# and store in __e_options global
 function __e_get_cmd_options() {
   local -a options=()
   "$@" --help | \
@@ -24,6 +26,8 @@ function __e_get_cmd_options() {
 }
 
 declare -a __e_subcommands=()
+# call `cmd --help`, parse out the command names,
+# and store in __e_subcommands global
 function __e_get_cmd_subcommands() {
   local -a subcommands=()
   "$@" --help | \
@@ -38,6 +42,8 @@ function __e_get_cmd_subcommands() {
 }
 
 declare -a __e_configs=()
+# call `e show configs`, parse out the config names,
+# and store in __e_configs global
 function __e_get_configs() {
   local -a configs=()
   e show configs | \
@@ -50,11 +56,11 @@ function __e_get_configs() {
 }
 
 declare -a __e_targets=()
+# call `e build --list-targets`, parse out the target names,
+# and store in __e_targets global
 function __e_get_targets() {
   local -a targets=()
   e build --list-targets | \
-  sed 's/, / /g' | \
-  tr ' ' '\n' | \
   sort | \
   while read -r target; do
     targets+=($target)
