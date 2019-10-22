@@ -39,7 +39,7 @@ function runNinja(config, target, ninjaArgs) {
 program
   .allowUnknownOption()
   .arguments('[target] [ninjaArgs...]')
-  .description('Build Electron and other things.')
+  .description('Build Electron and other targets.')
   .option('--list-targets', 'Show all supported targets', false)
   .option('--gen', 'Force a re-run of `gn gen` before building', false)
   .parse(process.argv);
@@ -54,7 +54,7 @@ const pretty_targets = {
 };
 
 if (program.listTargets) {
-  console.log(Object.keys(pretty_targets).join(', '));
+  Object.keys(pretty_targets).sort().forEach((target) => console.log(target));
   return;
 }
 

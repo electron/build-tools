@@ -35,7 +35,7 @@ program
 program
   .command('node [electronArgs...]')
   .allowUnknownOption()
-  .description('Run the Electron build as Node')
+  .description('Run the Electron build as if it were a Node.js executable')
   .action(() => {
     try {
       const exec = evmConfig.execOf(evmConfig.current());
@@ -51,7 +51,7 @@ program
     }
   });
 
-program.command('debug', 'Run the Electron build in a debugger');
+program.command('debug', 'Run the Electron build with a debugger (gdb or lldb)');
 
 program
   .command('use <name>')
