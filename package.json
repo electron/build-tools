@@ -6,8 +6,10 @@
   },
   "main": "null",
   "scripts": {
-    "lint": "prettier --check \"src/*.js\" \"src/e\"",
-    "prettier:write": "prettier --write \"src/*.js\" \"src/e\""
+    "lint": "prettier --check \"src/*.js\" \"tests/*.js\" \"src/e\"",
+    "prettier:write": "prettier --write \"src/*.js\" \"tests/*.js\" \"src/e\"",
+    "test":      "nyc --reporter=lcov --reporter=text-summary jest --config=jest.fast.json",
+    "test:full": "nyc --reporter=lcov --reporter=text-summary jest --config=jest.slow.json"
   },
   "repository": "https://github.com/electron/build-tools",
   "author": "Electron Authors",
@@ -20,6 +22,9 @@
     "path-key": "^3.1.0"
   },
   "devDependencies": {
-    "prettier": "^1.18.2"
+    "jest": "^24.9.0",
+    "nyc": "^14.1.1",
+    "prettier": "^1.18.2",
+    "rimraf": "^3.0.0"
   }
 }

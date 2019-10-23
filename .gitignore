@@ -1,4 +1,6 @@
+.nyc_output/
 configs
+coverage
 node_modules
 package-lock.json
 third_party

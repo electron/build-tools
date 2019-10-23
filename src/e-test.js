@@ -16,8 +16,8 @@ function ensureNodeHeaders(config) {
 
   let needs_build;
   try {
-    const package = path.resolve(electron_spec_dir, 'package.json');
-    const package_time = fs.lstatSync(package);
+    const filename = path.resolve(electron_spec_dir, 'package.json');
+    const package_time = fs.lstatSync(filename);
     const headers_time = fs.lstatSync(node_headers_dir);
     needs_build = package_time > headers_time;
   } catch {

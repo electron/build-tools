@@ -1,0 +1,21 @@
+{
+  "testEnvironment": "node",
+  "testRegex": "/tests/.*-spec.js$",
+  "bail": true,
+  "testPathIgnorePatterns": [
+    "/.tmp/",
+    "/tests/bootstrap-spec.js$"
+  ],
+  "coverageReporters": [
+    "none"
+  ],
+  "collectCoverageFrom": [
+    "src/e",
+    "src/e-*js"
+  ],
+  "coveragePathIgnorePatterns": [
+    "/node_modules/",
+    "/build-tools-spec-.*$",
+    "/tests/.*\\.js$"
+  ]
+}

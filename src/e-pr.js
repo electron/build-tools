@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
 const childProcess = require('child_process');
-const open = require('open');
+const fs = require('fs');
 const path = require('path');
+
+const open = require('open');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
@@ -10,17 +12,17 @@ const { fatal } = require('./util');
 
 function guessPRTarget(config) {
   const filename = path.resolve(config.root, 'src', 'electron', 'package.json');
-  const package = require(filename);
-  if (package.version.includes('nightly')) {
+  const version = JSON.parse(fs.readFileSync(filename)).version;
+  if (version.includes('nightly')) {
     return 'master';
   }
   const pattern = /^([0-9]+)\.([0-9]+)\.[0-9]+.*$/;
-  const match = pattern.exec(package.version);
+  const match = pattern.exec(version);
   if (match) {
     return `${match[1]}-${match[2]}-x`;
   }
   console.warn(
-    `Unable to guess default target PR branch -- ${filename}'s version '${package.version}' should include 'nightly' or match ${pattern}`,
+    `Unable to guess default target PR branch -- ${filename}'s version '${version}' should include 'nightly' or match ${pattern}`,
   );
 }
 

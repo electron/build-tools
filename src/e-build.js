@@ -57,7 +57,6 @@ if (program.listTargets) {
   Object.keys(pretty_targets)
     .sort()
     .forEach(target => console.log(target));
-  return;
 }
 
 try {
