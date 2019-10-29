@@ -1,8 +1,6 @@
+.nyc_output/
+configs
+coverage
 node_modules
-config.yml
-config.*.yml
-!config.example.yml
-third_party
 package-lock.json
-
-generated.env.*
+third_party

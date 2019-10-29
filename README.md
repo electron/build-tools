@@ -1,207 +1,243 @@
 # Electron GN Scripts
 
-This repository contains some helper/wrapper scripts to make working with GN easier, especially on Windows.
+This repository contains helper/wrapper scripts to make working with GN
+easier, especially on Windows.
 
 ## Installation
 
-### macOS / Linux
+A handful of prerequisites, such as git, python, and npm, are
+required. See [Platform Prerequisites][platform-prerequisites] for
+more details. Once they're installed, clone a copy of `build-tools`
+and add it to your path:
 
 ```sh
-git clone https://github.com/MarshallOfSound/electron-gn-scripts.git
-export PATH="$PATH:$PWD/electron-gn-scripts/nix"
+# get build-tools:
+git clone https://github.com/electron/build-tools.git
+cd build-tools
+npm install
 
+# then, on Darwin / Linux:
+export PATH="$PATH:$PWD/src"
 # You should probably add this to your `~/.profile` too:
-export PATH="$PATH:/path/to/electron-gn-scripts/nix"
+export PATH="$PATH:/path/to/build-tools/src"
+
+# then, on Windows:
+cd src
+set PATH=%CD%;%PATH%
 ```
 
-### Windows
+## Getting the Code and Building Electron
 
-```batch
-git clone https://github.com/MarshallOfSound/electron-gn-scripts.git
-cd electron-gn-scripts\win
-set PATH="%PATH%;%CD%"
-```
-
-On Windows, you'll also need to install [`depot_tools`](https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up) as outlined in the [GN Build Instructions](https://github.com/electron/electron/blob/master/docs/development/build-instructions-gn.md) and summarized here:
-
- 1. Download the `depot_tools` [bundle](https://storage.googleapis.com/chrome-infra/depot_tools.zip) and extract it to `C:\workspace\depot_tools`
- 2. Add `depot_tools` to the start of your `PATH` (must be ahead of any installs of Python)
- 3. From a cmd.exe shell, run the command `gclient` (with **no** arguments)
-
-## Initial Electron Setup
-
-After the installation steps above, getting and building Electron only
-takes the `e` command:
+After installing build-tools, you can run a new Electron build with this command:
 
 ```sh
-cd /path/to/your/developer/folder
+# The 'Hello, World!' of build-tools: get and build `master`
 
-# This will create a new "electron" folder in the current directory
-# It will set up a new evm config
-# Sync down all the required code and bootstrap the output directory
-e fetch
-
-e build
+e init --root=/path/to/new/electron/directory --bootstrap testing
 ```
 
-## Usage
+That command's going to run for awhile. While you're waiting, grab a
+cup of hot caffeine and read about what your computer is doing:
 
-The main command is just called `e`, all sub-commands are `git` sub-command style.  I.e. `e command ...args`
+### Concepts
+
+Electron's build-tools command is named `e`. Like [nvm][nvm] and git,
+you'll invoke e with commands and subcommands. See `e --help` or `e help <cmd>`
+for many more details.
+
+`e` also borrows another inspiration from nvm: having multiple configurations
+that you can switch between so that one is the current, active configuration.
+Many choices go into an Electron build:
+
+* Which [Electron branch](https://github.com/electron/electron/branches)
+  is used (e.g. `master`, `7-0-x`)
+* Which [.gn config file][gn-configs] is imported (e.g.
+  [testing](https://github.com/electron/electron/blob/master/build/args/testing.gn) or
+  [release](https://github.com/electron/electron/blob/master/build/args/release.gn))
+* Any compile-time options (e.g. Clang's [asan or tsan][sanitizers])
+
+`e` holds all these variables together in a build configuration. You can
+have multiple build configurations and manage them in a way similar to nvm:
+
+| nvm                  | e                  | Description                                    |
+|:---------------------|:-------------------|:-----------------------------------------------|
+| nvm ls               | e show configs     | Show the available configurations              |
+| nvm current          | e show current     | Show which configuration is currently in use   |
+| nvm use &lt;name&gt; | e use &lt;name&gt; | Change which configuration is currently in use |
+
+Getting the source code is a lot more than cloning `electron/electron`.
+Electron is built on top of Chromium (with Electron patches) and Node
+(with more Electron patches). A source tree needs to have all of the
+above **and** for their versions to be in sync with each other. Electron
+uses Chromium's [Depot Tools][depot-tools] and [GN][gn] for wrangling
+and building the code. `e` wraps these tools:
+
+| Command | Description                                                    |
+|:--------|:---------------------------------------------------------------|
+| e init  | Create a new build config and initialize a GN directory        |
+| e sync  | Get / update / synchronize source code branches                |
+| e build | Build it!                                                      |
+
+### e init
+
+New build configs are created with `e init`. It has several command-line
+options to specify the build configuration, e.g. the path to the source
+code, compile-time options, and so on. See `e init --help` for in-depth
+details.
+
+Each build config has a name, chosen by you to use as a mnemonic when
+switching between build configs with `e use <name>`. This is the name's
+only purpose, so choose whatever you find easiest to work with &mdash;
+whether it's `electron`, `6-1-x--testing`, or `chocolate-onion-popsicle`.
+
+Each build also needs a root directory. All the source code and built
+files will be stored somewhere beneath it. `e init` uses `$PWD/electron`
+by default, but you can choose your own with `--root=/some/path`. If you
+want to make multiple build types of the same branch, you can reuse
+an existing root to share it between build configs.
+
+As an example, let's say you're starting from scratch and want both
+testing and release builds of the master branch in `electron/electron`.
+You might do this:
+
+```
+# making 'release' and 'testing' builds from master
+
+$ e init master-testing -i testing --root=~/src/electron
+Creating '~/src/electron'
+New build config 'master-testing' created
+Now using config 'master-testing'
+$ e show current
+master-testing
+
+$ e init master-release -i release --root=~/src/electron
+INFO Root '~/src/electron' already exists.
+INFO (OK if you are sharing $root between multiple build configs)
+New build config 'master-release' created
+Now using config 'master-release'
+
+$ e show configs
+* master-release
+  master-testing
+
+$ e show current
+master-release
+$ e show root
+~/src/electron
+
+$ e use master-testing
+Now using config 'master-testing'
+$ e show current
+master-testing
+$ e show root
+~/src/electron
+```
+
+As a convenience, `e init --bootstrap` will run `e sync` and `e build`
+after creating the build config. Let's see what those do:
 
 ### `e sync`
 
-**If you ran `e fetch`, you can skip this step.**
+'e sync' is a wrapper around 'gclient sync' from [Depot Tools][depot-tools].
+If you're starting from scratch, this will (slowly) fetch all the source
+code. It's also useful after switching Electron branches to synchronize
+the rest of the sources to the versions needed by the new Electron branch.
 
-This command is the equivalent to `gclient sync`. Any addition args passed to this command are appended to the sync command.
-
-Some possible extra arguments include:
-
-* `--output-json` - Output a json document to this path containing summary information about the sync.
-* `--no-history` - Reduces the size/time of the checkout at the cost of no history.
-* `--ignore_locks` - Ignore cache locks.
-
-Basic Usage:
+`e sync` is usually all you need. Any extra args are passed along to gclient,
+so for example `e sync -v` runs gclient verbosely.
 
 ```sh
-e sync
-```
-
-Example Usage with extra arguments:
-
-```sh
-e sync --ignore_locks
-```
-
-### `e bootstrap`
-
-**If you ran `e fetch`, you can skip this step.**
-
-This command is the equivalent of `gn gen`: it generates required output directories and ninja configurations.
-
-```sh
-e bootstrap
+$ e show current
+master-testing
+$ e show root
+~/src/electron
+$ e sync -v
+Running "gclient sync --with_branch_heads --with_tags -v" in '~/src/electron/src'
+[sync output omitted]
 ```
 
 ### `e build`
 
-This command runs `ninja` in your `out` directory.
+Once you have the source, the next step is to build it with `e build [target]`.
+These build targets are supported:
 
-It defaults to building Electron, but you can pass a single argument to this command to change what gets built.
+| Target        | Description                                              |
+|:--------------|:---------------------------------------------------------|
+| breakpad      | Builds the breakpad `dump_syms` binary                   |
+| chromedriver  | Builds the `chromedriver` binary                         |
+| electron      | Builds the Electron binary **(Default)**                 |
+| electron:dist | Builds the Electron binary and generates a dist zip file |
+| mksnapshot    | Builds the `mksnapshot` binary                           |
+| node:headers  | Builds the node headers `.tar.gz` file                   |
 
-* `electron`: Builds the Electron binary
-* `electron:dist`: Builds the Electron binary and generates a dist zip file
-* `mksnapshot`: Builds the `mksnapshot` binary
-* `chromedriver`: Builds the `chromedriver` binary
-* `node:headers`: Builds the node headers `.tar.gz` file
-* `breakpad`: Builds the breakpad `dump_syms` binary
+As with syncing, `e build [target]` is usually all you need. Any extra
+args are passed along to [ninja][ninja], so for example `e build -v`
+runs a verbose build.
 
-**You probably only want to run the default command with no apppended arguments**
+## Using Electron
 
-Example Usage:
+After you've built Electron, it's time to use it!
 
-```sh
-# Default - build Electron itself
-e build
+| Command | Description                          |
+|:--------|:-------------------------------------|
+| e start | Run the Electron build               |
+| e node  | Run the Electron build as Node       |
+| e debug | Run the Electron build in a debugger |
+| e test  | Run Electron's spec runner           |
+
+As usual, any extra args are passed along to the executable. For example,
+`e node --version` will print out Electron's node version.
+
+### `e debug`
+
+Runs your local Electron build inside of [lldb][lldb] or [gdb][gdb].
+
+```
+$ uname
+Linux
+$ e debug
+Reading symbols from /home/yourname/electron/gn/master/src/out/Testing/electron...
+(gdb)
 ```
 
-```sh
-# Build the Electron binary and generates a dist zip file
-e build electron:dist
 ```
-
-```sh
-# Build the mksnapshot binary
-e build mksnapshot
-```
-
-```sh
-# Build the chromedriver binary
-e build chromedriver
-```
-
-```sh
-# Build the node headers .tar.gz file
-e build node:headers
-```
-
-```sh
-# Build the breakpad `dump_syms` binary
-e build breakpad
-```
-
-### `e start`
-
-Starts the generated Electron binary, passes all extra arguments directly through to Electron.  E.g.
-
-```sh
-e start --version
-e start path/to/my/app
+$ uname
+Darwin
+$ e debug
+target create "/Users/yourname/electron-gn/src/out/Testing/Electron.app/Contents/MacOS/Electron"
+(lldb)
 ```
 
 ### `e test`
 
-This commands runs the Electron tests using the generated Electron binary. It passes all extra arguments directly to the spec runner.
+Starts the local Electron build's test runner. Any extra args are passed
+along to the runner.
 
-Possible Extra Arguments:
-* `--ci` - Runs Electron's tests in CI mode.
-* `--runners=remote` - Only runs Electron's tests in the Renderer Process (found in the [`spec`](https://github.com/electron/electron/tree/master/spec)).
-* `--runners=main` - Only runs Electron's tests in the Main Process (found in the [`spec-main`](https://github.com/electron/electron/tree/master/spec-main)).
-
-Basic Usage:
-
-```sh
-e test
 ```
+# run all tests
+e test
 
-Example Extra Arguments:
-
-```sh
-# Run Main Process tests in CI mode 
+# Run main process tests in CI mode
 e test --ci --runners=main
 ```
 
-### `e debug`
+## Getting Information
 
-Initializes [lldb](https://lldb.llvm.org/) (on macOS) or [gdb](https://www.gnu.org/software/gdb/) (on Linux) with the debug target set to your local Electron build.
+`e show` shows information about the current build config.
 
-```sh
-e debug
+| Command           | Description                                                    |
+|:------------------|:---------------------------------------------------------------|
+| e show current    | The name of the active build config                            |
+| e show configs    | Lists all build configs                                        |
+| e show env        | Show environment variables injected by the active build config |
+| e show exe        | The path of the built Electron executable                      |
+| e show root       | The path of the root directory from `e init --root`.           |
+| e show src [name] | The path of the named (default: electron) source dir           |
+| e show stats      | SCCache build statistics                                       |
 
-# You should then see (on macOS, for example):
-# (lldb) target create "/Users/codebytere/Developer/electron-gn/src/out/Testing/Electron.app/Contents/MacOS/Electron"
-#Current executable set to '/Users/codebytere/Developer/electron-gn/src/out/Testing/Electron.app/Contents/MacOS/Electron' (x86_64).
-# (lldb) < you can now run debug commands here>
+Example usage:
+
 ```
-
-Debugging Resources:
-* `lldb` [Tutorial](https://lldb.llvm.org/use/tutorial.html)
-* `gdb` [Tutorial](https://web.eecs.umich.edu/~sugih/pointers/summary.html)
-
-**Nota Bene:** This works on macOS and Linux only.
-
-### `e export-patches [patch-dir]`
-
-Exports patches to the desired patch folder in Electron source tree.
-
-Valid patch directories include:
-* `node`
-* `v8`
-* `boringssl`
-* `chromium`
-
-**Nota Bene:** You need to be running at least Bash v4 to use this command.
-
-### `e show`
-
-Returns information about the current build.
-Useful in combination other shell tools.
- * `e show exe`: the path of the built Electron executable
- * `e show out`: the 'out' directory name
- * `e show src [code]`: the path to the source of the specified code (default:electron)
-
-Example Usage:
-
-```sh
 $ uname
 Darwin
 $ e show exe
@@ -221,17 +257,23 @@ $ pwd
 $ ripgrep --t h TakeHeapSnapshot `e show src`
 ```
 
-## Multiple Configs
+### `e export-patches [patch-dir]`
 
-If you're doing a lot of Electron development and constantly switching targets or branches it is a good idea to
-have multiple configurations with different out directories or `buildType`'s.  You can easily switch between configs
-using `evm`.
+Exports patches to the desired patch folder in Electron source tree.
 
-If you copy your `config.yml` and name the copy `config.debug.yml` you can switch to that config using
+Valid patch directories include:
 
-```sh
-evm debug
-e build
-```
+* `node`
+* `v8`
+* `boringssl`
+* `chromium`
 
-You can have as many config files as you want and switch to them at any time using `evm $CONFIG_NAME`.
+[depot-tools]: https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
+[gdb]: https://web.eecs.umich.edu/~sugih/pointers/summary.html
+[gn-configs]: https://github.com/electron/electron/tree/master/build/args
+[gn]: https://chromium.googlesource.com/chromium/src/tools/gn/+/48062805e19b4697c5fbd926dc649c78b6aaa138/README.md
+[lldb]: https://lldb.llvm.org/use/tutorial.html
+[ninja]: https://ninja-build.org
+[nvm]: https://github.com/nvm-sh/nvm
+[platform-prerequisites]: https://electronjs.org/docs/development/build-instructions-gn#platform-prerequisites
+[sanitizers]: https://github.com/google/sanitizers

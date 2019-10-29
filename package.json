@@ -1,19 +1,30 @@
 {
   "name": "build-tools",
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "engines": {
+    "node": ">= 10.12.0"
+  },
   "main": "null",
   "scripts": {
-    "lint": "find nix -type f | xargs shellcheck -f gcc -a"
+    "lint": "prettier --check \"src/*.js\" \"tests/*.js\" \"src/e\"",
+    "prettier:write": "prettier --write \"src/*.js\" \"tests/*.js\" \"src/e\"",
+    "test":     "nyc --reporter=lcov --reporter=text-summary jest --config=jest.fast.json",
+    "test:all": "nyc --reporter=lcov --reporter=text-summary jest --config=jest.slow.json"
   },
   "repository": "https://github.com/electron/build-tools",
   "author": "Electron Authors",
   "license": "MIT",
   "dependencies": {
     "chalk": "^2.4.1",
-    "fs-extra": "^8.1.0",
-    "yaml-js": "^0.2.3"
+    "command-exists": "^1.2.8",
+    "commander": "^3.0.2",
+    "open": "^6.4.0",
+    "path-key": "^3.1.0"
   },
   "devDependencies": {
-    "shellcheck": "^0.3.0"
+    "jest": "^24.9.0",
+    "nyc": "^14.1.1",
+    "prettier": "^1.18.2",
+    "rimraf": "^3.0.0"
   }
 }

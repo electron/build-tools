@@ -1,0 +1,107 @@
+#compdef e
+
+# For oh-my-zsh, install this in $ZSH/completions/ or ~/.oh-my-zsh/completions/
+# (You may need to mkdir that completions/ directory.)
+#
+# If you're not using oh-my-zsh, you may need to add this to your ~/.zshrc:
+# source /path/to/_e
+# autoload -U compinit && compinit
+#
+# To force zsh to regenerate completions, you can `rm -f ~/.zcompdump`
+
+declare -a __e_options=()
+# call `cmd --help`, parse out the option names,
+# and store in __e_options global
+function __e_get_cmd_options() {
+  local -a options=()
+  "$@" --help | \
+    awk '/^Options:/{flag=1;next}/^$/{flag=0}flag' | \
+    sed 's/  /;/g' | cut -f2 -d';' | \
+    sed 's/^-[a-zA-Z0-9], //g' | \
+    cut -f1 -d' ' | \
+    while read -r option; do
+      options+=($option)
+    done
+  __e_options=($options[@])
+}
+
+declare -a __e_subcommands=()
+# call `cmd --help`, parse out the command names,
+# and store in __e_subcommands global
+function __e_get_cmd_subcommands() {
+  local -a subcommands=()
+  "$@" --help | \
+  awk '/^Commands:/{flag=1;next}/^$/{flag=0}flag' | \
+  sed 's/  /;/g' | cut -f2 -d';' | \
+  sed 's/|/\n/' | \
+  cut -f1 -d' ' | \
+  while read -r subcommand; do
+    subcommands+=($subcommand)
+  done
+  __e_subcommands=("$subcommands[@]")
+}
+
+declare -a __e_configs=()
+# call `e show configs`, parse out the config names,
+# and store in __e_configs global
+function __e_get_configs() {
+  local -a configs=()
+  e show configs | \
+  sed 's/..//' | \
+  sort | \
+  while read -r configname; do
+    configs+=($configname)
+  done
+  __e_configs=("$configs[@]")
+}
+
+declare -a __e_targets=()
+# call `e build --list-targets`, parse out the target names,
+# and store in __e_targets global
+function __e_get_targets() {
+  local -a targets=()
+  e build --list-targets | \
+  sort | \
+  while read -r target; do
+    targets+=($target)
+  done
+  __e_targets=("$targets[@]")
+}
+
+__e_get_cmd_subcommands e
+__e_get_cmd_options e
+declare line
+
+_arguments -C \
+  '1: :($__e_subcommands $__e_options)' \
+  '*::arg:->args' \
+&& ret=0
+
+case $line[1] in
+  (use)
+    __e_get_configs
+    _arguments -C \
+      '1: :($__e_configs)' \
+      '*::arg:->args' \
+    && ret=0
+  ;;
+
+  (build|make)
+    __e_get_targets
+    __e_get_cmd_subcommands e $line[1]
+    __e_get_cmd_options e $line[1]
+    _arguments -C \
+      '1: :("${__e_targets[@]}" $__e_subcommands $__e_options)' \
+      '*::arg:->args' \
+    && ret=0
+  ;;
+
+  (*)
+    __e_get_cmd_subcommands e $line[1]
+    __e_get_cmd_options e $line[1]
+    _arguments -C \
+      '1: :($__e_subcommands $__e_options)' \
+      '*::arg:->args' \
+    && ret=0
+  ;;
+esac
