@@ -1,18 +1,26 @@
+const _ = require('lodash');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const yml = require('yaml-js');
 const { color, ensureDir } = require('./util');
 
 const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
-const currentFile = path.resolve(configRoot, 'evm-current.json');
+const currentFile = path.resolve(configRoot, 'evm-current.txt');
 
 function pathOf(name) {
-  return path.resolve(configRoot, `evm.${name}.json`);
+  const jsonPath = path.resolve(configRoot, `evm.${name}.json`);
+  if (fs.existsSync(jsonPath)) {
+    return jsonPath;
+  }
+  return path.resolve(configRoot, `evm.${name}.yml`);
 }
 
 function filenameToConfigName(filename) {
-  const match = filename.match(/^evm\.(.*)\.json$/);
-  return match ? match[1] : null;
+  const jsonMatch = filename.match(/^evm\.(.*)\.json$/);
+  if (jsonMatch) return jsonMatch[1];
+  const ymlMatch = filename.match(/^evm\.(.*)\.yml$/);
+  return ymlMatch ? ymlMatch[1] : null;
 }
 
 function save(name, o) {
@@ -64,8 +72,30 @@ function execOf(config) {
   }
 }
 
+function maybeExtendConfig(config) {
+  if (config.extends) {
+    const deeperConfig = maybeExtendConfig(loadConfigFileRaw(config.extends));
+    delete config.extends;
+    return _.mergeWith(config, deeperConfig, (objValue, srcValue) => {
+      if (Array.isArray(objValue)) {
+        return objValue.concat(srcValue);
+      }
+    });
+  }
+  return config;
+}
+
+function loadConfigFileRaw(name) {
+  const configFile = pathOf(name);
+  const configContents = fs.readFileSync(configFile);
+  if (path.extname(configFile) === '.yml') {
+    return maybeExtendConfig(yml.load(configContents));
+  }
+  return maybeExtendConfig(JSON.parse(configContents));
+}
+
 module.exports = {
-  current: () => JSON.parse(fs.readFileSync(pathOf(currentName()))),
+  current: () => loadConfigFileRaw(currentName()),
   currentName,
   execOf,
   names,
