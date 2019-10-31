@@ -1,0 +1,5 @@
+extends: base
+gen:
+  args:
+    - import("//electron/build/args/release.gn")
+  out: Release
