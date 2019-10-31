@@ -5,7 +5,8 @@ const os = require('os');
 const path = require('path');
 const pathKey = require('path-key');
 
-const DEPOT_TOOLS_DIR = path.resolve(__dirname, '..', 'third_party', 'depot_tools');
+const defaultDepotPath = path.resolve(__dirname, '..', 'third_party', 'depot_tools');
+const DEPOT_TOOLS_DIR = process.env.DEPOT_TOOLS_DIR || defaultDepotPath;
 
 function resolvePath(p) {
   if (path.isAbsolute(p)) return p;
