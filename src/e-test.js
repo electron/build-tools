@@ -39,6 +39,10 @@ function runSpecRunner(config, script, runnerArgs) {
     stdio: 'inherit',
     encoding: 'utf8',
     cwd: path.resolve(config.root, 'src', 'electron'),
+    env: {
+      ELECTRON_OUT_DIR: config.gen.out,
+      ...process.env,
+    },
   };
   console.log(color.childExec(exec, args, opts));
   childProcess.execFileSync(exec, args, opts);
