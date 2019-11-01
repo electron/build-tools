@@ -11,35 +11,43 @@ program.description('Electron build tool').usage('<command> [commandArgs...]');
 program
   .command('init [options] <name>', 'Create a new build config')
   .alias('new')
-  .command('sync [gclientArgs...]', 'Get / update source code')
+  .command('sync [gclientArgs...]', 'Get or update source code')
   .command('build [options]', 'Build Electron and other things')
   .alias('make');
 
 program
-  .command('start [electronArgs...]')
+  .command('start')
   .alias('run')
+  .description('Run the Electron executable')
   .allowUnknownOption()
-  .description('Run the Electron build')
   .action(() => {
     try {
       const exec = evmConfig.execOf(evmConfig.current());
-      const args = program.parseOptions(program.rawArgs.slice(2)).unknown;
+      const args = program.rawArgs.slice(3);
       const opts = { stdio: ['ignore', 'inherit', 'ignore'] };
       console.log(color.childExec(exec, args, opts));
       childProcess.execFileSync(exec, args, opts);
     } catch (e) {
       fatal(e);
     }
+  })
+  .on('--help', () => {
+    console.log('');
+    console.log('Examples:');
+    console.log('');
+    console.log('  $ e start .');
+    console.log('  $ e start /path/to/app');
+    console.log('  $ e start /path/to/app --js-flags');
   });
 
 program
-  .command('node [electronArgs...]')
-  .allowUnknownOption()
+  .command('node')
   .description('Run the Electron build as if it were a Node.js executable')
+  .allowUnknownOption()
   .action(() => {
     try {
       const exec = evmConfig.execOf(evmConfig.current());
-      const args = program.parseOptions(program.rawArgs.slice(2)).unknown;
+      const args = program.rawArgs.slice(3);
       const opts = {
         env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
         stdio: ['ignore', 'inherit', 'ignore'],
@@ -49,6 +57,13 @@ program
     } catch (e) {
       fatal(e);
     }
+  })
+  .on('--help', () => {
+    console.log('');
+    console.log('Examples:');
+    console.log('');
+    console.log('  $ e node .');
+    console.log('  $ e node /path/to/app');
   });
 
 program.command('debug', 'Run the Electron build with a debugger (gdb or lldb)');
