@@ -1,0 +1,17 @@
+root: /path/to/your/developer/folder
+origin:
+  # ssh: git@github.com:electron/electron.git
+  # https: https://github.com/electron/electron
+  electron: https_or_ssh_url
+  # ssh: git@github.com:electron/node.git
+  # https: https://github.com/nodejs/node
+  node: https_or_ssh_url
+gen:
+  args:
+    # path to sccache for faster builds (https://github.com/mozilla/sccache)
+    - cc_wrapper="path/to/your/developer/folder/electron/src/electron/external_binaries/sccache"
+env:
+  GIT_CACHE_PATH: /Users/use_name/.git_cache
+  SCCACHE_BUCKET: electronjs-sccache-ci
+  SCCACHE_CACHE_SIZE: 40G
+  SCCACHE_TWO_TIER: true
