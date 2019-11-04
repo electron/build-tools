@@ -1,6 +1,6 @@
-# Electron GN Scripts
+# Electron Build Scripts
 
-This repository contains helper/wrapper scripts to make working with GN
+This repository contains helper/wrapper scripts to make building Electron
 easier, especially on Windows.
 
 ## Installation
@@ -11,19 +11,23 @@ more details. Once they're installed, clone a copy of `build-tools`
 and add it to your path:
 
 ```sh
-# get build-tools:
+# First, get build-tools:
 git clone https://github.com/electron/build-tools.git
 cd build-tools
 npm install
 
-# then, on Darwin / Linux:
-export PATH="$PATH:$PWD/src"
-# You should probably add this to your `~/.profile` too:
-export PATH="$PATH:/path/to/build-tools/src"
+# Next, ensure that the tool is in your PATH
 
-# then, on Windows:
+# On macOS and Linux:
+export PATH="$PATH:$PWD/src"
+# On Windows:
 cd src
 set PATH=%CD%;%PATH%
+```
+
+On Unix, you should also add the following line to your command line config of choice (e.g. `~/.bashrc` for `bash`, or `~/.zshrc` for `zsh`):
+```sh
+export PATH="$PATH:/path/to/build-tools/src"
 ```
 
 ## Getting the Code and Building Electron
@@ -36,13 +40,19 @@ After installing build-tools, you can run a new Electron build with this command
 e init --root=/path/to/new/electron/directory --bootstrap testing
 ```
 
+For your Electron directory, you need to either:
+1) Create a new (empty) directory in your developer folder (on unix, for example, something like `~/username/Developer/electron-gn`)
+2) If you have an existing build locally, pass the path of the existing directory
+
+If you've never done this before, you'll want to choose `1`.
+
 That command's going to run for awhile. While you're waiting, grab a
 cup of hot caffeine and read about what your computer is doing:
 
 ### Concepts
 
 Electron's build-tools command is named `e`. Like [nvm][nvm] and git,
-you'll invoke e with commands and subcommands. See `e --help` or `e help <cmd>`
+you'll invoke `e` with commands and subcommands. See `e --help` or `e help <cmd>`
 for many more details.
 
 `e` also borrows another inspiration from nvm: having multiple configurations
