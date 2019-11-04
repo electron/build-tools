@@ -2,7 +2,7 @@ const _ = require('lodash');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const yml = require('yaml-js');
+const yml = require('js-yaml');
 const { color, ensureDir } = require('./util');
 
 const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
@@ -33,7 +33,7 @@ function save(name, o) {
   ensureDir(configRoot);
   const filename = pathOf(name);
   const txt =
-    (path.extname(filename) === '.json' ? JSON.stringify(o, null, 2) : yml.dump(o)) + '\n';
+    (path.extname(filename) === '.json' ? JSON.stringify(o, null, 2) : yml.safeDump(o)) + '\n';
   fs.writeFileSync(filename, txt);
 }
 
@@ -99,7 +99,7 @@ function maybeExtendConfig(config) {
 function loadConfigFileRaw(name) {
   const configFile = pathOf(name);
   const configContents = fs.readFileSync(configFile);
-  return maybeExtendConfig(yml.load(configContents));
+  return maybeExtendConfig(yml.safeLoad(configContents));
 }
 
 module.exports = {
