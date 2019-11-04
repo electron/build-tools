@@ -18,10 +18,10 @@
     "chalk": "^2.4.1",
     "command-exists": "^1.2.8",
     "commander": "^3.0.2",
+    "js-yaml": "^3.13.1",
     "lodash": "^4.17.15",
     "open": "^6.4.0",
-    "path-key": "^3.1.0",
-    "yaml-js": "^0.2.3"
+    "path-key": "^3.1.0"
   },
   "devDependencies": {
     "jest": "^24.9.0",
