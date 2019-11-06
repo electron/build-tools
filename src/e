@@ -24,7 +24,7 @@ program
     try {
       const exec = evmConfig.execOf(evmConfig.current());
       const args = program.rawArgs.slice(3);
-      const opts = { stdio: ['ignore', 'inherit', 'ignore'] };
+      const opts = { stdio: ['ignore', 'inherit', 'inherit'] };
       console.log(color.childExec(exec, args, opts));
       childProcess.execFileSync(exec, args, opts);
     } catch (e) {
@@ -50,7 +50,7 @@ program
       const args = program.rawArgs.slice(3);
       const opts = {
         env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
-        stdio: ['ignore', 'inherit', 'ignore'],
+        stdio: ['ignore', 'inherit', 'inherit'],
       };
       console.log(color.childExec(exec, args, opts));
       childProcess.execFileSync(exec, args, opts);
