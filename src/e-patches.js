@@ -8,7 +8,7 @@ const { color, fatal } = require('./util');
 
 function exportPatches(target) {
   try {
-    const { root } = evmConfig.current().config;
+    const { root } = evmConfig.current();
     const srcdir = path.resolve(root, 'src');
 
     const targets = {
