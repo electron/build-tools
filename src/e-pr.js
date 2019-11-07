@@ -8,11 +8,10 @@ const open = require('open');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
-const { fatal } = require('./util');
+const { fatal, readElectronVersion } = require('./util');
 
 function guessPRTarget(config) {
-  const filename = path.resolve(config.root, 'src', 'electron', 'package.json');
-  const version = JSON.parse(fs.readFileSync(filename)).version;
+  const version = readElectronVersion(config);
   if (version.includes('nightly')) {
     return 'master';
   }

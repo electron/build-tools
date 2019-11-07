@@ -4,6 +4,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const pathKey = require('path-key');
+const makeUuid = require('uuid/v4');
 
 const defaultDepotPath = path.resolve(__dirname, '..', 'third_party', 'depot_tools');
 const DEPOT_TOOLS_DIR = process.env.DEPOT_TOOLS_DIR || defaultDepotPath;
@@ -125,6 +126,11 @@ function ensureSCCache(config) {
   }
 }
 
+function readElectronVersion(config) {
+  const filename = path.resolve(config.root, 'src', 'electron', 'package.json');
+  return JSON.parse(fs.readFileSync(filename)).version;
+}
+
 const color = {
   cmd: str => `"${chalk.cyan(str)}"`,
   config: str => `${chalk.blueBright(str)}`,
@@ -150,6 +156,21 @@ function fatal(e) {
   process.exit(1);
 }
 
+function getOrCreateUuid() {
+  const id_file = path.resolve(__dirname, '..', 'metrics-uuid');
+  try {
+    return String(fs.readFileSync(id_file));
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      const uuid = makeUuid();
+      fs.writeFileSync(id_file, uuid);
+      return uuid;
+    } else {
+      throw err;
+    }
+  }
+}
+
 // public
 
 module.exports = {
@@ -162,6 +183,8 @@ module.exports = {
   },
   ensureDir,
   fatal,
+  getOrCreateUuid,
+  readElectronVersion,
   resolvePath,
   sccache: {
     ensure: ensureSCCache,

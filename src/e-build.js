@@ -5,9 +5,10 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const program = require('commander');
+const https = require('https');
 
 const evmConfig = require('./evm-config');
-const { depot, sccache, fatal } = require('./util');
+const { depot, sccache, fatal, getOrCreateUuid, readElectronVersion } = require('./util');
 
 function runGNGen(config) {
   depot.ensure();
@@ -33,7 +34,37 @@ function runNinja(config, target, ninjaArgs) {
   const exec = os.platform === 'win32' ? 'ninja.exe' : 'ninja';
   const args = [...ninjaArgs, target];
   const opts = { cwd: evmConfig.outDir(config) };
+
+  const start = Date.now();
   depot.execFileSync(config, exec, args, opts);
+  recordBuildTiming({
+    elapsed_time_ms: Date.now() - start,
+    build_target: target,
+    electron_version: readElectronVersion(config),
+  });
+}
+
+function recordBuildTiming({ elapsed_time_ms, build_target, electron_version }) {
+  if (process.env.EVM_SKIP_TELEMETRY) return;
+  // If it fails, nbd, we'll just miss this timing.
+  const req = https.request({
+    hostname: 'electron-build-perf-21c0b.firebaseio.com',
+    path: '/build-timings.json',
+    method: 'POST',
+  });
+
+  req.write(
+    JSON.stringify({
+      elapsed_time_ms,
+      electron_version,
+      build_target,
+      uid: getOrCreateUuid(),
+      ram: os.totalmem(),
+      cores: os.cpus().length,
+      timestamp: { '.sv': 'timestamp' },
+    }),
+  );
+  req.end();
 }
 
 program
