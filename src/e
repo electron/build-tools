@@ -6,7 +6,19 @@ const program = require('commander');
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./util');
 
-program.description('Electron build tool').usage('<command> [commandArgs...]');
+program
+  .description('Electron build tool')
+  .usage('<command> [commandArgs...]')
+  .action(() => {
+    const command = program.rawArgs.slice(2)[0];
+    const isValid = item => item._name === command || item._alias === command;
+    if (!program.commands.find(item => isValid(item))) {
+      console.log('');
+      console.error(`Unrecognized command ${color.cmd(command)}`);
+      console.log('');
+      program.help();
+    }
+  });
 
 program
   .command('init [options] <name>', 'Create a new build config')

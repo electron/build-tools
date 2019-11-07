@@ -217,8 +217,8 @@ along to the runner.
 # run all tests
 e test
 
-# Run main process tests in CI mode
-e test --ci --runners=main
+# Run main process tests
+e test --runners=main
 ```
 
 ## Getting Information
