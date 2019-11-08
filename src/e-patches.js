@@ -2,6 +2,7 @@
 
 const path = require('path');
 const program = require('commander');
+const childProcess = require('child_process');
 
 const evmConfig = require('./evm-config.js');
 const { color, fatal } = require('./util');
