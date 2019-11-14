@@ -2,13 +2,14 @@
 
 const path = require('path');
 const program = require('commander');
+const childProcess = require('child_process');
 
 const evmConfig = require('./evm-config.js');
 const { color, fatal } = require('./util');
 
 function exportPatches(target) {
   try {
-    const { root } = evmConfig.current().config;
+    const { root } = evmConfig.current();
     const srcdir = path.resolve(root, 'src');
 
     const targets = {
