@@ -27,7 +27,10 @@ function run_lldb(config) {
 }
 
 try {
-  const choices = [{ exec: 'gdb', runner: run_gdb }, { exec: 'lldb', runner: run_lldb }];
+  const choices = [
+    { exec: 'gdb', runner: run_gdb },
+    { exec: 'lldb', runner: run_lldb },
+  ];
 
   const choice = choices.find(choice => commandExistsSync(choice.exec));
   if (choice) {
