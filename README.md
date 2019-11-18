@@ -14,7 +14,7 @@ and add it to your path:
 # get build-tools:
 git clone https://github.com/electron/build-tools.git
 cd build-tools
-npm install
+yarn install
 
 # then, on Darwin / Linux:
 export PATH="$PATH:$PWD/src"
