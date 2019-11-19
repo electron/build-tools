@@ -6,8 +6,12 @@ easier, especially on Windows.
 ## Installation
 
 A handful of prerequisites, such as git, python, and npm, are
-required. See [Platform Prerequisites][platform-prerequisites] for
-more details. Once they're installed, clone a copy of `build-tools`
+required for building Electron itself; these can be found in 
+[Platform Prerequisites][platform-prerequisites]. `npm` can be used
+with `build-tools` itself as well, but we've configured it to run
+with `yarn`, so we also recommend you [install it to your system](https://yarnpkg.com/lang/en/docs/install/#mac-stable).
+
+Once they're installed, clone a copy of `build-tools`
 and add it to your path:
 
 ```sh
