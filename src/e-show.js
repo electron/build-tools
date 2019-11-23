@@ -130,10 +130,21 @@ program
 
 program
   .command('out')
-  .description('outdir, e.g. "Testing"')
+  .description('outdir name, e.g. "Testing"')
   .action(() => {
     try {
       console.log(evmConfig.current().gen.out);
+    } catch (e) {
+      fatal(e);
+    }
+  });
+
+program
+  .command('outdir')
+  .description('outdir path, e.g. "/$root/src/out/Testing"`')
+  .action(() => {
+    try {
+      console.log(color.path(evmConfig.outDir(evmConfig.current())));
     } catch (e) {
       fatal(e);
     }
