@@ -37,6 +37,9 @@ After installing build-tools, you can run a new Electron build with this command
 ```sh
 # The 'Hello, World!' of build-tools: get and build `master`
 
+# On macOS if you aren't sure you have the right SDK version you should run
+e load-macos-sdks
+
 e init --root=/path/to/new/electron/directory --bootstrap testing
 ```
 
