@@ -6,6 +6,7 @@ const path = require('path');
 const pathKey = require('path-key');
 
 const defaultDepotPath = path.resolve(__dirname, '..', 'third_party', 'depot_tools');
+const macOSSDKsPath = path.resolve(__dirname, '..', 'third_party', 'macOS_SDKs');
 const DEPOT_TOOLS_DIR = process.env.DEPOT_TOOLS_DIR || defaultDepotPath;
 
 function resolvePath(p) {
@@ -51,6 +52,16 @@ function ensureDepotTools() {
   if (days_untouched >= days_before_pull) {
     updateDepotTools();
     fs.utimesSync(depot_dir, now, now);
+  }
+}
+
+function ensureMacOSSDKs() {
+  if (!fs.existsSync(macOSSDKsPath)) {
+    console.log(`Cloning ${color.cmd('MacOSX-SDKs')} into ${color.path(macOSSDKsPath)}`);
+    const url = 'https://github.com/phracker/MacOSX-SDKs.git';
+    childProcess.execFileSync('git', ['clone', '-q', url, macOSSDKsPath], { stdio: 'inherit' });
+  } else {
+    childProcess.execFileSync('git', ['pull', '-q'], { cwd: macOSSDKsPath, stdio: 'inherit' });
   }
 }
 
@@ -159,6 +170,10 @@ module.exports = {
     ensure: ensureDepotTools,
     execFileSync: depotExecFileSync,
     execSync: depotExecSync,
+  },
+  macOSSDKs: {
+    path: macOSSDKsPath,
+    ensure: ensureMacOSSDKs,
   },
   ensureDir,
   fatal,
