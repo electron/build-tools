@@ -20,14 +20,18 @@ git clone https://github.com/electron/build-tools.git
 cd build-tools
 yarn install
 
-# then, on Darwin / Linux:
+# then, if on Darwin / Linux:
 export PATH="$PATH:$PWD/src"
 # You should probably add this to your `~/.profile` too:
 export PATH="$PATH:/path/to/build-tools/src"
 
-# then, on Windows:
+# then, if in Windows' cmd:
 cd src
 set PATH=%CD%;%PATH%
+
+# then, if in Windows' PowerShell:
+cd src
+$Env:Path += ";$(pwd)"
 ```
 
 ## Getting the Code and Building Electron
