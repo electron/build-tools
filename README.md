@@ -11,6 +11,11 @@ required for building Electron itself; these can be found in
 with `build-tools` itself as well, but we've configured it to run
 with `yarn`, so we also recommend you [install it to your system](https://yarnpkg.com/lang/en/docs/install/).
 
+From here, you'll need a command-line prompt. On Mac and Linux, this will
+be a terminal with a shell, e.g. bash or zsh. You can also use these on
+Windows if you install them, or use built-in tools like Windows'
+[Command Prompt](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/windows-commands#command-shell-overview) or [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/getting-started/getting-started-with-windows-powershell?view=powershell-6).
+
 Once they're installed, clone a copy of `build-tools`
 and add it to your path:
 
@@ -25,11 +30,11 @@ export PATH="$PATH:$PWD/src"
 # You should probably add this to your `~/.profile` too:
 export PATH="$PATH:/path/to/build-tools/src"
 
-# then, if in Windows' cmd:
+# then, if in Windows' Command Prompt:
 cd src
 set PATH=%CD%;%PATH%
 
-# then, if in Windows' PowerShell:
+# then, if in Windows PowerShell:
 cd src
 $Env:Path += ";$(pwd)"
 ```
