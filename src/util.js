@@ -118,17 +118,11 @@ function ensureSCCache(config) {
     return;
   }
 
-  try {
-    childProcess.execFileSync(sccache, ['--stop-server'], opts);
-  } catch {
-    // it's OK for this to fail -- maybe it wasn't running
-  }
-
   for (;;) {
     try {
-      const args = ['--start-server'];
-      console.log(color.childExec(sccache, args, opts));
-      childProcess.execFileSync(sccache, args, opts);
+      console.log(color.childExec(sccache, [], opts));
+      // --show-stats will start the server if not already started.
+      childProcess.execFileSync(sccache, ['--show-stats'], opts);
       break;
     } catch {
       console.warn('Failed to start sccache. Trying again...');
