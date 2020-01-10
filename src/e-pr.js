@@ -8,19 +8,24 @@ const open = require('open');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
-const { fatal } = require('./util');
 
 function guessPRTarget(config) {
   const filename = path.resolve(config.root, 'src', 'electron', 'package.json');
   const version = JSON.parse(fs.readFileSync(filename)).version;
-  if (version.includes('nightly')) {
-    return 'master';
-  }
-  const pattern = /^([0-9]+)\.([0-9]+)\.[0-9]+.*$/;
-  const match = pattern.exec(version);
+
+  // Nightlies are only released off of master, so we can safely make this assumption
+  if (version.includes('nightly')) return 'master';
+
+  const versionPattern = /^(\d+)\.(\d+)\.\d+.*$/;
+  const match = versionPattern.exec(version);
+
   if (match) {
-    return `${match[1]}-${match[2]}-x`;
+    const [major, minor] = [match[1], match[2]];
+
+    //TODO(codebytere): remove this conditional when 7-1-x is EOL
+    return major >= '8' ? `${major}-x-y` : `${major}-${minor}-x`;
   }
+
   console.warn(
     `Unable to guess default target PR branch -- ${filename}'s version '${version}' should include 'nightly' or match ${pattern}`,
   );
