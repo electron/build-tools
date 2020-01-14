@@ -77,7 +77,6 @@ function depotOpts(config, opts = {}) {
     // set these defaults that can be overridden via process.env
     PYTHONDONTWRITEBYTECODE: '1', // depot needs it
     DEPOT_TOOLS_METRICS: '0', // disable depot metrics
-
     ...process.env,
     ...config.env,
     ...opts.env,
@@ -105,8 +104,50 @@ function depotExecFileSync(config, exec, args, opts_in) {
   childProcess.execFileSync(exec, args, opts);
 }
 
+const getExternalBinaries = root => path.resolve(root, 'src', 'electron', 'external_binaries');
+
+const gomaDirExists = root => fs.existsSync(path.resolve(getExternalBinaries(root), 'goma'));
+
+function gomaIsAuthenticated(root) {
+  const gomaDir = path.resolve(getExternalBinaries(root), 'goma');
+
+  // Bail early if we're not on a branch with the ability to use Goma
+  if (!gomaDirExists(root)) return;
+
+  const loggedInInfo = childProcess.execFileSync('python', ['goma_auth.py', 'info'], {
+    cwd: gomaDir,
+  });
+
+  const loggedInPattern = /^Login as (\w+\s\w+)$/;
+  return loggedInPattern.test(loggedInInfo.toString().trim());
+}
+
+function authenticateGoma(root) {
+  const gomaDir = path.resolve(getExternalBinaries(root), 'goma');
+
+  // Bail early if we're not on a branch with the ability to use Goma
+  if (!gomaDirExists(root)) return;
+
+  if (!gomaIsAuthenticated(root)) {
+    console.log(color.childExec('goma_auth.py', ['login'], { cwd: gomaDir }));
+    childProcess.execFileSync('python', ['goma_auth.py', 'login'], { cwd: gomaDir });
+  }
+}
+
+function ensureGomaStart(root) {
+  const gomaDir = path.resolve(getExternalBinaries(root), 'goma');
+
+  // Bail early if we're not on a branch with the ability to use Goma
+  if (!gomaDirExists(root)) return;
+
+  if (gomaIsAuthenticated(root)) {
+    console.log(color.childExec('goma_ctl.py', ['ensure_start'], { cwd: gomaDir }));
+    childProcess.execFileSync('python', ['goma_ctl.py', 'ensure_start'], { cwd: gomaDir });
+  }
+}
+
 function getSCCacheExec(root) {
-  return path.resolve(root, 'src', 'electron', 'external_binaries', 'sccache');
+  return path.resolve(getExternalBinaries(root), 'sccache');
 }
 
 function ensureSCCache(config) {
@@ -178,6 +219,12 @@ module.exports = {
   ensureDir,
   fatal,
   resolvePath,
+  goma: {
+    isAuthenticated: gomaIsAuthenticated,
+    auth: authenticateGoma,
+    ensure: ensureGomaStart,
+    exists: gomaDirExists,
+  },
   sccache: {
     ensure: ensureSCCache,
     exec: root => getSCCacheExec(root),

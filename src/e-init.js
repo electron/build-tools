@@ -7,7 +7,7 @@ const path = require('path');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
-const { color, depot, sccache, resolvePath, ensureDir, fatal } = require('./util');
+const { color, depot, sccache, resolvePath, ensureDir, fatal, goma } = require('./util');
 
 function getVSReleaseLine() {
   const exec = 'C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe';
@@ -16,15 +16,21 @@ function getVSReleaseLine() {
   return childProcess.execFileSync(exec, args, opts).trim();
 }
 
-function createConfig(name, options) {
+function createConfig(options) {
   const root = resolvePath(options.root);
   const homedir = os.homedir();
 
   // build the `gn gen` args
-  const gn_args = [
-    `import("//electron/build/args/${options.import}.gn")`,
-    `cc_wrapper="${sccache.exec(root)}"`,
-  ];
+  const gn_args = [`import("//electron/build/args/${options.import}.gn")`];
+
+  if (options.useGoma) {
+    if (goma.exists(root)) {
+      gn_args.push('import("//electron/build/args/goma.gn")');
+    }
+  } else {
+    gn_args.push(`cc_wrapper="${sccache.exec(root)}"`);
+  }
+
   if (options.asan) gn_args.push('is_asan=true');
   if (options.lsan) gn_args.push('is_lsan=true');
   if (options.msan) gn_args.push('is_msan=true');
@@ -37,7 +43,21 @@ function createConfig(name, options) {
     platform_env.GYP_MSVS_VERSION = getVSReleaseLine();
   }
 
+  // sccache-specific environment variables
+  const sccacheEnv = {
+    SCCACHE_BUCKET: process.env.SCCACHE_BUCKET || 'electronjs-sccache-ci',
+    SCCACHE_CACHE_SIZE: process.env.SCCACHE_CACHE_SIZE || '20G',
+    GIT_CACHE_PATH: process.env.GIT_CACHE_PATH
+      ? resolvePath(process.env.GIT_CACHE_PATH)
+      : path.resolve(homedir, '.git_cache'),
+    SCCACHE_DIR: process.env.SCCACHE_DIR
+      ? resolvePath(process.env.SCCACHE_DIR)
+      : path.resolve(homedir, '.sccache'),
+    SCCACHE_TWO_TIER: process.env.SCCACHE_TWO_TIER || 'true',
+  };
+
   return {
+    goma: options.useGoma,
     root,
     origin: {
       electron: options.useHttps
@@ -53,16 +73,8 @@ function createConfig(name, options) {
     },
     env: {
       CHROMIUM_BUILDTOOLS_PATH: path.resolve(root, 'src', 'buildtools'),
-      GIT_CACHE_PATH: process.env.GIT_CACHE_PATH
-        ? resolvePath(process.env.GIT_CACHE_PATH)
-        : path.resolve(homedir, '.git_cache'),
-      SCCACHE_BUCKET: process.env.SCCACHE_BUCKET || 'electronjs-sccache-ci',
-      SCCACHE_CACHE_SIZE: process.env.SCCACHE_CACHE_SIZE || '20G',
-      SCCACHE_DIR: process.env.SCCACHE_DIR
-        ? resolvePath(process.env.SCCACHE_DIR)
-        : path.resolve(homedir, '.sccache'),
-      SCCACHE_TWO_TIER: process.env.SCCACHE_TWO_TIER || 'true',
       ...platform_env,
+      ...(!options.useGoma && sccacheEnv),
     },
   };
 }
@@ -128,6 +140,7 @@ program
   .option('--msan', `When building, enable clang's memory sanitizer`, false)
   .option('--lsan', `When building, enable clang's leak sanitizer`, false)
   .option('--bootstrap', 'Run `e sync` and `e build` after creating the build config.')
+  .option('--use-goma', `Use Electron's custom deployment of Goma (only available to maintainers).`)
   .option(
     '--use-https',
     'During `e sync`, set remote origins with https://github... URLs instead of git@github...',
@@ -153,7 +166,7 @@ try {
   }
 
   // save the new config
-  const config = createConfig(name, options);
+  const config = createConfig(options);
   ensureRoot(config);
   evmConfig.save(name, config);
   console.log(`New build config ${color.config(name)} created in ${color.path(filename)}`);
@@ -162,6 +175,9 @@ try {
   const e = path.resolve(__dirname, 'e');
   const opts = { stdio: 'inherit' };
   childProcess.execFileSync('node', [e, 'use', name], opts);
+
+  // maybe authenticate with Goma
+  if (config.goma) goma.auth(config.root);
 
   // maybe bootstrap
   if (program.bootstrap) {
