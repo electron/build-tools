@@ -154,10 +154,4 @@ describe('e-init', () => {
     expect(result.exitCode).toStrictEqual(0);
     expect(result.stdout).toStrictEqual('Debug');
   });
-
-  /*
-  it('Adds SCCACHE environmental variables', () => {
-  });
-  /*
-   */
 });

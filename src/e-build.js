@@ -7,7 +7,7 @@ const path = require('path');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
-const { depot, sccache, fatal } = require('./util');
+const { depot, sccache, fatal, goma } = require('./util');
 
 function runGNGen(config) {
   depot.ensure();
@@ -26,7 +26,15 @@ function ensureGNGen(config) {
 }
 
 function runNinja(config, target, ninjaArgs) {
-  sccache.ensure(config);
+  if (config.goma) {
+    const authenticated = goma.isAuthenticated(config.root);
+    if (!authenticated) {
+      throw new Error('Goma not authenticated.');
+    }
+  } else {
+    sccache.ensure(config);
+  }
+
   depot.ensure(config);
   ensureGNGen(config);
 
