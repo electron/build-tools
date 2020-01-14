@@ -129,6 +129,7 @@ function authenticateGoma(root) {
   if (!gomaDirExists(root)) return;
 
   if (!gomaIsAuthenticated(root)) {
+    console.log(color.childExec('goma_auth.py', ['login'], { cwd: gomaDir }));
     childProcess.execFileSync('python', ['goma_auth.py', 'login'], { cwd: gomaDir });
   }
 }
@@ -140,6 +141,7 @@ function ensureGomaStart(root) {
   if (!gomaDirExists(root)) return;
 
   if (gomaIsAuthenticated(root)) {
+    console.log(color.childExec('goma_ctl.py', ['ensure_start'], { cwd: gomaDir }));
     childProcess.execFileSync('python', ['goma_ctl.py', 'ensure_start'], { cwd: gomaDir });
   }
 }
