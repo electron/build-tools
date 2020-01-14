@@ -4,20 +4,20 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const { color, macOSSDKs } = require('./util');
+const { color, macOSSDKs, Xcode } = require('./util');
 
 if (process.platform !== 'darwin') {
-  console.error('Should only configure macOS SDKs on darwin platform');
+  console.error('Should only configure Xcode on darwin platform');
   process.exit(1);
 }
 
+Xcode.ensureXcode();
 macOSSDKs.ensure();
 
 const SDK_TO_LINK = ['10.13', '10.14', '10.15'];
 
 const xCodeSDKDir = path.resolve(
-  '/Applications',
-  'Xcode.app',
+  Xcode.XcodePath,
   'Contents',
   'Developer',
   'Platforms',
@@ -47,12 +47,9 @@ for (const sdk of SDK_TO_LINK) {
 }
 
 const output = childProcess.execFileSync('xcode-select', ['-p']).toString();
-if (!output.trim().includes('Xcode.app')) {
-  console.warn(
-    `${color.warn} Looks like your Xcode is not configured correctly, running a command to fix it now`,
-  );
-  console.info(`Setting your Xcode installation to ${color.path('/Applications/Xcode.app')}`);
-  childProcess.execFileSync('sudo', ['xcode-select', '-s', '/Applications/Xcode.app']);
+if (!output.trim().startsWith(Xcode.XcodePath)) {
+  console.info(`Setting your Xcode installation to ${color.path(Xcode.XcodePath)}`);
+  childProcess.execFileSync('sudo', ['xcode-select', '-s', Xcode.XcodePath]);
 }
 
 console.log(color.done);
