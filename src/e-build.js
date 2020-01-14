@@ -27,9 +27,13 @@ function ensureGNGen(config) {
 
 function runNinja(config, target, ninjaArgs) {
   if (config.goma) {
-    const authenticated = goma.isAuthenticated(config.root);
-    if (!authenticated) {
-      throw new Error('Goma not authenticated.');
+    if (goma.exists(config.root)) {
+      const authenticated = goma.isAuthenticated(config.root);
+      if (!authenticated) {
+        throw new Error('Goma not authenticated.');
+      } else {
+        goma.ensure(config.root);
+      }
     }
   } else {
     sccache.ensure(config);

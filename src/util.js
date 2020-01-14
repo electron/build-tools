@@ -106,8 +106,14 @@ function depotExecFileSync(config, exec, args, opts_in) {
 
 const getExternalBinaries = root => path.resolve(root, 'src', 'electron', 'external_binaries');
 
+const gomaDirExists = root => fs.existsSync(path.resolve(getExternalBinaries(root), 'goma'));
+
 function gomaIsAuthenticated(root) {
   const gomaDir = path.resolve(getExternalBinaries(root), 'goma');
+
+  // Bail early if we're not on a branch with the ability to use Goma
+  if (!gomaDirExists(root)) return;
+
   const loggedInInfo = childProcess.execFileSync('python', ['goma_auth.py', 'info'], {
     cwd: gomaDir,
   });
@@ -119,8 +125,22 @@ function gomaIsAuthenticated(root) {
 function authenticateGoma(root) {
   const gomaDir = path.resolve(getExternalBinaries(root), 'goma');
 
+  // Bail early if we're not on a branch with the ability to use Goma
+  if (!gomaDirExists(root)) return;
+
   if (!gomaIsAuthenticated(root)) {
     childProcess.execFileSync('python', ['goma_auth.py', 'login'], { cwd: gomaDir });
+  }
+}
+
+function ensureGomaStart(root) {
+  const gomaDir = path.resolve(getExternalBinaries(root), 'goma');
+
+  // Bail early if we're not on a branch with the ability to use Goma
+  if (!gomaDirExists(root)) return;
+
+  if (gomaIsAuthenticated(root)) {
+    childProcess.execFileSync('python', ['goma_ctl.py', 'ensure_start'], { cwd: gomaDir });
   }
 }
 
@@ -197,10 +217,11 @@ module.exports = {
   ensureDir,
   fatal,
   resolvePath,
-  authenticateGoma,
   goma: {
     isAuthenticated: gomaIsAuthenticated,
     auth: authenticateGoma,
+    ensure: ensureGomaStart,
+    exists: gomaDirExists,
   },
   sccache: {
     ensure: ensureSCCache,

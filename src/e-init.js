@@ -24,7 +24,9 @@ function createConfig(options) {
   const gn_args = [`import("//electron/build/args/${options.import}.gn")`];
 
   if (options.useGoma) {
-    gn_args.push('import("//electron/build/args/goma.gn")');
+    if (goma.exists(root)) {
+      gn_args.push('import("//electron/build/args/goma.gn")');
+    }
   } else {
     gn_args.push(`cc_wrapper="${sccache.exec(root)}"`);
   }
