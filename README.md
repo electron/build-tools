@@ -52,7 +52,7 @@ e load-macos-sdks
 # Choose the directory where Electron's source and build files will reside.
 # You can specify any path you like; this command defaults to ~/projects/electron.
 # If you're going to use multiple branches, you may want something like:
-# `--root=$PWD/electron/branch` (e.g. `~/electron-gn/master`)
+# `--root=~/electron/branch` (e.g. `~/electron-gn/master`)
 e init --root=$PWD/electron --bootstrap testing
 ```
 
