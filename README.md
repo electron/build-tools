@@ -53,7 +53,7 @@ e load-macos-sdks
 # You can specify any path you like; this command defaults to ~/projects/electron.
 # If you're going to use multiple branches, you may want something like:
 # `--root=~/electron/branch` (e.g. `~/electron-gn/master`)
-e init --root=$PWD/electron --bootstrap testing
+e init --root=~/electron --bootstrap testing
 ```
 
 That command's going to run for awhile. While you're waiting, grab a
