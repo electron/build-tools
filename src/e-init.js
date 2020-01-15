@@ -47,9 +47,6 @@ function createConfig(options) {
   const sccacheEnv = {
     SCCACHE_BUCKET: process.env.SCCACHE_BUCKET || 'electronjs-sccache-ci',
     SCCACHE_CACHE_SIZE: process.env.SCCACHE_CACHE_SIZE || '20G',
-    GIT_CACHE_PATH: process.env.GIT_CACHE_PATH
-      ? resolvePath(process.env.GIT_CACHE_PATH)
-      : path.resolve(homedir, '.git_cache'),
     SCCACHE_DIR: process.env.SCCACHE_DIR
       ? resolvePath(process.env.SCCACHE_DIR)
       : path.resolve(homedir, '.sccache'),
@@ -73,6 +70,9 @@ function createConfig(options) {
     },
     env: {
       CHROMIUM_BUILDTOOLS_PATH: path.resolve(root, 'src', 'buildtools'),
+      GIT_CACHE_PATH: process.env.GIT_CACHE_PATH
+        ? resolvePath(process.env.GIT_CACHE_PATH)
+        : path.resolve(homedir, '.git_cache'),
       ...platform_env,
       ...(!options.useGoma && sccacheEnv),
     },
