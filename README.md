@@ -41,7 +41,7 @@ $Env:Path += ";$(pwd)"
 
 ## Getting the Code and Building Electron
 
-After installing build-tools, you can run a new Electron build with this command:
+You can run a new Electron build with this command:
 
 ```sh
 # The 'Hello, World!' of build-tools: get and build `master`
@@ -49,7 +49,11 @@ After installing build-tools, you can run a new Electron build with this command
 # On macOS if you aren't sure you have the right SDK version you should run
 e load-macos-sdks
 
-e init --root=/path/to/new/electron/directory --bootstrap testing
+# Choose the directory where Electron's source and build files will reside.
+# You can specify any path you like; this command defaults to ~/projects/electron.
+# If you're going to use multiple branches, you may want something like:
+# `--root=~/electron/branch` (e.g. `~/electron-gn/master`)
+e init --root=~/electron --bootstrap testing
 ```
 
 That command's going to run for awhile. While you're waiting, grab a
@@ -116,7 +120,7 @@ As an example, let's say you're starting from scratch and want both
 testing and release builds of the master branch in `electron/electron`.
 You might do this:
 
-```
+```sh
 # making 'release' and 'testing' builds from master
 
 $ e init master-testing -i testing --root=~/src/electron
