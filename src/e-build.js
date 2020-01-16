@@ -35,6 +35,9 @@ function runNinja(config, target, ninjaArgs) {
         goma.ensure(config.root);
       }
     }
+    if (!ninjaArgs.includes('-j') && !ninjaArgs.find(arg => /^-j[0-9]+$/.test(arg.trim()))) {
+      ninjaArgs.push('-j', process.platform === 'darwin' ? 50 : 200);
+    }
   } else {
     sccache.ensure(config);
   }
