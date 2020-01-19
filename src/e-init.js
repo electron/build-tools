@@ -23,7 +23,6 @@ function createConfig(options) {
   // build the `gn gen` args
   const gn_args = [`import("//electron/build/args/${options.import}.gn")`];
 
-  console.log(options);
   if (options.useGoma) {
     if (goma.exists(root)) {
       gn_args.push('import("//electron/build/args/goma.gn")');
