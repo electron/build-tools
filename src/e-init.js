@@ -141,7 +141,11 @@ program
   .option('--msan', `When building, enable clang's memory sanitizer`, false)
   .option('--lsan', `When building, enable clang's leak sanitizer`, false)
   .option('--bootstrap', 'Run `e sync` and `e build` after creating the build config.')
-  .option('--use-goma', `Use Electron's custom deployment of Goma (only available to maintainers).`, false)
+  .option(
+    '--use-goma',
+    `Use Electron's custom deployment of Goma (only available to maintainers).`,
+    false,
+  )
   .option(
     '--use-https',
     'During `e sync`, set remote origins with https://github... URLs instead of git@github...',
