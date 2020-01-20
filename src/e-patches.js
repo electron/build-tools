@@ -6,7 +6,7 @@ const program = require('commander');
 const childProcess = require('child_process');
 
 const evmConfig = require('./evm-config.js');
-const { color, fatal } = require('./util');
+const { color, fatal } = require('./utils/e-utils');
 
 function exportPatches(target) {
   try {

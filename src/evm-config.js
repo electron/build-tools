@@ -3,7 +3,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const yml = require('js-yaml');
-const { color, ensureDir } = require('./util');
+const { color, ensureDir } = require('./utils/e-utils');
 
 const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
 const currentFile = path.resolve(configRoot, 'evm-current.txt');

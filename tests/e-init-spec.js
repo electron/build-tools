@@ -1,9 +1,5 @@
-//const childProcess = require('child_process');
 const fs = require('fs');
 const path = require('path');
-
-//const rimraf = require('rimraf');
-//const pathKey = require('path-key')();
 
 const createSandbox = require('./sandbox');
 
@@ -32,7 +28,7 @@ describe('e-init', () => {
         .name('name')
         .run();
 
-      // confirm tht it worked
+      // confirm that it worked
       expect(result.exitCode).toStrictEqual(0);
       expect(fs.statSync(root).isDirectory()).toStrictEqual(true);
       expect(fs.statSync(gclient_file).isFile()).toStrictEqual(true);

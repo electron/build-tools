@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 const childProcess = require('child_process');
-const os = require('os');
 const path = require('path');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
-const { color, sccache, fatal } = require('./util');
+const { color, fatal } = require('./utils/e-utils');
+const { sccache } = require('./utils/sccache-utils');
 
 function gitStatus(config) {
   const exec = 'git';

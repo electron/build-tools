@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 
-const childProcess = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
-const { depot, sccache, fatal, goma } = require('./util');
+const { fatal } = require('./utils/e-utils');
+const { depot } = require('./utils/depot-tools-utils');
+const { sccache } = require('./utils/sccache-utils');
+const { goma } = require('./utils/goma-utils');
 
 function runGNGen(config) {
   depot.ensure();

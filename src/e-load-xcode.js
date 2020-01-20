@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const { color, macOSSDKs, Xcode } = require('./util');
+const { Xcode } = require('./utils/xcode-utils');
 
 if (process.platform !== 'darwin') {
   console.error('Should only configure Xcode on darwin platform');

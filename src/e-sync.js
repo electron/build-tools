@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 const childProcess = require('child_process');
-const fs = require('fs');
 const path = require('path');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
-const { depot, ensureDir, fatal } = require('./util');
+const { ensureDir, fatal } = require('./utils/e-utils');
+const { depot } = require('./utils/depot-tools-utils');
 
 function setOrigin(cwd, url) {
   const cmd = 'git';
