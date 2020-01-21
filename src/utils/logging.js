@@ -1,21 +1,4 @@
 const chalk = require('chalk');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
-
-function resolvePath(p) {
-  if (path.isAbsolute(p)) return p;
-  if (p.startsWith('~/')) return path.resolve(os.homedir(), p.substr(2));
-  return path.resolve(process.cwd(), p);
-}
-
-function ensureDir(dir) {
-  dir = resolvePath(dir);
-  if (!fs.existsSync(dir)) {
-    console.log(`Creating ${color.path(dir)}`);
-    fs.mkdirSync(dir, { recursive: true });
-  }
-}
 
 const color = {
   cmd: str => `"${chalk.cyan(str)}"`,
@@ -44,7 +27,5 @@ function fatal(e) {
 
 module.exports = {
   color,
-  ensureDir,
   fatal,
-  resolvePath,
 };

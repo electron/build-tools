@@ -7,10 +7,11 @@ const path = require('path');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
-const { color, resolvePath, ensureDir, fatal } = require('./utils/e-utils');
-const { goma } = require('./utils/goma-utils');
-const { sccache } = require('./utils/sccache-utils');
-const { depot } = require('./utils/depot-tools-utils');
+const { color, fatal } = require('./utils/logging');
+const { resolvePath, ensureDir } = require('./utils/paths');
+const goma = require('./utils/goma');
+const sccache = require('./utils/sccache');
+const depot = require('./utils/depot-tools');
 
 function getVSReleaseLine() {
   const exec = 'C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe';

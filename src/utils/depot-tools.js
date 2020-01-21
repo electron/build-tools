@@ -4,7 +4,7 @@ const os = require('os');
 const childProcess = require('child_process');
 const pathKey = require('path-key');
 
-const { color } = require('./e-utils');
+const { color } = require('./logging');
 
 const defaultDepotPath = path.resolve(__dirname, '..', 'third_party', 'depot_tools');
 const DEPOT_TOOLS_DIR = process.env.DEPOT_TOOLS_DIR || defaultDepotPath;
@@ -81,10 +81,8 @@ function depotExecFileSync(config, exec, args, opts_in) {
 }
 
 module.exports = {
-  depot: {
-    path: DEPOT_TOOLS_DIR,
-    ensure: ensureDepotTools,
-    execFileSync: depotExecFileSync,
-    execSync: depotExecSync,
-  }
+  path: DEPOT_TOOLS_DIR,
+  ensure: ensureDepotTools,
+  execFileSync: depotExecFileSync,
+  execSync: depotExecSync,
 }

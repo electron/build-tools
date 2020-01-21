@@ -5,8 +5,9 @@ const path = require('path');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
-const { ensureDir, fatal } = require('./utils/e-utils');
-const { depot } = require('./utils/depot-tools-utils');
+const { fatal } = require('./utils/logging');
+const { ensureDir } = require('./utils/paths');
+const depot = require('./utils/depot-tools');
 
 function setOrigin(cwd, url) {
   const cmd = 'git';

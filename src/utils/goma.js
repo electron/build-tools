@@ -1,7 +1,7 @@
 const childProcess = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const { color } = require('./e-utils')
+const { color } = require('./logging')
 
 const getExternalBinaries = root => path.resolve(root, 'src', 'electron', 'external_binaries');
 const gomaDirExists = root => fs.existsSync(path.resolve(getExternalBinaries(root), 'goma'));
@@ -45,10 +45,8 @@ function ensureGomaStart(root) {
 }
 
 module.exports = {
-  goma: {
-    isAuthenticated: gomaIsAuthenticated,
-    auth: authenticateGoma,
-    ensure: ensureGomaStart,
-    exists: gomaDirExists,
-  }
+  isAuthenticated: gomaIsAuthenticated,
+  auth: authenticateGoma,
+  ensure: ensureGomaStart,
+  exists: gomaDirExists,
 }

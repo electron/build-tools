@@ -4,7 +4,7 @@ const childProcess = require('child_process');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
-const { color, fatal } = require('./utils/e-utils');
+const { color, fatal } = require('./utils/logging');
 
 program.description('Electron build tool').usage('<command> [commandArgs...]');
 

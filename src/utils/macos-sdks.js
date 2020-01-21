@@ -1,7 +1,7 @@
 const childProcess = require('child_process');
 const path = require('path');
 
-const { color } = require('./e-utils');
+const { color } = require('./output');
 
 const macOSSDKsPath = path.resolve(__dirname, '..', 'third_party', 'macOS_SDKs');
 
@@ -16,8 +16,6 @@ function ensureMacOSSDKs() {
 }
 
 module.exports = {
-  macOSSDKs: {
-    path: macOSSDKsPath,
-    ensure: ensureMacOSSDKs,
-  }
+  path: macOSSDKsPath,
+  ensure: ensureMacOSSDKs,
 }

@@ -6,10 +6,10 @@ const path = require('path');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
-const { fatal } = require('./utils/e-utils');
-const { depot } = require('./utils/depot-tools-utils');
-const { sccache } = require('./utils/sccache-utils');
-const { goma } = require('./utils/goma-utils');
+const { fatal } = require('./utils/logging');
+const depot = require('./utils/depot-tools');
+const sccache = require('./utils/sccache');
+const goma = require('./utils/goma');
 
 function runGNGen(config) {
   depot.ensure();

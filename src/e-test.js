@@ -6,7 +6,7 @@ const path = require('path');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
-const { color, fatal } = require('./utils/e-utils');
+const { color, fatal } = require('./utils/logging');
 
 function ensureNodeHeaders(config) {
   const src_dir = path.resolve(config.root, 'src');

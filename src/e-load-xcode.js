@@ -4,8 +4,9 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const { color, macOSSDKs, Xcode } = require('./util');
-const { Xcode } = require('./utils/xcode-utils');
+const { color } = require('./utils/logging');
+const macOSSDKs = require('./utils/macos-sdks');
+const Xcode = require('./utils/xcode');
 
 if (process.platform !== 'darwin') {
   console.error('Should only configure Xcode on darwin platform');

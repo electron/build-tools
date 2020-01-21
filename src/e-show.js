@@ -5,8 +5,8 @@ const path = require('path');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
-const { color, fatal } = require('./utils/e-utils');
-const { sccache } = require('./utils/sccache-utils');
+const { color, fatal } = require('./utils/logging');
+const sccache = require('./utils/sccache');
 
 function gitStatus(config) {
   const exec = 'git';

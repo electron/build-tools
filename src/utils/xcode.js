@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
 const zip = require('cross-zip');
-const { ensureDir } = require('./e-utils');
+const { ensureDir } = require('./paths');
 
 const XcodeDir = path.resolve(__dirname, '..', 'third_party', 'Xcode');
 const XcodePath = path.resolve(XcodeDir, 'Xcode.app');
@@ -48,9 +48,15 @@ function ensureXcode() {
   }
 }
 
+function hashFile(file) {	
+  console.log(`Calculating hash for ${color.path(file)}`);	
+  return childProcess	
+    .spawnSync(process.execPath, [path.resolve(__dirname, 'hash.js'), file])	
+    .stdout.toString()	
+    .trim();	
+}
+
 module.exports = {
-  Xcode: {
-    XcodePath,
-    ensureXcode,
-  }
+  XcodePath,
+  ensureXcode,
 }
