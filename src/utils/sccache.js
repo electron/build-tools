@@ -2,7 +2,7 @@ const childProcess = require('child_process');
 const os = require('os');
 const path = require('path');
 
-const { color } = require('./logging')
+const { color } = require('./logging');
 
 const getExternalBinaries = root => path.resolve(root, 'src', 'electron', 'external_binaries');
 
@@ -39,4 +39,4 @@ function ensureSCCache(config) {
 module.exports = {
   ensure: ensureSCCache,
   exec: root => getSCCacheExec(root),
-}
+};

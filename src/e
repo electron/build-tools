@@ -5,6 +5,8 @@ const program = require('commander');
 
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
+const depot = require('./utils/depot-tools');
+const goma = require('./utils/goma');
 
 program.description('Electron build tool').usage('<command> [commandArgs...]');
 
@@ -95,4 +97,28 @@ program.on('--help', () => {
 See https://github.com/electron/build-tools/blob/master/README.md for usage.`);
 });
 
-program.parse(process.argv);
+const result = program.parse(process.argv);
+if (result) {
+  // If we get to here, we ran an unknown command
+  const { rawArgs } = result;
+  const args = rawArgs.slice(2);
+  // Map goma_ctl and goma_auth to our goma client, not depot_tools
+  let cwd;
+  if (args[0] === 'goma_ctl' || args[1] === 'goma_auth') {
+    cwd = goma.dir(evmConfig.current().root);
+    args[0] = `${args[0]}.py`;
+    args.unshift('python');
+  }
+
+  console.log(`${color.info} Treating unknown command as depot tools executable`);
+  const { status, error } = depot.spawnSync(evmConfig.current(), args[0], args.slice(1), {
+    cwd,
+    stdio: 'inherit',
+  });
+  if (status !== 0) {
+    console.error(
+      `${color.err} Failed to run command, exit code was "${status}", error was '${error}'`,
+    );
+  }
+  process.exit(status);
+}
