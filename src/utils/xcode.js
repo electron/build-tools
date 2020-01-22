@@ -2,7 +2,6 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
-const zip = require('cross-zip');
 const { ensureDir } = require('./paths');
 
 const { color } = require('./logging')
@@ -42,7 +41,9 @@ function ensureXcode() {
 
     const unzipPath = path.resolve(XcodeDir, 'tmp_unzip');
     rimraf.sync(unzipPath);
-    zip.unzipSync(XcodeZip, unzipPath);
+    childProcess.spawnSync('unzip', ['-o', XcodeZip, '-d', unzipPath, '-q'], {
+      stdio: 'ignore'
+    });
 
     fs.renameSync(path.resolve(unzipPath, 'Xcode.app'), XcodePath);
     rimraf.sync(XcodeZip);
