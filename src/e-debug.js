@@ -5,7 +5,7 @@ const commandExistsSync = require('command-exists').sync;
 const path = require('path');
 
 const evmConfig = require('./evm-config');
-const { fatal } = require('./util');
+const { fatal } = require('./utils/logging');
 
 const opts = {
   encoding: 'utf8',
