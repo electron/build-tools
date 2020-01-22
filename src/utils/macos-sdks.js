@@ -1,7 +1,7 @@
 const childProcess = require('child_process');
 const path = require('path');
 
-const { color } = require('./output');
+const { color } = require('./logging');
 
 const macOSSDKsPath = path.resolve(__dirname, '..', 'third_party', 'macOS_SDKs');
 
