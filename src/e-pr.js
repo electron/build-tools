@@ -38,10 +38,25 @@ function guessPRSource(config) {
   return childProcess.execSync(command, options).trim();
 }
 
-let defaultTarget;
+function guessRepo(config) {
+  const fallback = 'electron/electron';
+  const origin = config.origin.electron;
+  let repo;
+  if (origin.endsWith('.git')) {
+    let tmp = origin.slice(0, -4);
+    tmp = tmp.replace('https://github.com/', '');
+    tmp = tmp.replace('git@github.com:', '');
+    repo = tmp;
+  }
+  return repo || falback;
+}
+
+let defaultRepo;
 let defaultSource;
+let defaultTarget;
 try {
   const config = evmConfig.current();
+  defaultRepo = guessRepo(config);
   defaultSource = guessPRSource(config);
   defaultTarget = guessPRTarget(config);
 } catch {
@@ -50,8 +65,9 @@ try {
 
 program
   .description('Open a GitHub URL where you can PR your changes')
+  .option('-r, --repo <repository>', 'Repository to use', defaultRepo)
   .option('-s, --source <source_branch>', 'Where the changes are coming from', defaultSource)
   .option('-t, --target <target_branch>', 'Where the changes are going to', defaultTarget)
   .parse(process.argv);
 
-open(`https://github.com/electron/electron/compare/${program.target}...${program.source}?expand=1`);
+open(`https://github.com/${program.repo}/compare/${program.target}...${program.source}?expand=1`);
