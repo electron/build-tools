@@ -18,7 +18,6 @@
     "chalk": "^2.4.1",
     "command-exists": "^1.2.8",
     "commander": "^3.0.2",
-    "cross-zip": "^2.1.6",
     "got": "^10.2.2",
     "hasha": "^5.1.0",
     "js-yaml": "^3.13.1",
