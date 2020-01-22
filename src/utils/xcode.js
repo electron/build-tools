@@ -5,6 +5,8 @@ const rimraf = require('rimraf');
 const zip = require('cross-zip');
 const { ensureDir } = require('./paths');
 
+const { color } = require('./logging')
+
 const XcodeDir = path.resolve(__dirname, '..', 'third_party', 'Xcode');
 const XcodePath = path.resolve(XcodeDir, 'Xcode.app');
 const XcodeZip = path.resolve(XcodeDir, 'Xcode.zip');
@@ -31,7 +33,7 @@ function ensureXcode() {
       console.log(`Downloading ${color.cmd(XcodeURL)} into ${color.path(XcodeZip)}`);
       childProcess.spawnSync(
         process.execPath,
-        [path.resolve(__dirname, 'download.js'), XcodeURL, XcodeZip],
+        [path.resolve(__dirname, '..', 'download.js'), XcodeURL, XcodeZip],
         {
           stdio: 'inherit',
         },
