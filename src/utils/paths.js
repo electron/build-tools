@@ -1,7 +1,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { color} = require('./logging')
+const { color } = require('./logging');
 
 function resolvePath(p) {
   if (path.isAbsolute(p)) return p;
@@ -19,5 +19,5 @@ function ensureDir(dir) {
 
 module.exports = {
   resolvePath,
-  ensureDir
-}
+  ensureDir,
+};

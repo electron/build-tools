@@ -1,7 +1,7 @@
 const childProcess = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const { color } = require('./logging')
+const { color } = require('./logging');
 
 const getExternalBinaries = root => path.resolve(root, 'src', 'electron', 'external_binaries');
 const gomaDirExists = root => fs.existsSync(path.resolve(getExternalBinaries(root), 'goma'));
@@ -49,4 +49,5 @@ module.exports = {
   auth: authenticateGoma,
   ensure: ensureGomaStart,
   exists: gomaDirExists,
-}
+  dir: root => path.resolve(getExternalBinaries(root), 'goma'),
+};

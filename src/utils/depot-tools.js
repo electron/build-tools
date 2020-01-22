@@ -71,6 +71,12 @@ function depotExecSync(config, cmd, opts_in) {
   childProcess.execSync(cmd, opts);
 }
 
+function depotSpawnSync(config, cmd, args, opts_in) {
+  const opts = depotOpts(config, opts_in);
+  console.log(color.childExec(cmd, args, opts));
+  return childProcess.spawnSync(cmd, args, opts);
+}
+
 function depotExecFileSync(config, exec, args, opts_in) {
   if (exec === 'python' && !path.isAbsolute(args[0])) {
     args[0] = path.resolve(DEPOT_TOOLS_DIR, args[0]);
@@ -85,4 +91,5 @@ module.exports = {
   ensure: ensureDepotTools,
   execFileSync: depotExecFileSync,
   execSync: depotExecSync,
-}
+  spawnSync: depotSpawnSync,
+};
