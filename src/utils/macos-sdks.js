@@ -19,4 +19,4 @@ function ensureMacOSSDKs() {
 module.exports = {
   path: macOSSDKsPath,
   ensure: ensureMacOSSDKs,
-}
+};

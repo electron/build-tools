@@ -51,15 +51,15 @@ function ensureXcode() {
   }
 }
 
-function hashFile(file) {	
-  console.log(`Calculating hash for ${color.path(file)}`);	
-  return childProcess	
-    .spawnSync(process.execPath, [path.resolve(__dirname, 'hash.js'), file])	
-    .stdout.toString()	
-    .trim();	
+function hashFile(file) {
+  console.log(`Calculating hash for ${color.path(file)}`);
+  return childProcess
+    .spawnSync(process.execPath, [path.resolve(__dirname, 'hash.js'), file])
+    .stdout.toString()
+    .trim();
 }
 
 module.exports = {
   XcodePath,
   ensureXcode,
-}
+};
