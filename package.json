@@ -27,9 +27,20 @@
     "stream-progressbar": "^1.3.0"
   },
   "devDependencies": {
+    "husky": "^4.2.0",
     "jest": "^24.9.0",
+    "lint-staged": "^10.0.2",
     "nyc": "^14.1.1",
     "prettier": "^1.19.1",
     "rimraf": "^3.0.0"
+  },
+  "lint-staged": {
+    "*.js": ["prettier --write"],
+    "e": ["prettier --write"]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }
