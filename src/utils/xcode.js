@@ -6,7 +6,7 @@ const { ensureDir } = require('./paths');
 
 const { color } = require('./logging')
 
-const XcodeDir = path.resolve(__dirname, '..', 'third_party', 'Xcode');
+const XcodeDir = path.resolve(__dirname, '..', '..', 'third_party', 'Xcode');
 const XcodePath = path.resolve(XcodeDir, 'Xcode.app');
 const XcodeZip = path.resolve(XcodeDir, 'Xcode.zip');
 const XcodeURL = 'https://electron-build-tools.s3-us-west-2.amazonaws.com/macos/Xcode-10.3.zip';
