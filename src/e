@@ -99,8 +99,12 @@ program
   .allowUnknownOption()
   .action(() => {
     const args = process.argv.slice(3);
+    if (args.length === 0) {
+      console.error(`${color.err} Must provide a command to 'e depot-tools'`);
+      process.exit(1);
+    }
     let cwd;
-    if (args[0] === 'goma_ctl' || args[1] === 'goma_auth') {
+    if (args[0] === 'goma_ctl' || args[0] === 'goma_auth') {
       cwd = goma.dir(evmConfig.current().root);
       args[0] = `${args[0]}.py`;
       args.unshift('python');
