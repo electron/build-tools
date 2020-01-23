@@ -184,12 +184,16 @@ try {
   const opts = { stdio: 'inherit' };
   childProcess.execFileSync('node', [e, 'use', name], opts);
 
+  // (maybe) run sync to ensure external binaries are downloaded
+  if (program.bootstrap) {
+    childProcess.execFileSync('node', [e, 'sync', '-v'], opts);
+  }
+
   // maybe authenticate with Goma
   if (config.goma) goma.auth(config.root);
 
-  // maybe bootstrap
+  // (maybe) build Electron
   if (program.bootstrap) {
-    childProcess.execFileSync('node', [e, 'sync', '-v'], opts);
     childProcess.execFileSync('node', [e, 'build'], opts);
   }
 } catch (e) {
