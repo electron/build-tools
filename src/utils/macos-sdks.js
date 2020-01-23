@@ -4,7 +4,7 @@ const path = require('path');
 
 const { color } = require('./logging');
 
-const macOSSDKsPath = path.resolve(__dirname, '..', 'third_party', 'macOS_SDKs');
+const macOSSDKsPath = path.resolve(__dirname, '..', '..', 'third_party', 'macOS_SDKs');
 
 function ensureMacOSSDKs() {
   if (!fs.existsSync(macOSSDKsPath)) {

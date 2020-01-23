@@ -6,7 +6,7 @@ const pathKey = require('path-key');
 
 const { color } = require('./logging');
 
-const defaultDepotPath = path.resolve(__dirname, '..', 'third_party', 'depot_tools');
+const defaultDepotPath = path.resolve(__dirname, '..', '..', 'third_party', 'depot_tools');
 const DEPOT_TOOLS_DIR = process.env.DEPOT_TOOLS_DIR || defaultDepotPath;
 
 function updateDepotTools() {
