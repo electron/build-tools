@@ -23,7 +23,12 @@ function runGNGen(config) {
 
 function ensureGNGen(config) {
   const buildfile = path.resolve(evmConfig.outDir(config), 'build.ninja');
-  if (!fs.existsSync(buildfile)) runGNGen(config);
+  if (!fs.existsSync(buildfile)) return runGNGen(config);
+  const argsFile = path.resolve(evmConfig.outDir(config), 'args.gn');
+  if (!fs.existsSync(argsFile)) return runGNGen(config);
+  const contents = fs.readFileSync(argsFile, 'utf8');
+  // If the current args do not match the args file, re-run gen
+  if (contents.trim() !== config.gen.args.join('\n').trim()) return runGNGen(config);
 }
 
 function runNinja(config, target, ninjaArgs) {
