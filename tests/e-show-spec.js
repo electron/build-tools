@@ -138,13 +138,6 @@ describe('e-show', () => {
         acc[k] = v;
         return acc;
       }, {});
-    expect(Object.keys(env).sort()).toEqual([
-      'CHROMIUM_BUILDTOOLS_PATH',
-      'GIT_CACHE_PATH',
-      'SCCACHE_BUCKET',
-      'SCCACHE_CACHE_SIZE',
-      'SCCACHE_DIR',
-      'SCCACHE_TWO_TIER',
-    ]);
+    expect(Object.keys(env).sort()).toEqual(['CHROMIUM_BUILDTOOLS_PATH', 'GIT_CACHE_PATH']);
   });
 });

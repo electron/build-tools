@@ -10,7 +10,6 @@ const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const { resolvePath, ensureDir } = require('./utils/paths');
 const goma = require('./utils/goma');
-const sccache = require('./utils/sccache');
 const depot = require('./utils/depot-tools');
 
 function getVSReleaseLine() {
@@ -27,12 +26,8 @@ function createConfig(options) {
   // build the `gn gen` args
   const gn_args = [`import("//electron/build/args/${options.import}.gn")`];
 
-  if (options.useGoma) {
-    if (goma.exists(root)) {
-      gn_args.push('import("//electron/build/args/goma.gn")');
-    }
-  } else {
-    gn_args.push(`cc_wrapper="${sccache.exec(root)}"`);
+  if (options.goma !== 'none') {
+    gn_args.push(`import("${goma.gnFilePath}")`);
   }
 
   if (options.asan) gn_args.push('is_asan=true');
@@ -47,18 +42,8 @@ function createConfig(options) {
     platform_env.GYP_MSVS_VERSION = getVSReleaseLine();
   }
 
-  // sccache-specific environment variables
-  const sccacheEnv = {
-    SCCACHE_BUCKET: process.env.SCCACHE_BUCKET || 'electronjs-sccache-ci',
-    SCCACHE_CACHE_SIZE: process.env.SCCACHE_CACHE_SIZE || '20G',
-    SCCACHE_DIR: process.env.SCCACHE_DIR
-      ? resolvePath(process.env.SCCACHE_DIR)
-      : path.resolve(homedir, '.sccache'),
-    SCCACHE_TWO_TIER: process.env.SCCACHE_TWO_TIER || 'true',
-  };
-
   return {
-    goma: options.useGoma,
+    goma: options.goma,
     root,
     origin: {
       electron: options.useHttps
@@ -78,7 +63,6 @@ function createConfig(options) {
         ? resolvePath(process.env.GIT_CACHE_PATH)
         : path.resolve(homedir, '.git_cache'),
       ...platform_env,
-      ...(!options.useGoma && sccacheEnv),
     },
   };
 }
@@ -145,9 +129,9 @@ program
   .option('--lsan', `When building, enable clang's leak sanitizer`, false)
   .option('--bootstrap', 'Run `e sync` and `e build` after creating the build config.')
   .option(
-    '--use-goma',
-    `Use Electron's custom deployment of Goma (only available to maintainers).`,
-    false,
+    '--goma <target>',
+    `Use Electron's custom deployment of Goma.  Can be "cache-only", "cluster" or "none".  The "cluster" mode is only available to maintainers`,
+    'cache-only',
   )
   .option(
     '--use-https',
@@ -173,6 +157,15 @@ try {
     throw Error(`Build config ${color.config(name)} already exists! (${color.path(filename)})`);
   }
 
+  // Make sure the goma options are valid
+  if (!['none', 'cache-only', 'cluster'].includes(options.goma)) {
+    throw new Error(
+      `Config property ${color.config('goma')} must be one of ${color.config(
+        'cache-only',
+      )} or ${color.config('cluster')} but you provided ${color.config(options.goma)}`,
+    );
+  }
+
   // save the new config
   const config = createConfig(options);
   ensureRoot(config);
@@ -186,11 +179,13 @@ try {
 
   // (maybe) run sync to ensure external binaries are downloaded
   if (program.bootstrap) {
-    childProcess.execFileSync('node', [e, 'sync', '-v'], opts);
+    childProcess.execFileSync('node', [e, 'sync', '-v', '--ignore_locks'], opts);
   }
 
   // maybe authenticate with Goma
-  if (config.goma) goma.auth(config.root);
+  if (config.goma === 'cluster') {
+    goma.auth();
+  }
 
   // (maybe) build Electron
   if (program.bootstrap) {

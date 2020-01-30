@@ -5,6 +5,7 @@ const path = require('path');
 const yml = require('js-yaml');
 const { color } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
+const goma = require('./utils/goma');
 
 const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
 const currentFile = path.resolve(configRoot, 'evm-current.txt');
@@ -103,8 +104,52 @@ function loadConfigFileRaw(name) {
   return maybeExtendConfig(yml.safeLoad(configContents));
 }
 
+function sanitizeConfig(config) {
+  if (!['none', 'cluster', 'cache-only'].includes(config.goma)) {
+    config.goma = 'cache-only';
+    console.warn(
+      `${color.warn} Your evm config ${color.config(
+        currentName(),
+      )} does not define the ${color.config(
+        'goma',
+      )} property as one of "none", "cluster" or "cache-only", we are defaulting to to ${color.config(
+        'cache-only',
+      )} for you`,
+    );
+  }
+  if (
+    config.goma !== 'none' &&
+    (!config.gen || !config.gen.args || !config.gen.args.find(arg => arg.includes(goma.gnFilePath)))
+  ) {
+    config.gen.args.push(`import("${goma.gnFilePath}")`);
+    console.warn(
+      `${color.warn} Your evm config ${color.config(
+        currentName(),
+      )} has goma enabled but did not include the goma gn file "${color.path(
+        goma.gnFilePath,
+      )}" in the gen args. We've put it there for you`,
+    );
+  }
+  if (
+    config.goma !== 'none' &&
+    config.gen &&
+    config.gen.args &&
+    config.gen.args.find(arg => arg.includes('cc_wrapper'))
+  ) {
+    config.gen.args = config.gen.args.filter(arg => !arg.includes('cc_wrapper'));
+    console.warn(
+      `${color.warn} Your evm config ${color.config(
+        currentName(),
+      )} has goma enabled but also defines a ${color.config(
+        'cc_wrapper',
+      )} argument, we have removed it for you`,
+    );
+  }
+  return config;
+}
+
 module.exports = {
-  current: () => loadConfigFileRaw(currentName()),
+  current: () => sanitizeConfig(loadConfigFileRaw(currentName())),
   currentName,
   execOf,
   names,

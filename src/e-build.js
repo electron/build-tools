@@ -8,7 +8,6 @@ const program = require('commander');
 const evmConfig = require('./evm-config');
 const { fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
-const sccache = require('./utils/sccache');
 const goma = require('./utils/goma');
 
 function runGNGen(config) {
@@ -28,20 +27,21 @@ function ensureGNGen(config) {
 }
 
 function runNinja(config, target, ninjaArgs) {
-  if (config.goma) {
-    if (goma.exists(config.root)) {
+  if (config.goma !== 'none') {
+    if (config.goma === 'cluster') {
       const authenticated = goma.isAuthenticated(config.root);
       if (!authenticated) {
-        throw new Error('Goma not authenticated.');
-      } else {
-        goma.ensure(config.root);
+        throw new Error(
+          `Goma not authenticated. Either sign in with ${color.cmd(
+            'e d goma_auth login',
+          )} or change your config.goma value to 'cache-only'`,
+        );
       }
     }
+    goma.ensure();
     if (!ninjaArgs.includes('-j') && !ninjaArgs.find(arg => /^-j[0-9]+$/.test(arg.trim()))) {
       ninjaArgs.push('-j', process.platform === 'darwin' ? 50 : 200);
     }
-  } else {
-    sccache.ensure(config);
   }
 
   depot.ensure(config);

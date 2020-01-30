@@ -254,7 +254,7 @@ e test --runners=main
 | e show exe        | The path of the built Electron executable                      |
 | e show root       | The path of the root directory from `e init --root`.           |
 | e show src [name] | The path of the named (default: electron) source dir           |
-| e show stats      | SCCache build statistics                                       |
+| e show stats      | Build statistics                                               |
 
 Example usage:
 

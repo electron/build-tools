@@ -1051,6 +1051,13 @@ cross-spawn@^7.0.0:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
+cross-zip@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/cross-zip/-/cross-zip-3.0.0.tgz#478136c7ba2df7e5888f7fb57211a4bbd5afafb4"
+  integrity sha512-cm+l8PJ6WiSQmKZ/x8DGvUm2u/3FX2JFs1AFd18gdHaVhP5Lf4oE6Jrj2Jd05JYSioz5x+nIRVp0zBQuzuCRcQ==
+  dependencies:
+    rimraf "^3.0.0"
+
 cssom@0.3.x, "cssom@>= 0.3.2 < 0.4.0":
   version "0.3.8"
   resolved "https://registry.yarnpkg.com/cssom/-/cssom-0.3.8.tgz#9f1276f5b2b463f2114d3f2c75250af8c1a36f4a"

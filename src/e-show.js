@@ -6,7 +6,7 @@ const program = require('commander');
 
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
-const sccache = require('./utils/sccache');
+const goma = require('./utils/goma');
 
 function gitStatus(config) {
   const exec = 'git';
@@ -152,13 +152,12 @@ program
 
 program
   .command('stats')
-  .description('sccache build statistics')
+  .description('build statistics')
   .action(() => {
     try {
       const config = evmConfig.current();
-      const exec = sccache.exec(config.root);
-      const options = { env: config.env, stdio: 'inherit' };
-      childProcess.execFileSync(exec, ['--show-stats'], options);
+      const options = { env: { ...process.env, ...config.env }, stdio: 'inherit', cwd: goma.dir };
+      childProcess.execFileSync('python', ['goma_ctl.py', 'stat'], options);
     } catch (e) {
       fatal(e);
     }
