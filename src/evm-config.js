@@ -9,6 +9,10 @@ const goma = require('./utils/goma');
 
 const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
 const currentFile = path.resolve(configRoot, 'evm-current.txt');
+let sessionFile;
+if (process.env.EVM_SESSION_ID && !process.env.EVM_SESSION_ID.includes('.')) {
+  sessionFile = path.resolve(configRoot, 'sessions', process.env.EVM_SESSION_ID, 'evm-current.txt');
+}
 const preferredFormat = process.env.EVM_FORMAT || 'json'; // yaml yml json
 
 function buildPath(name, suffix) {
@@ -49,7 +53,12 @@ function setCurrent(name) {
     );
   }
   try {
+    fs.mkdirSync(path.dirname(currentFile), { recursive: true });
     fs.writeFileSync(currentFile, `${name}\n`);
+    if (sessionFile) {
+      fs.mkdirSync(path.dirname(sessionFile), { recursive: true });
+      fs.writeFileSync(sessionFile, `${name}\n`);
+    }
   } catch (e) {
     throw Error(`Unable to set evm config ${color.config(name)} (${e})`);
   }
@@ -65,8 +74,14 @@ function names() {
 
 function currentName() {
   if (process.env.EVM_CURRENT) return process.env.EVM_CURRENT;
+  if (sessionFile && fs.existsSync(sessionFile))
+    return fs.readFileSync(sessionFile, { encoding: 'utf8' }).trim();
+
   if (!fs.existsSync(currentFile)) throw Error('No current build configuration');
-  return fs.readFileSync(currentFile, { encoding: 'utf8' }).trim();
+  const current = fs.readFileSync(currentFile, { encoding: 'utf8' }).trim();
+  // If we fell back to the "current" file then we should set the sessionFile for future usage
+  if (sessionFile) setCurrent(current);
+  return current;
 }
 
 function outDir(config) {
