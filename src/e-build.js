@@ -6,7 +6,7 @@ const path = require('path');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
-const { fatal } = require('./utils/logging');
+const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
 
@@ -64,38 +64,42 @@ program
   .description('Build Electron and other targets.')
   .option('--list-targets', 'Show all supported targets', false)
   .option('--gen', 'Force a re-run of `gn gen` before building', false)
+  .option('-t|--target [target]', 'Forces a specific ninja target')
   .parse(process.argv);
-
-const pretty_targets = {
-  breakpad: 'third_party/breakpad:dump_sym',
-  chromedriver: 'electron:electron_chromedriver_zip',
-  electron: 'electron',
-  'electron:dist': 'electron:electron_dist_zip',
-  mksnapshot: 'electron:electron_mksnapshot_zip',
-  'node:headers': 'third_party/electron_node:headers',
-};
-
-if (program.listTargets) {
-  Object.keys(pretty_targets)
-    .sort()
-    .forEach(target => console.log(target));
-}
 
 try {
   const config = evmConfig.current();
+
+  const pretty_targets = {
+    breakpad: 'third_party/breakpad:dump_sym',
+    chromedriver: 'electron:electron_chromedriver_zip',
+    electron: 'electron',
+    'electron:dist': 'electron:electron_dist_zip',
+    mksnapshot: 'electron:electron_mksnapshot_zip',
+    'node:headers': 'third_party/electron_node:headers',
+    default: config.defaultTarget || 'electron',
+  };
+
+  if (program.listTargets) {
+    Object.keys(pretty_targets)
+      .sort()
+      .forEach(target => console.log(`${target} --> ${color.config(pretty_targets[target])}`));
+    return;
+  }
+
   if (program.gen) {
     runGNGen(config);
   }
 
   // collect all the unrecognized args that aren't a target
-  const pretty = Object.keys(pretty_targets).find(p => program.rawArgs.includes(p)) || 'electron';
+  const pretty = Object.keys(pretty_targets).find(p => program.rawArgs.includes(p)) || 'default';
   const args = program.parseOptions(process.argv).unknown;
   const index = args.indexOf(pretty);
   if (index != -1) {
     args.splice(index, 1);
   }
 
-  runNinja(config, pretty_targets[pretty], args);
+  runNinja(config, program.target || pretty_targets[pretty], args);
 } catch (e) {
   fatal(e);
 }
