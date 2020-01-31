@@ -96,6 +96,13 @@ case $line[1] in
     && ret=0
   ;;
 
+  # in 'e start' / 'e node',
+  # try file completion on remaining args
+  (start|run|node)
+    _path_files \
+    && ret=0
+  ;;
+
   (*)
     __e_get_cmd_subcommands e $line[1]
     __e_get_cmd_options e $line[1]
