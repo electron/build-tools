@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const childProcess = require('child_process');
+const open = require('open');
 const path = require('path');
 const program = require('commander');
 
@@ -158,6 +159,18 @@ program
       const config = evmConfig.current();
       const options = { env: { ...process.env, ...config.env }, stdio: 'inherit', cwd: goma.dir };
       childProcess.execFileSync('python', ['goma_ctl.py', 'stat'], options);
+    } catch (e) {
+      fatal(e);
+    }
+  });
+
+const gomaUrl = 'http://localhost:8088/';
+program
+  .command('goma')
+  .description(`Watch Goma at work at ${gomaUrl}`)
+  .action(async () => {
+    try {
+      await open(gomaUrl);
     } catch (e) {
       fatal(e);
     }
