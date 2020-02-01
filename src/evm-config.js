@@ -8,11 +8,10 @@ const { ensureDir } = require('./utils/paths');
 const goma = require('./utils/goma');
 
 const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
-const currentFile = path.resolve(configRoot, 'evm-current.txt');
-let sessionFile;
-if (process.env.EVM_SESSION_ID && !process.env.EVM_SESSION_ID.includes('.')) {
-  sessionFile = path.resolve(configRoot, 'sessions', process.env.EVM_SESSION_ID, 'evm-current.txt');
-}
+const currentFiles = _.compact([
+  process.env.EVM_CURRENT_FILE,
+  path.resolve(configRoot, 'evm-current.txt'),
+]);
 const preferredFormat = process.env.EVM_FORMAT || 'json'; // yaml yml json
 
 function buildPath(name, suffix) {
@@ -44,8 +43,7 @@ function save(name, o) {
 }
 
 function setCurrent(name) {
-  const filename = pathOf(name);
-  if (!fs.existsSync(filename)) {
+  if (!fs.existsSync(pathOf(name))) {
     throw Error(
       `Build config ${color.config(name)} not found. (Tried ${buildPathCandidates(name)
         .map(f => color.path(f))
@@ -53,12 +51,7 @@ function setCurrent(name) {
     );
   }
   try {
-    fs.mkdirSync(path.dirname(currentFile), { recursive: true });
-    fs.writeFileSync(currentFile, `${name}\n`);
-    if (sessionFile) {
-      fs.mkdirSync(path.dirname(sessionFile), { recursive: true });
-      fs.writeFileSync(sessionFile, `${name}\n`);
-    }
+    currentFiles.forEach(filename => fs.writeFileSync(filename, `${name}\n`));
   } catch (e) {
     throw Error(`Unable to set evm config ${color.config(name)} (${e})`);
   }
@@ -73,15 +66,18 @@ function names() {
 }
 
 function currentName() {
-  if (process.env.EVM_CURRENT) return process.env.EVM_CURRENT;
-  if (sessionFile && fs.existsSync(sessionFile))
-    return fs.readFileSync(sessionFile, { encoding: 'utf8' }).trim();
-
-  if (!fs.existsSync(currentFile)) throw Error('No current build configuration');
-  const current = fs.readFileSync(currentFile, { encoding: 'utf8' }).trim();
-  // If we fell back to the "current" file then we should set the sessionFile for future usage
-  if (sessionFile) setCurrent(current);
-  return current;
+  // return the contents of the first nonempty file in currentFiles
+  const name = currentFiles.reduce((name, filename) => {
+    try {
+      return name || fs.readFileSync(filename, { encoding: 'utf8' }).trim();
+    } catch (e) {
+      return;
+    }
+  }, null);
+  if (name) {
+    return name;
+  }
+  throw Error('No current build configuration');
 }
 
 function outDir(config) {
