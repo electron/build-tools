@@ -7,12 +7,16 @@ const { color } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
 const goma = require('./utils/goma');
 
+const preferredFormat = process.env.EVM_FORMAT || 'json'; // yaml yml json
 const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
+
+// If you want your shell sessions to each have different active configs,
+// try this in your ~/.profile or ~/.zshrc or ~/.bashrc:
+// export EVM_CURRENT_FILE="$(mktemp --tmpdir evm-current.XXXXXXXX.txt)"
 const currentFiles = _.compact([
   process.env.EVM_CURRENT_FILE,
   path.resolve(configRoot, 'evm-current.txt'),
 ]);
-const preferredFormat = process.env.EVM_FORMAT || 'json'; // yaml yml json
 
 function buildPath(name, suffix) {
   return path.resolve(configRoot, `evm.${name}.${suffix}`);
