@@ -74,14 +74,16 @@ function outDir(config) {
 }
 
 function execOf(config) {
+  const execName = (config.execName || 'electron').toLowerCase();
   const builddir = outDir(config);
   switch (os.type()) {
     case 'Linux':
-      return path.resolve(builddir, 'electron');
+      return path.resolve(builddir, execName);
     case 'Darwin':
-      return path.resolve(builddir, 'Electron.app', 'Contents', 'MacOS', 'Electron');
+      const upperExecName = execName[0].toUpperCase() + execName.slice(1);
+      return path.resolve(builddir, `${upperExecName}.app`, 'Contents', 'MacOS', upperExecName);
     default:
-      return path.resolve(builddir, 'electron.exe');
+      return path.resolve(builddir, `${execName}.exe`);
   }
 }
 
