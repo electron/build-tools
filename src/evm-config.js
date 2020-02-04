@@ -105,31 +105,33 @@ function loadConfigFileRaw(name) {
 }
 
 function sanitizeConfig(config) {
+  const configName = color.config(currentName());
+
   if (!['none', 'cluster', 'cache-only'].includes(config.goma)) {
     config.goma = 'cache-only';
     console.warn(
-      `${color.warn} Your evm config ${color.config(
-        currentName(),
-      )} does not define the ${color.config(
+      `${color.warn} Your evm config ${configName} does not define the ${color.config(
         'goma',
-      )} property as one of "none", "cluster" or "cache-only", we are defaulting to to ${color.config(
+      )} property as one of "none", "cluster" or "cache-only" - we are defaulting to ${color.config(
         'cache-only',
       )} for you`,
     );
   }
+
   if (
     config.goma !== 'none' &&
     (!config.gen || !config.gen.args || !config.gen.args.find(arg => arg.includes(goma.gnFilePath)))
   ) {
     config.gen.args.push(`import("${goma.gnFilePath}")`);
     console.warn(
-      `${color.warn} Your evm config ${color.config(
-        currentName(),
-      )} has goma enabled but did not include the goma gn file "${color.path(
+      `${
+        color.warn
+      } Your evm config ${configName} has goma enabled but did not include the goma gn file "${color.path(
         goma.gnFilePath,
-      )}" in the gen args. We've put it there for you`,
+      )}" in the gen args - we've put it there for you`,
     );
   }
+
   if (
     config.goma !== 'none' &&
     config.gen &&
@@ -138,13 +140,24 @@ function sanitizeConfig(config) {
   ) {
     config.gen.args = config.gen.args.filter(arg => !arg.includes('cc_wrapper'));
     console.warn(
-      `${color.warn} Your evm config ${color.config(
-        currentName(),
-      )} has goma enabled but also defines a ${color.config(
+      `${
+        color.warn
+      } Your evm config ${configName} has goma enabled but also defines a ${color.config(
         'cc_wrapper',
-      )} argument, we have removed it for you`,
+      )} argument - we have removed it for you`,
     );
   }
+
+  if (!config.env || !config.env.CHROMIUM_BUILDTOOLS_PATH) {
+    const toolsPath = path.resolve(config.root, 'src', 'buildtools');
+    config.env.CHROMIUM_BUILDTOOLS_PATH = toolsPath;
+    console.warn(
+      `${color.warn} Your evm config ${configName} has not defined ${color.config(
+        'CHROMIUM_BUILDTOOLS_PATH',
+      )} - we have added it for you`,
+    );
+  }
+
   return config;
 }
 
