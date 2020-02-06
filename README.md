@@ -299,7 +299,9 @@ Valid patch directories include:
 [platform-prerequisites]: https://electronjs.org/docs/development/build-instructions-gn#platform-prerequisites
 [sanitizers]: https://github.com/google/sanitizers
 
-## Per-Session Active Configs
+## Advanced Usage
+
+### Per-Session Active Configs
 
 If you want your shell sessions to each have different active configs, try this in your `~/.profile` or `~/.zshrc` or `~/.bashrc`:
 
