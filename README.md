@@ -298,3 +298,16 @@ Valid patch directories include:
 [nvm]: https://github.com/nvm-sh/nvm
 [platform-prerequisites]: https://electronjs.org/docs/development/build-instructions-gn#platform-prerequisites
 [sanitizers]: https://github.com/google/sanitizers
+
+## Advanced Usage
+
+### Per-Session Active Configs
+
+If you want your shell sessions to each have different active configs, try this in your `~/.profile` or `~/.zshrc` or `~/.bashrc`:
+
+```sh
+export EVM_CURRENT_FILE="$(mktemp --tmpdir evm-current.XXXXXXXX.txt)"
+```
+
+This will create per-shell temporary files in which he active config file can be changed with `e use`.
+
