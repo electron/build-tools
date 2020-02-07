@@ -164,16 +164,31 @@ If you're starting from scratch, this will (slowly) fetch all the source
 code. It's also useful after switching Electron branches to synchronize
 the rest of the sources to the versions needed by the new Electron branch.
 
-`e sync` is usually all you need. Any extra args are passed along to gclient,
-so for example `e sync -v` runs gclient verbosely.
+`e sync` is usually all you need. Any extra args are passed along to gclient itself.
 
 ```sh
 $ e show current
 master-testing
+
 $ e show root
 ~/src/electron
+
+$ e sync
+Running "gclient sync --with_branch_heads --with_tags" in '~/src/electron/src'
+[sync output omitted]
+```
+
+To make your output more verbose, you can add an increasing number of `-v`s. For example,
+
+```sh
+# basic verbosity
 $ e sync -v
 Running "gclient sync --with_branch_heads --with_tags -v" in '~/src/electron/src'
+[sync output omitted]
+
+# significant verbosity
+$ e sync -vvvv
+Running "gclient sync --with_branch_heads --with_tags -vvvv" in '~/src/electron/src'
 [sync output omitted]
 ```
 
@@ -213,7 +228,7 @@ As usual, any extra args are passed along to the executable. For example,
 
 Runs your local Electron build inside of [lldb][lldb] or [gdb][gdb].
 
-```
+```sh
 $ uname
 Linux
 $ e debug
@@ -221,9 +236,10 @@ Reading symbols from /home/yourname/electron/gn/master/src/out/Testing/electron.
 (gdb)
 ```
 
-```
+```sh
 $ uname
 Darwin
+
 $ e debug
 target create "/Users/yourname/electron-gn/src/out/Testing/Electron.app/Contents/MacOS/Electron"
 (lldb)
@@ -234,13 +250,17 @@ target create "/Users/yourname/electron-gn/src/out/Testing/Electron.app/Contents
 Starts the local Electron build's test runner. Any extra args are passed
 along to the runner.
 
-```
+```sh
 # run all tests
 e test
 
-# Run main process tests
+# run main process tests
 e test --runners=main
 ```
+
+Possible extra arguments to pass:
+* `--node` - Run Node.js' own tests with Electron in `RUN_AS_NODE` mode.
+* `--runners=<main|remote|native>` - The set of tests to run, can be either `main`, `remote`, or `native`.
 
 ## Getting Information
 
@@ -258,36 +278,52 @@ e test --runners=main
 
 Example usage:
 
-```
+```sh
 $ uname
 Darwin
+
 $ e show exe
 /Users/username/electron-gn-root/src/out/Testing/Electron.app/Contents/MacOS/Electron
 
 $ uname
 Linux
+
 $ e show exe
 /home/username/electron-gn-root/src/out/Testing/electron
+
 $ e show out
 Testing
+
 $ e show src
 /home/username/electron-gn-root/src/electron
-$ cd `e show src base`
-$ pwd
+
+$ cd `e show src base` && pwd
 /home/username/electron-gn-root/src/base
+
 $ ripgrep --t h TakeHeapSnapshot `e show src`
 ```
 
-### `e export-patches [patch-dir]`
+### `e patches [patch-dir]`
 
 Exports patches to the desired patch folder in Electron source tree.
 
-Valid patch directories include:
+Valid patch directories can include:
 
 * `node`
 * `v8`
 * `boringssl`
 * `chromium`
+* `perfetto`
+* `icu`
+
+| Command              | Source Directory                   | Patch Directory                   |
+|:---------------------|:-----------------------------------------------------------------------|
+| e patches node       | `src/third_party/electron_node`    | `src/electron/patches/node`       |
+| e patches chromium   | `src`                              | `src/electron/patches/chromium`   |
+| e patches boringssl  | `src/third_party/boringssl/src`    | `src/electron/patches/boringssl`  |
+| e patches v8         | `src/v8`                           | `src/electron/patches/v8`         |
+| e patches perfetto   | `src/third_party/perfetto`         | `src/electron/patches/perfetto`   |
+| e patches icu        | `src/third_party/icu`              | `src/electron/patches/icu`        |
 
 [depot-tools]: https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
 [gdb]: https://web.eecs.umich.edu/~sugih/pointers/summary.html
