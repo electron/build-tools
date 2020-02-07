@@ -7,9 +7,16 @@ const { color } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
 const goma = require('./utils/goma');
 
-const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
-const currentFile = path.resolve(configRoot, 'evm-current.txt');
 const preferredFormat = process.env.EVM_FORMAT || 'json'; // yaml yml json
+const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
+
+// If you want your shell sessions to each have different active configs,
+// try this in your ~/.profile or ~/.zshrc or ~/.bashrc:
+// export EVM_CURRENT_FILE="$(mktemp --tmpdir evm-current.XXXXXXXX.txt)"
+const currentFiles = _.compact([
+  process.env.EVM_CURRENT_FILE,
+  path.resolve(configRoot, 'evm-current.txt'),
+]);
 
 function buildPath(name, suffix) {
   return path.resolve(configRoot, `evm.${name}.${suffix}`);
@@ -40,8 +47,7 @@ function save(name, o) {
 }
 
 function setCurrent(name) {
-  const filename = pathOf(name);
-  if (!fs.existsSync(filename)) {
+  if (!fs.existsSync(pathOf(name))) {
     throw Error(
       `Build config ${color.config(name)} not found. (Tried ${buildPathCandidates(name)
         .map(f => color.path(f))
@@ -49,7 +55,7 @@ function setCurrent(name) {
     );
   }
   try {
-    fs.writeFileSync(currentFile, `${name}\n`);
+    currentFiles.forEach(filename => fs.writeFileSync(filename, `${name}\n`));
   } catch (e) {
     throw Error(`Unable to set evm config ${color.config(name)} (${e})`);
   }
@@ -64,9 +70,18 @@ function names() {
 }
 
 function currentName() {
-  if (process.env.EVM_CURRENT) return process.env.EVM_CURRENT;
-  if (!fs.existsSync(currentFile)) throw Error('No current build configuration');
-  return fs.readFileSync(currentFile, { encoding: 'utf8' }).trim();
+  // return the contents of the first nonempty file in currentFiles
+  const name = currentFiles.reduce((name, filename) => {
+    try {
+      return name || fs.readFileSync(filename, { encoding: 'utf8' }).trim();
+    } catch (e) {
+      return;
+    }
+  }, null);
+  if (name) {
+    return name;
+  }
+  throw Error('No current build configuration');
 }
 
 function outDir(config) {
