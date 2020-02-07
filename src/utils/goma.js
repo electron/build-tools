@@ -87,8 +87,6 @@ function downloadAndPrepareGoma() {
 function gomaIsAuthenticated() {
   if (!isSupportedPlatform) return false;
 
-  downloadAndPrepareGoma();
-
   const loggedInInfo = childProcess.execFileSync('python', ['goma_auth.py', 'info'], {
     cwd: gomaDir,
   });
