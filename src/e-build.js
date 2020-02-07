@@ -13,8 +13,9 @@ const goma = require('./utils/goma');
 function runGNGen(config) {
   depot.ensure();
 
+  const gnExec = os.platform() === 'win32' ? 'gn.bat' : 'gn';
   const gn_args = config.gen.args.join(' ').replace(/\"/g, '\\"'); // gn parses this part -- inner quotes must be escaped
-  const exec = `${path.resolve(depot.path, 'gn.py')} gen "out/${
+  const exec = `${path.resolve(depot.path, gnExec)} gen "out/${
     config.gen.out
   }" --args="${gn_args}"`;
   const opts = { cwd: path.resolve(config.root, 'src') };
