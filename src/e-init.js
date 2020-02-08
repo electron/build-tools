@@ -11,6 +11,7 @@ const { color, fatal } = require('./utils/logging');
 const { resolvePath, ensureDir } = require('./utils/paths');
 const goma = require('./utils/goma');
 const depot = require('./utils/depot-tools');
+const { checkGlobalGitConfig } = require('./utils/git');
 
 function getVSReleaseLine() {
   const exec = 'C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe';
@@ -185,6 +186,11 @@ try {
   // maybe authenticate with Goma
   if (config.goma === 'cluster') {
     goma.auth();
+  }
+
+  // Check global git settings that need to be enabled on Windows.
+  if (os.platform() === 'win32') {
+    checkGlobalGitConfig();
   }
 
   // (maybe) build Electron
