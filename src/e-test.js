@@ -7,6 +7,7 @@ const program = require('commander');
 
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
+const { ensureDir } = require('./utils/paths');
 
 function ensureNodeHeaders(config) {
   const src_dir = path.resolve(config.root, 'src');
@@ -30,6 +31,11 @@ function ensureNodeHeaders(config) {
     const opts = { stdio: 'inherit', encoding: 'utf8' };
     childProcess.execFileSync(exec, args, opts);
   }
+
+  if (process.platform === 'win32') {
+    ensureDir(path.resolve(node_headers_dir, 'Release'))
+    fs.copyFileSync(path.resolve(out_dir, 'electron.lib'), path.resolve(node_headers_dir, 'Release', 'node.lib'));
+  }
 }
 
 function runSpecRunner(config, script, runnerArgs) {
@@ -41,7 +47,9 @@ function runSpecRunner(config, script, runnerArgs) {
     cwd: path.resolve(config.root, 'src', 'electron'),
     env: {
       ELECTRON_OUT_DIR: config.gen.out,
+      npm_config_node_gyp: path.resolve(__dirname, '..', 'node_modules', 'node-gyp', 'bin', 'node-gyp'),
       ...process.env,
+      ...config.env,
     },
   };
   console.log(color.childExec(exec, args, opts));
