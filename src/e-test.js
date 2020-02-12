@@ -33,8 +33,11 @@ function ensureNodeHeaders(config) {
   }
 
   if (process.platform === 'win32') {
-    ensureDir(path.resolve(node_headers_dir, 'Release'))
-    fs.copyFileSync(path.resolve(out_dir, 'electron.lib'), path.resolve(node_headers_dir, 'Release', 'node.lib'));
+    ensureDir(path.resolve(node_headers_dir, 'Release'));
+    fs.copyFileSync(
+      path.resolve(out_dir, 'electron.lib'),
+      path.resolve(node_headers_dir, 'Release', 'node.lib'),
+    );
   }
 }
 
@@ -47,7 +50,14 @@ function runSpecRunner(config, script, runnerArgs) {
     cwd: path.resolve(config.root, 'src', 'electron'),
     env: {
       ELECTRON_OUT_DIR: config.gen.out,
-      npm_config_node_gyp: path.resolve(__dirname, '..', 'node_modules', 'node-gyp', 'bin', 'node-gyp'),
+      npm_config_node_gyp: path.resolve(
+        __dirname,
+        '..',
+        'node_modules',
+        'node-gyp',
+        'bin',
+        'node-gyp',
+      ),
       ...process.env,
       ...config.env,
     },
