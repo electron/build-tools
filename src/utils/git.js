@@ -1,7 +1,7 @@
 const cp = require('child_process');
 
 function checkGlobalGitConfig() {
-  const { stdout: fileMode } = cp.spawnSync('git', ['config', '--global', 'user.name']);
+  const { stdout: fileMode } = cp.spawnSync('git', ['config', '--global', 'core.filemode']);
 
   if (fileMode.toString().trim() !== 'false') {
     throw new Error('git config --global core.filemode must be set to false.');
