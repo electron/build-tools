@@ -1,5 +1,6 @@
 const childProcess = require('child_process');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 // for `rm -rf`'ing the sandbox tmpdir
@@ -16,7 +17,7 @@ function runSync(args, options) {
   // jest doesn't directly support coverage of exec'ed scripts,
   // but this workaround of invoking nyc in spawn gets the job done.
   // https://github.com/facebook/jest/issues/3190#issuecomment-354758036
-  const spawnCmd = 'nyc';
+  const spawnCmd = os.platform() === 'win32' ? 'nyc.cmd' : 'nyc';
   const spawnArgs = ['--reporter', 'none', 'node'];
   const debug = false;
 
