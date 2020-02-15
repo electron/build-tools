@@ -317,7 +317,7 @@ Valid patch directories can include:
 * `icu`
 
 | Command              | Source Directory                   | Patch Directory                   |
-|:---------------------|:-----------------------------------------------------------------------|
+|:---------------------|:-----------------------------------|:----------------------------------|
 | e patches node       | `src/third_party/electron_node`    | `src/electron/patches/node`       |
 | e patches chromium   | `src`                              | `src/electron/patches/chromium`   |
 | e patches boringssl  | `src/third_party/boringssl/src`    | `src/electron/patches/boringssl`  |
