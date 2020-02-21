@@ -14,7 +14,9 @@ with `yarn`, so we also recommend you [install it to your system](https://yarnpk
 From here, you'll need a command-line prompt. On Mac and Linux, this will
 be a terminal with a shell, e.g. bash or zsh. You can also use these on
 Windows if you install them, or use built-in tools like Windows'
-[Command Prompt](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/windows-commands#command-shell-overview) or [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/getting-started/getting-started-with-windows-powershell?view=powershell-6).
+[Command Prompt](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/windows-commands#command-shell-overview).
+
+Please note that `build-tools` (due to nested dependencies) might not work properly in powershell, please use `cmd` on Windows for optimum results.
 
 Once they're installed, clone a copy of `build-tools`
 and add it to your path:
@@ -33,10 +35,6 @@ export PATH="$PATH:/path/to/build-tools/src"
 # then, if in Windows' Command Prompt:
 cd src
 set PATH=%CD%;%PATH%
-
-# then, if in Windows PowerShell:
-cd src
-$Env:Path += ";$(pwd)"
 ```
 
 ## Getting the Code and Building Electron
