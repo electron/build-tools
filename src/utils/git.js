@@ -18,7 +18,7 @@ function checkGlobalGitConfig() {
     'branch.autosetuprebase',
   ]);
   if (autoSetupRebase.toString().trim() !== 'always') {
-    throw new Error('git config --global branch.autosetuprebase must be set to false.');
+    throw new Error('git config --global branch.autosetuprebase must be set to always.');
   }
 }
 
