@@ -152,6 +152,11 @@ if (options.import && !options.out) {
 }
 
 try {
+  // Check global git settings that need to be enabled on Windows.
+  if (os.platform() === 'win32') {
+    checkGlobalGitConfig();
+  }
+
   // make sure the config name is new
   const filename = evmConfig.pathOf(name);
   if (!options.force && fs.existsSync(filename)) {
@@ -186,11 +191,6 @@ try {
   // maybe authenticate with Goma
   if (config.goma === 'cluster') {
     goma.auth();
-  }
-
-  // Check global git settings that need to be enabled on Windows.
-  if (os.platform() === 'win32') {
-    checkGlobalGitConfig();
   }
 
   // (maybe) build Electron
