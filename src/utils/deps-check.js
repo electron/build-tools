@@ -6,9 +6,10 @@ const { whichAndFix } = require('./which');
 
 const spawnSyncWithLog = (cmd, args) => {
   console.log(color.childExec(cmd, args, {}));
-  return cp.spawnSync(cmd, args, {
-    stdio: 'inherit',
-  });
+  const result = cp.spawnSync(cmd, args);
+  if (result.status !== 0) {
+    throw new Error(`Failed to run "${cmd} ${args.join(' ')}"`);
+  }
 };
 
 const deps = {
@@ -16,7 +17,7 @@ const deps = {
     {
       cmd: 'python',
       fix: () => {
-        spawnSyncWithLog('choco', ['install', 'python2']);
+        spawnSyncWithLog('choco', ['install', 'python2', '--yes']);
       },
       deps: ['choco'],
     },
