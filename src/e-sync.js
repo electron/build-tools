@@ -31,7 +31,9 @@ function runGClientSync(config, syncArgs) {
 
   const exec = 'python';
   const args = ['gclient.py', 'sync', '--with_branch_heads', '--with_tags', ...syncArgs];
-  const opts = { cwd: srcdir };
+  const opts = {
+    cwd: srcdir,
+  };
   depot.execFileSync(config, exec, args, opts);
   setOrigin(path.resolve(srcdir, 'electron'), config.origin.electron);
   setOrigin(path.resolve(srcdir, 'third_party', 'electron_node'), config.origin.node);
