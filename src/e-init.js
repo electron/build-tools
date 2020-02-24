@@ -13,13 +13,6 @@ const goma = require('./utils/goma');
 const depot = require('./utils/depot-tools');
 const { checkGlobalGitConfig } = require('./utils/git');
 
-function getVSReleaseLine() {
-  const exec = 'C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe';
-  const args = ['-latest', '-property', 'catalog_productLineVersion'];
-  const opts = { encoding: 'utf8' };
-  return childProcess.execFileSync(exec, args, opts).trim();
-}
-
 function createConfig(options) {
   const root = resolvePath(options.root);
   const homedir = os.homedir();
@@ -35,13 +28,6 @@ function createConfig(options) {
   if (options.lsan) gn_args.push('is_lsan=true');
   if (options.msan) gn_args.push('is_msan=true');
   if (options.tsan) gn_args.push('is_tsan=true');
-
-  // os-specific environment variables
-  const platform_env = {};
-  if (os.platform() === 'win32') {
-    platform_env.DEPOT_TOOLS_WIN_TOOLCHAIN = '0';
-    platform_env.GYP_MSVS_VERSION = getVSReleaseLine();
-  }
 
   return {
     goma: options.goma,
@@ -63,7 +49,6 @@ function createConfig(options) {
       GIT_CACHE_PATH: process.env.GIT_CACHE_PATH
         ? resolvePath(process.env.GIT_CACHE_PATH)
         : path.resolve(homedir, '.git_cache'),
-      ...platform_env,
     },
   };
 }

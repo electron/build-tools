@@ -54,6 +54,11 @@ function depotOpts(config, opts = {}) {
     PYTHONDONTWRITEBYTECODE: '1', // depot needs it
     DEPOT_TOOLS_METRICS: '0', // disable depot metrics
     ...process.env,
+    DEPOT_TOOLS_WIN_TOOLCHAIN: '1',
+    DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL:
+      'https://electron-build-tools.s3-us-west-2.amazonaws.com/win32/toolchains/_',
+    GYP_MSVS_HASH_9ff60e43ba91947baca460d0ca3b1b980c3a2c23:
+      '6d205e765a23d3cbe0fcc8d1191ae406d8bf9c04',
     ...config.env,
     ...opts.env,
   };
