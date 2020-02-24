@@ -29,7 +29,8 @@ function ensureGNGen(config) {
   if (!fs.existsSync(argsFile)) return runGNGen(config);
   const contents = fs.readFileSync(argsFile, 'utf8');
   // If the current args do not match the args file, re-run gen
-  if (contents.trim() !== config.gen.args.join('\n').trim()) return runGNGen(config);
+  if (contents.trim() !== config.gen.args.join(process.platform === 'win32' ? '\r\n' : '\n').trim())
+    return runGNGen(config);
 }
 
 function runNinja(config, target, ninjaArgs) {
