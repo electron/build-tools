@@ -12,7 +12,9 @@ const deps = {
   win32: [
     {
       cmd: 'python',
-      fix: () => {},
+      fix: () => {
+        spawnSyncWithLog('choco', ['install', 'python2']);
+      },
       deps: ['choco'],
     },
     {
