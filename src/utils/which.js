@@ -5,6 +5,7 @@ const { refreshPathVariable } = require('./refresh-path');
 
 const whichAndFix = (cmd, check, fix) => {
   const found = check ? check() : !!which(cmd, { nothrow: true });
+  console.log(cmd, check, fix, found);
   if (!found) {
     maybeAutoFix(
       fix,
