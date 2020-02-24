@@ -44,6 +44,9 @@ const deps = {
 };
 
 const checkPlatformDependencies = () => {
+  // Use latest PATH variable when searching for deps
+  refreshPathVariable();
+
   if (!deps[process.platform]) return;
   let depsToResolve = deps[process.platform];
   let previousLength = depsToResolve.length;
