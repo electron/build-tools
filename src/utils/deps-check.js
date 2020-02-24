@@ -36,7 +36,7 @@ const deps = {
         return cp.spawnSync('python', ['-c', 'import win32process']).status === 0;
       },
       fix: () => {
-        spawnSyncWithLog('choco', ['install', 'python2', '--yes']);
+        spawnSyncWithLog('choco', ['install', 'pywin32', '--yes']);
       },
       deps: ['choco'],
     },
