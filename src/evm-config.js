@@ -62,6 +62,7 @@ function setCurrent(name) {
 }
 
 function names() {
+  if (!fs.existsSync(configRoot)) return [];
   return fs
     .readdirSync(configRoot)
     .map(filename => filenameToConfigName(filename))
