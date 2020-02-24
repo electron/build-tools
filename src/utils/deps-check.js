@@ -15,13 +15,6 @@ const spawnSyncWithLog = (cmd, args) => {
 const deps = {
   win32: [
     {
-      cmd: 'python',
-      fix: () => {
-        spawnSyncWithLog('choco', ['install', 'python2', '--yes']);
-      },
-      deps: ['choco'],
-    },
-    {
       cmd: 'choco',
       fix: () => {
         spawnSyncWithLog('powershell', [
@@ -29,6 +22,23 @@ const deps = {
           "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))",
         ]);
       },
+    },
+    {
+      cmd: 'python',
+      fix: () => {
+        spawnSyncWithLog('choco', ['install', 'python2', '--yes']);
+      },
+      deps: ['choco'],
+    },
+    {
+      cmd: 'pywin32',
+      check: () => {
+        return cp.spawnSync('python', ['-c', 'import win32process']).status === 0;
+      },
+      fix: () => {
+        spawnSyncWithLog('choco', ['install', 'python2', '--yes']);
+      },
+      deps: ['choco'],
     },
   ],
 };
@@ -48,7 +58,7 @@ const checkPlatformDependencies = () => {
         newDeps.push(dep);
         continue;
       }
-      whichAndFix(dep.cmd, dep.fix);
+      whichAndFix(dep.cmd, dep.check, dep.fix);
       for (const oDep of depsToResolve) {
         if (oDep === dep) continue;
         if (oDep.deps) {

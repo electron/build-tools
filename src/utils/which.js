@@ -3,8 +3,8 @@ const which = require('which').sync;
 const { maybeAutoFix } = require('./maybe-auto-fix');
 const { refreshPathVariable } = require('./refresh-path');
 
-const whichAndFix = (cmd, fix) => {
-  const found = !!which(cmd, { nothrow: true });
+const whichAndFix = (cmd, check, fix) => {
+  const found = check ? check() : !!which(cmd, { nothrow: true });
   if (!found) {
     maybeAutoFix(
       fix,
@@ -15,7 +15,7 @@ const whichAndFix = (cmd, fix) => {
 
     refreshPathVariable();
 
-    if (!which(cmd, { nothrow: true })) {
+    if (!(check ? check() : which(cmd, { nothrow: true }))) {
       throw new Error(
         `A required dependency "${cmd}" could not be located and we could not install it for some reason, it probably has to be installed manually.`,
       );
