@@ -1,6 +1,7 @@
 const cp = require('child_process');
 
 const { color } = require('./logging');
+const { refreshPathVariable } = require('./refresh-path');
 const { whichAndFix } = require('./which');
 
 const spawnSyncWithLog = (cmd, args) => {
@@ -30,6 +31,9 @@ const deps = {
 };
 
 const checkPlatformDependencies = () => {
+  // Refresh the PATH variable at the top of this shell so that retries in the same shell get the latest PATH variable
+  refreshPathVariable();
+
   if (!deps[process.platform]) return;
   let depsToResolve = deps[process.platform];
   let previousLength = depsToResolve.length;
