@@ -6,7 +6,9 @@ const { whichAndFix } = require('./which');
 
 const spawnSyncWithLog = (cmd, args) => {
   console.log(color.childExec(cmd, args, {}));
-  return cp.spawnSync(cmd, args);
+  return cp.spawnSync(cmd, args, {
+    stdio: 'inherit',
+  });
 };
 
 const deps = {
