@@ -50,7 +50,7 @@ for (const sdk of SDK_TO_LINK) {
     )}`,
   );
 
-  childProcess.execFileSync('sudo', ['ln', '-s', sourceSDK, targetDirectory]);
+  childProcess.execFileSync('ln', ['-s', sourceSDK, targetDirectory]);
 }
 
 // Unlink unnecessary macOS SDKs.
@@ -78,7 +78,9 @@ for (const sdk of SDK_TO_UNLINK) {
 
 const output = childProcess.execFileSync('xcode-select', ['-p']).toString();
 if (!output.trim().startsWith(Xcode.XcodePath)) {
-  console.info(`Setting your Xcode installation to ${color.path(Xcode.XcodePath)}`);
+  console.info(
+    `Setting your Xcode installation to ${color.path(Xcode.XcodePath)}, this will require sudo`,
+  );
   childProcess.execFileSync('sudo', ['xcode-select', '-s', Xcode.XcodePath]);
 }
 
