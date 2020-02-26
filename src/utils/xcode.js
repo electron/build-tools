@@ -4,12 +4,13 @@ const path = require('path');
 const rimraf = require('rimraf');
 const { ensureDir } = require('./paths');
 
-const { color } = require('./logging')
+const { color } = require('./logging');
 
 const XcodeDir = path.resolve(__dirname, '..', '..', 'third_party', 'Xcode');
 const XcodePath = path.resolve(XcodeDir, 'Xcode.app');
 const XcodeZip = path.resolve(XcodeDir, 'Xcode.zip');
-const XcodeURL = 'https://electron-build-tools.s3-us-west-2.amazonaws.com/macos/Xcode-10.3.zip';
+const XcodeURL = `${process.env.ELECTRON_BUILD_TOOLS_MIRROR ||
+  'https://electron-build-tools.s3-us-west-2.amazonaws.com'}/macos/Xcode-10.3.zip`;
 
 const expectedXcodeHash = '51acff28efa4742c86962b93f8fab9f2';
 
@@ -39,10 +40,11 @@ function ensureXcode() {
       );
     }
 
+    console.log(`Extracting ${color.cmd(XcodeZip)} into ${color.path(XcodePath)}`);
     const unzipPath = path.resolve(XcodeDir, 'tmp_unzip');
     rimraf.sync(unzipPath);
-    childProcess.spawnSync('unzip', ['-o', XcodeZip, '-d', unzipPath, '-q'], {
-      stdio: 'ignore'
+    childProcess.spawnSync('unzip', ['-q', '-o', XcodeZip, '-d', unzipPath], {
+      stdio: 'inherit',
     });
 
     fs.renameSync(path.resolve(unzipPath, 'Xcode.app'), XcodePath);
