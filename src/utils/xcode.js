@@ -10,23 +10,39 @@ const XcodeDir = path.resolve(__dirname, '..', '..', 'third_party', 'Xcode');
 const XcodePath = path.resolve(XcodeDir, 'Xcode.app');
 const XcodeZip = path.resolve(XcodeDir, 'Xcode.zip');
 const XcodeURL = `${process.env.ELECTRON_BUILD_TOOLS_MIRROR ||
-  'https://electron-build-tools.s3-us-west-2.amazonaws.com'}/macos/Xcode-10.3.zip`;
+  'https://electron-build-tools.s3-us-west-2.amazonaws.com'}/macos/Xcode-11.1.zip`;
+const EXPECTED_XCODE_VERSION = '11.1';
 
-const expectedXcodeHash = '51acff28efa4742c86962b93f8fab9f2';
+const expectedXcodeHash = 'f24c258035ed1513afc96eaa9a2500c0';
+
+function getXcodeVersion() {
+  const result = childProcess.spawnSync('defaults', [
+    'read',
+    path.resolve(XcodePath, 'Contents', 'Info.plist'),
+    'CFBundleShortVersionString',
+  ]);
+  if (result.status === 0) {
+    return result.stdout.toString().trim();
+  }
+  return 'unknown';
+}
 
 function ensureXcode() {
-  if (!fs.existsSync(XcodePath)) {
+  if (!fs.existsSync(XcodePath) || getXcodeVersion() !== EXPECTED_XCODE_VERSION) {
     ensureDir(XcodeDir);
     let shouldDownload = true;
     if (fs.existsSync(XcodeZip)) {
       const existingHash = hashFile(XcodeZip);
-      if (existingHash === expectedXcodeHash) shouldDownload = false;
-      else
+      if (existingHash === expectedXcodeHash) {
+        shouldDownload = false;
+      } else {
         console.log(
           `${color.warn} Got existing hash ${color.cmd(
             existingHash,
           )} which did not match ${color.cmd(expectedXcodeHash)} so redownloading Xcode`,
         );
+        rimraf.sync(XcodeZip);
+      }
     }
 
     if (shouldDownload) {
@@ -47,6 +63,16 @@ function ensureXcode() {
       stdio: 'inherit',
     });
 
+    // We keep the old Xcode around to avoid redownloading incase we ever want
+    // build-tools to support hot-switching of Xcode versions
+    if (fs.existsSync(XcodePath)) {
+      const versionedXcode = path.resolve(XcodeDir, `Xcode-${getXcodeVersion()}.app`);
+      if (!fs.existsSync(versionedXcode)) {
+        fs.renameSync(XcodePath, versionedXcode);
+      } else {
+        rimraf.sync(XcodePath);
+      }
+    }
     fs.renameSync(path.resolve(unzipPath, 'Xcode.app'), XcodePath);
     rimraf.sync(XcodeZip);
     rimraf.sync(unzipPath);
@@ -56,7 +82,7 @@ function ensureXcode() {
 function hashFile(file) {
   console.log(`Calculating hash for ${color.path(file)}`);
   return childProcess
-    .spawnSync(process.execPath, [path.resolve(__dirname, 'hash.js'), file])
+    .spawnSync('md5', ['-q', file])
     .stdout.toString()
     .trim();
 }
