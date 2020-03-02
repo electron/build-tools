@@ -84,4 +84,4 @@ if (!output.trim().startsWith(Xcode.XcodePath)) {
   childProcess.execFileSync('sudo', ['xcode-select', '-s', Xcode.XcodePath]);
 }
 
-console.log(color.done);
+if (!process.argv.includes('--quiet')) console.log(color.done);

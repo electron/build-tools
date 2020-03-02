@@ -73,7 +73,11 @@ function depotExecSync(config, cmd, opts_in) {
 
 function depotSpawnSync(config, cmd, args, opts_in) {
   const opts = depotOpts(config, opts_in);
-  console.log(color.childExec(cmd, args, opts));
+  if (opts_in.msg) {
+    console.log(opts_in.msg);
+  } else {
+    console.log(color.childExec(cmd, args, opts));
+  }
   return childProcess.spawnSync(cmd, args, opts);
 }
 

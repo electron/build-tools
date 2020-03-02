@@ -91,6 +91,13 @@ try {
     return;
   }
 
+  if (process.platform === 'darwin') {
+    depot.spawnSync(config, 'node', [path.resolve(__dirname, 'e-load-xcode.js'), '--quiet'], {
+      stdio: 'inherit',
+      msg: `Running ${color.cmd('e load-xcode --quiet')}`,
+    });
+  }
+
   if (program.gen) {
     runGNGen(config);
   }
