@@ -1,12 +1,35 @@
 #!/usr/bin/env node
 
 const childProcess = require('child_process');
+const fs = require('fs');
 const program = require('commander');
+const path = require('path');
 
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
+
+const updateCheckTSFile = path.resolve(__dirname, '..', '.update');
+const lastCheck = fs.existsSync(updateCheckTSFile)
+  ? parseInt(fs.readFileSync(updateCheckTSFile, 'utf8'), 10)
+  : 0;
+if (isNaN(lastCheck) || Date.now() - lastCheck > 1000 * 60 * 60 * 4) {
+  childProcess.spawnSync(process.execPath, ['e-check-for-updates.js'], {
+    cwd: __dirname,
+    stdio: 'inherit',
+  });
+  fs.writeFileSync(updateCheckTSFile, `${Date.now()}`);
+  const result = childProcess.spawnSync(
+    process.execPath,
+    process.argv[0] === process.execPath ? process.argv.slice(1) : process.argv,
+    {
+      cwd: process.cwd(),
+      stdio: 'inherit',
+    },
+  );
+  process.exit(result.status);
+}
 
 program.description('Electron build tool').usage('<command> [commandArgs...]');
 
@@ -90,7 +113,8 @@ program
   .command(
     'load-xcode',
     'Loads required versions of Xcode and the macOS SDK and symlinks them.  This may require sudo',
-  );
+  )
+  .command('check-for-updates', 'a');
 
 program
   .command('depot-tools')
