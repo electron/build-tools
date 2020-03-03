@@ -3,17 +3,32 @@ const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
 const { ensureDir } = require('./paths');
+const evmConfig = require('../evm-config');
 
 const { color } = require('./logging');
 
 const XcodeDir = path.resolve(__dirname, '..', '..', 'third_party', 'Xcode');
 const XcodePath = path.resolve(XcodeDir, 'Xcode.app');
 const XcodeZip = path.resolve(XcodeDir, 'Xcode.zip');
-const XcodeURL = `${process.env.ELECTRON_BUILD_TOOLS_MIRROR ||
-  'https://electron-build-tools.s3-us-west-2.amazonaws.com'}/macos/Xcode-11.1.zip`;
-const EXPECTED_XCODE_VERSION = '11.1';
+const XcodeBaseURL = `${process.env.ELECTRON_BUILD_TOOLS_MIRROR ||
+  'https://electron-build-tools.s3-us-west-2.amazonaws.com'}/macos/`;
 
-const expectedXcodeHash = 'f24c258035ed1513afc96eaa9a2500c0';
+const XcodeVersions = {
+  '9.4.1': {
+    fileName: 'Xcode-9.4.1.zip',
+    md5: '84be26baae0ce613e64306e0c39162ae',
+  },
+  '11.1.0': {
+    fileName: 'Xcode-11.1.zip',
+    md5: 'f24c258035ed1513afc96eaa9a2500c0',
+  },
+  '10.3.0': {
+    fileName: 'Xcode-10.3.0.zip',
+    md5: 'df587e65d9243fc87b22db617e23c376',
+  },
+};
+
+const fallbackXcode = '11.1.0';
 
 function getXcodeVersion() {
   const result = childProcess.spawnSync('defaults', [
@@ -22,61 +37,129 @@ function getXcodeVersion() {
     'CFBundleShortVersionString',
   ]);
   if (result.status === 0) {
-    return result.stdout.toString().trim();
+    const v = result.stdout.toString().trim();
+    if (v.split('.').length === 2) return `${v}.0`;
+    return v;
   }
   return 'unknown';
 }
 
+function expectedXcodeVersion() {
+  const { root } = evmConfig.current();
+  const yaml = path.resolve(root, 'src', 'electron', '.circleci', 'config.yml');
+  const match = /xcode: "(.+?)"/.exec(fs.readFileSync(yaml, 'utf8'));
+  if (!match) {
+    console.warn(
+      color.warn,
+      'failed to automatically identify the required version of Xcode, falling back to default of',
+      fallbackXcode,
+    );
+    return fallbackXcode;
+  }
+  const version = match[1].trim();
+  if (!XcodeVersions[version]) {
+    console.warn(
+      color.warn,
+      `automatically detected an unkown version of Xcode ${color.path(
+        version,
+      )}, falling back to default of`,
+      fallbackXcode,
+    );
+    return fallbackXcode;
+  }
+  return version;
+}
+
+function fixBadVersioned103() {
+  const bad = path.resolve(XcodeDir, `Xcode-10.3.app`);
+  const good = path.resolve(XcodeDir, `Xcode-10.3.0.app`);
+  if (fs.existsSync(bad)) {
+    if (fs.existsSync(good)) {
+      rimraf.sync(bad);
+    } else {
+      fs.renameSync(bad, good);
+    }
+  }
+}
+
 function ensureXcode() {
-  if (!fs.existsSync(XcodePath) || getXcodeVersion() !== EXPECTED_XCODE_VERSION) {
+  const expected = expectedXcodeVersion();
+  fixBadVersioned103();
+
+  if (!fs.existsSync(XcodePath) || getXcodeVersion() !== expected) {
     ensureDir(XcodeDir);
     let shouldDownload = true;
-    if (fs.existsSync(XcodeZip)) {
-      const existingHash = hashFile(XcodeZip);
-      if (existingHash === expectedXcodeHash) {
-        shouldDownload = false;
-      } else {
-        console.log(
-          `${color.warn} Got existing hash ${color.cmd(
-            existingHash,
-          )} which did not match ${color.cmd(expectedXcodeHash)} so redownloading Xcode`,
-        );
-        rimraf.sync(XcodeZip);
+    const expectedXcodeHash = XcodeVersions[expected].md5;
+    const eventualVersionedPath = path.resolve(XcodeDir, `Xcode-${expected}.app`);
+
+    if (fs.existsSync(eventualVersionedPath)) {
+      shouldDownload = false;
+    } else {
+      if (fs.existsSync(XcodeZip)) {
+        const existingHash = hashFile(XcodeZip);
+        if (existingHash === expectedXcodeHash) {
+          shouldDownload = false;
+        } else {
+          console.log(
+            `${color.warn} Got existing hash ${color.cmd(
+              existingHash,
+            )} which did not match ${color.cmd(expectedXcodeHash)} so redownloading Xcode`,
+          );
+          rimraf.sync(XcodeZip);
+        }
       }
-    }
 
-    if (shouldDownload) {
-      console.log(`Downloading ${color.cmd(XcodeURL)} into ${color.path(XcodeZip)}`);
-      childProcess.spawnSync(
-        process.execPath,
-        [path.resolve(__dirname, '..', 'download.js'), XcodeURL, XcodeZip],
-        {
-          stdio: 'inherit',
-        },
-      );
-    }
+      if (shouldDownload) {
+        const XcodeURL = `${XcodeBaseURL}${XcodeVersions[expected].fileName}`;
+        console.log(`Downloading ${color.cmd(XcodeURL)} into ${color.path(XcodeZip)}`);
+        childProcess.spawnSync(
+          process.execPath,
+          [path.resolve(__dirname, '..', 'download.js'), XcodeURL, XcodeZip],
+          {
+            stdio: 'inherit',
+          },
+        );
 
-    console.log(`Extracting ${color.cmd(XcodeZip)} into ${color.path(XcodePath)}`);
-    const unzipPath = path.resolve(XcodeDir, 'tmp_unzip');
-    rimraf.sync(unzipPath);
-    childProcess.spawnSync('unzip', ['-q', '-o', XcodeZip, '-d', unzipPath], {
-      stdio: 'inherit',
-    });
+        const newHash = hashFile(XcodeZip);
+        if (newHash !== expectedXcodeHash) {
+          rimraf.sync(XcodeZip);
+          throw new Error(
+            `Downloaded Xcode zip had hash "${newHash}" which does not match expected hash "${expectedXcodeHash}"`,
+          );
+        }
+      }
+
+      console.log(`Extracting ${color.cmd(XcodeZip)} into ${color.path(eventualVersionedPath)}`);
+      const unzipPath = path.resolve(XcodeDir, 'tmp_unzip');
+      rimraf.sync(unzipPath);
+      childProcess.spawnSync('unzip', ['-q', '-o', XcodeZip, '-d', unzipPath], {
+        stdio: 'inherit',
+      });
+
+      fs.renameSync(path.resolve(unzipPath, 'Xcode.app'), eventualVersionedPath);
+      rimraf.sync(XcodeZip);
+      rimraf.sync(unzipPath);
+    }
 
     // We keep the old Xcode around to avoid redownloading incase we ever want
     // build-tools to support hot-switching of Xcode versions
     if (fs.existsSync(XcodePath)) {
-      const versionedXcode = path.resolve(XcodeDir, `Xcode-${getXcodeVersion()}.app`);
-      if (!fs.existsSync(versionedXcode)) {
-        fs.renameSync(XcodePath, versionedXcode);
+      if (fs.statSync(XcodePath).isSymbolicLink()) {
+        fs.unlinkSync(XcodePath);
       } else {
-        rimraf.sync(XcodePath);
+        const versionedXcode = path.resolve(XcodeDir, `Xcode-${getXcodeVersion()}.app`);
+        if (!fs.existsSync(versionedXcode)) {
+          fs.renameSync(XcodePath, versionedXcode);
+        } else {
+          rimraf.sync(XcodePath);
+        }
       }
     }
-    fs.renameSync(path.resolve(unzipPath, 'Xcode.app'), XcodePath);
-    rimraf.sync(XcodeZip);
-    rimraf.sync(unzipPath);
+
+    console.log(`Updating active Xcode version to ${color.path(expected)}`);
+    fs.symlinkSync(eventualVersionedPath, XcodePath);
   }
+  rimraf.sync(XcodeZip);
 }
 
 function hashFile(file) {

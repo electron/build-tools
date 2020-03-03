@@ -92,10 +92,16 @@ try {
   }
 
   if (process.platform === 'darwin') {
-    depot.spawnSync(config, 'node', [path.resolve(__dirname, 'e-load-xcode.js'), '--quiet'], {
-      stdio: 'inherit',
-      msg: `Running ${color.cmd('e load-xcode --quiet')}`,
-    });
+    const result = depot.spawnSync(
+      config,
+      'node',
+      [path.resolve(__dirname, 'e-load-xcode.js'), '--quiet'],
+      {
+        stdio: 'inherit',
+        msg: `Running ${color.cmd('e load-xcode --quiet')}`,
+      },
+    );
+    if (result.status !== 0) process.exit(result.status);
   }
 
   if (program.gen) {
