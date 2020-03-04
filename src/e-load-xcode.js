@@ -5,7 +5,6 @@ const fs = require('fs');
 const path = require('path');
 
 const { color } = require('./utils/logging');
-const macOSSDKs = require('./utils/macos-sdks');
 const Xcode = require('./utils/xcode');
 
 if (process.platform !== 'darwin') {
@@ -31,10 +30,7 @@ if (out.status !== 0 && out.stderr.toString().includes('xcodebuild')) {
   childProcess.execFileSync('sudo', ['xcodebuild', '-license', 'accept']);
 }
 
-macOSSDKs.ensure();
-
-const SDK_TO_LINK = ['10.15'];
-const SDK_TO_UNLINK = ['10.12', '10.13', '10.14'];
+const SDK_TO_UNLINK = ['10.12', '10.13', '10.14', '10.15'];
 
 const xCodeSDKDir = path.resolve(
   Xcode.XcodePath,
@@ -51,31 +47,8 @@ if (!fs.existsSync(xCodeSDKDir)) {
   process.exit(1);
 }
 
-// Link necessary macOS SDKs.
-for (const sdk of SDK_TO_LINK) {
-  // Ensure that source SDK doesn't already exist.
-  const sourceSDK = path.resolve(macOSSDKs.path, `MacOSX${sdk}.sdk`);
-  if (!fs.existsSync(sourceSDK)) continue;
-
-  // Ensure that target doesn't already exist.
-  const targetDirectory = path.resolve(xCodeSDKDir, `MacOSX${sdk}.sdk`);
-  if (fs.existsSync(targetDirectory)) continue;
-
-  console.warn(
-    `${color.info} Creating a symbolic link from ${color.path(sourceSDK)} --> ${color.path(
-      targetDirectory,
-    )}`,
-  );
-
-  childProcess.execFileSync('ln', ['-s', sourceSDK, targetDirectory]);
-}
-
-// Unlink unnecessary macOS SDKs.
+// Unlink unnecessary macOS SDKs that we have linked in the past
 for (const sdk of SDK_TO_UNLINK) {
-  // Check that source SDK exists.
-  const sourceSDK = path.resolve(macOSSDKs.path, `MacOSX${sdk}.sdk`);
-  if (!fs.existsSync(sourceSDK)) continue;
-
   // Check that target exists.
   const targetDirectory = path.resolve(xCodeSDKDir, `MacOSX${sdk}.sdk`);
   if (!fs.existsSync(targetDirectory)) continue;
@@ -84,11 +57,11 @@ for (const sdk of SDK_TO_UNLINK) {
   const stats = fs.lstatSync(targetDirectory);
   if (!stats.isSymbolicLink()) return;
 
-  console.warn(
-    `${color.info} Removing symbolic link from ${color.path(sourceSDK)} --> ${color.path(
-      targetDirectory,
-    )}`,
-  );
+  // Check if the link is to the default SDK that we should have
+  if (fs.realpathSync(targetDirectory) === fs.realpathSync(path.resolve(xCodeSDKDir, 'MacOSX.sdk')))
+    return;
+
+  console.warn(`${color.info} Removing symbolic link ${color.path(targetDirectory)}`);
 
   childProcess.execFileSync('unlink', [targetDirectory]);
 }
