@@ -56,7 +56,7 @@ function runSpecRunner(config, script, runnerArgs) {
         'node_modules',
         'node-gyp',
         'bin',
-        'node-gyp',
+        'node-gyp.js',
       ),
       ...process.env,
       ...config.env,
