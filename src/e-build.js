@@ -40,13 +40,26 @@ function runNinja(config, target, ninjaArgs) {
     if (config.goma === 'cluster') {
       const authenticated = goma.isAuthenticated(config.root);
       if (!authenticated) {
-        throw new Error(
-          `Goma not authenticated. Either sign in with ${color.cmd(
-            'e d goma_auth login',
-          )} or change your config.goma value to 'cache-only'`,
+        console.log('Not Authenticated - Triggering Goma Login');
+        const { status, error } = depot.spawnSync(
+          evmConfig.current(),
+          'python',
+          ['goma_auth.py', 'login'],
+          {
+            cwd: goma.dir,
+            stdio: 'inherit',
+          },
         );
+
+        if (status !== 0) {
+          console.error(
+            `${color.err} Failed to run command, exit code was "${status}", error was '${error}'`,
+          );
+        }
+        process.exit(status);
       }
     }
+
     goma.ensure();
     if (!ninjaArgs.includes('-j') && !ninjaArgs.find(arg => /^-j[0-9]+$/.test(arg.trim()))) {
       ninjaArgs.push('-j', process.platform === 'darwin' ? 50 : 200);

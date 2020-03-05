@@ -87,9 +87,15 @@ function downloadAndPrepareGoma() {
 function gomaIsAuthenticated() {
   if (!isSupportedPlatform) return false;
 
-  const loggedInInfo = childProcess.execFileSync('python', ['goma_auth.py', 'info'], {
-    cwd: gomaDir,
-  });
+  let loggedInInfo;
+  try {
+    loggedInInfo = childProcess.execFileSync('python', ['goma_auth.py', 'info'], {
+      cwd: gomaDir,
+      stdio: ['ignore'],
+    });
+  } catch {
+    return false;
+  }
 
   const loggedInPattern = /^Login as (\w+\s\w+)$/;
   return loggedInPattern.test(loggedInInfo.toString().trim());
