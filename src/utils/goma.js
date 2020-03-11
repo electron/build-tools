@@ -108,7 +108,7 @@ function authenticateGoma() {
 
   if (!gomaIsAuthenticated()) {
     console.log(color.childExec('goma_auth.py', ['login'], { cwd: gomaDir }));
-    childProcess.execFileSync('python', ['goma_auth.py', 'login'], { cwd: gomaDir });
+    childProcess.execFileSync('python', ['goma_auth.py', 'login'], { cwd: gomaDir, stdio: 'inherit' });
   }
 }
 
