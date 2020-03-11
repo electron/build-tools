@@ -30,7 +30,15 @@ function runGClientSync(config, syncArgs) {
   depot.ensure();
 
   const exec = 'python';
-  const args = ['gclient.py', 'sync', '--with_branch_heads', '--with_tags', ...syncArgs];
+  const args = [
+    'gclient.py',
+    'sync',
+    '--with_branch_heads',
+    '--with_tags',
+    '-vv',
+    '--ignore_locks',
+    ...syncArgs,
+  ];
   const opts = { cwd: srcdir };
   depot.execFileSync(config, exec, args, opts);
   setOrigin(path.resolve(srcdir, 'electron'), config.origin.electron);
