@@ -12,9 +12,9 @@ const gomaShaFile = path.resolve(__dirname, '..', '..', 'third_party', 'goma', '
 const gomaBaseURL = 'https://electron-build-tools.s3-us-west-2.amazonaws.com/build-dependencies';
 
 const GOMA_PLATFORM_SHAS = {
-  darwin: 'e95b600be5eaaad4b84b37adbf284cd1388745c0872bd38de28b54617d0aa6cf',
-  linux: '8e801867c3b26d4e00901299ee124ff62d9a50b2cc11180ed1d17c0dc1f665f0',
-  win32: 'd13f5e07c3306fa0367a662feea6133870e30a03767c23123da72a4e3a385d2e',
+  darwin: 'd51a54134c5d7edd745c1ee969c1dbfbb5ea4a4c3d59b164299663006e4a2948',
+  linux: '0250ac4991bc57afd430b230d61aa026d5cc3b893284345a3016ef104cb84f40',
+  win32: '72716f654ea5772c48460a6ed589e26a67d146c48ba9c47d50f3fd840cdd891e',
 };
 
 const isSupportedPlatform = !!GOMA_PLATFORM_SHAS[process.platform];
