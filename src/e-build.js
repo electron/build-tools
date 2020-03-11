@@ -55,8 +55,8 @@ function runNinja(config, target, ninjaArgs) {
           console.error(
             `${color.err} Failed to run command, exit code was "${status}", error was '${error}'`,
           );
+          process.exit(status);
         }
-        process.exit(status);
       }
     }
 
