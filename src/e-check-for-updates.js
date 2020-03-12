@@ -23,6 +23,18 @@ try {
     .execSync('git rev-parse --verify HEAD')
     .toString('utf8')
     .trim();
+
+  const currentBranch = cp
+    .execSync('git rev-parse --abbrev-ref HEAD')
+    .toString('utf8')
+    .trim();
+
+  if (currentBranch !== 'master') {
+    throw new Error(
+      `build-tools is checked out on ${currentBranch} and not 'master' - please switch and try again.`,
+    );
+  }
+
   console.log(
     color.childExec('git', ['pull'], {
       cwd: baseDir,
