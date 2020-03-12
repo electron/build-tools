@@ -5,6 +5,7 @@
     "node": ">= 10.12.0"
   },
   "main": "null",
+  "private": true,
   "scripts": {
     "lint": "prettier --check \"src/*.js\" \"tests/*.js\" \"src/e\"",
     "prettier:write": "prettier --write \"src/*.js\" \"tests/*.js\" \"src/e\"",
