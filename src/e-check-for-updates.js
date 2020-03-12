@@ -19,15 +19,20 @@ try {
   console.log('Checking for build-tools updates');
   const baseDir = path.resolve(__dirname, '..');
 
+  const execOpts = {
+    cwd: baseDir,
+  };
+
   const headBefore = cp
-    .execSync('git rev-parse --verify HEAD')
+    .execSync('git rev-parse --verify HEAD', execOpts)
     .toString('utf8')
     .trim();
 
   const currentBranch = cp
-    .execSync('git rev-parse --abbrev-ref HEAD')
+    .execSync('git rev-parse --abbrev-ref HEAD', execOpts)
     .toString('utf8')
     .trim();
+  console.log({ headBefore, currentBranch });
 
   if (currentBranch !== 'master') {
     throw new Error(
@@ -35,16 +40,10 @@ try {
     );
   }
 
-  console.log(
-    color.childExec('git', ['pull'], {
-      cwd: baseDir,
-    }),
-  );
-  cp.execSync('git pull', {
-    cwd: baseDir,
-  });
+  console.log(color.childExec('git', ['pull'], execOpts));
+  cp.execSync('git pull', execOpts);
   const headAfter = cp
-    .execSync('git rev-parse --verify HEAD')
+    .execSync('git rev-parse --verify HEAD', execOpts)
     .toString('utf8')
     .trim();
   if (headBefore !== headAfter) {
@@ -53,9 +52,7 @@ try {
         cwd: baseDir,
       }),
     );
-    cp.execSync('npx yarn', {
-      cwd: baseDir,
-    });
+    cp.execSync('npx yarn', execOpts);
     console.log('Updated to Latest Build Tools');
   } else {
     console.log('Already Up To Date');
