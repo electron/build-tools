@@ -17,10 +17,9 @@ program
 
 try {
   console.log('Checking for build-tools updates');
-  const baseDir = path.resolve(__dirname, '..');
 
   const execOpts = {
-    cwd: baseDir,
+    cwd: path.resolve(__dirname, '..'),
   };
 
   const headBefore = cp
@@ -46,11 +45,7 @@ try {
     .toString('utf8')
     .trim();
   if (headBefore !== headAfter) {
-    console.log(
-      color.childExec('npx', ['yarn'], {
-        cwd: baseDir,
-      }),
-    );
+    console.log(color.childExec('npx', ['yarn'], execOpts));
     cp.execSync('npx yarn', execOpts);
     console.log('Updated to Latest Build Tools');
   } else {
