@@ -32,7 +32,6 @@ try {
     .execSync('git rev-parse --abbrev-ref HEAD', execOpts)
     .toString('utf8')
     .trim();
-  console.log({ headBefore, currentBranch });
 
   if (currentBranch !== 'master') {
     throw new Error(
