@@ -114,7 +114,7 @@ program
     'load-xcode',
     'Loads required versions of Xcode and the macOS SDK and symlinks them.  This may require sudo',
   )
-  .command('check-for-updates', 'a');
+  .command('check-for-updates', 'Check for build-tools updates');
 
 program
   .command('depot-tools')
