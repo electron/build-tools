@@ -10,16 +10,32 @@ const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
 
-const updateCheckTSFile = path.resolve(__dirname, '..', '.update');
-const lastCheck = fs.existsSync(updateCheckTSFile)
-  ? parseInt(fs.readFileSync(updateCheckTSFile, 'utf8'), 10)
-  : 0;
-if (isNaN(lastCheck) || Date.now() - lastCheck > 1000 * 60 * 60 * 4) {
+function maybeCheckForUpdates() {
+  // don't check if we already checked recently
+  const intervalHours = 4;
+  const updateCheckTSFile = path.resolve(__dirname, '..', '.update');
+  const lastCheckEpochMsec = fs.existsSync(updateCheckTSFile)
+    ? parseInt(fs.readFileSync(updateCheckTSFile, 'utf8'), 10)
+    : 0;
+  const needCheckAfter = lastCheckEpochMsec + 1000 * 60 * 60 * intervalHours;
+  if (Date.now() < needCheckAfter) {
+    return;
+  }
+
+  // Run the updater script.
+  //
+  // NB: send updater's stdout to stderr so its log messages are visible
+  // but don't pollute stdout. For example, calling `FOO="$(e show exec)"`
+  // should not get a FOO that includes "Checking for build-tools updates".
   childProcess.spawnSync(process.execPath, ['e-check-for-updates.js'], {
     cwd: __dirname,
-    stdio: 'inherit',
+    stdio: [0, 2, 2],
   });
+
+  // update the last-checked-at timestamp
   fs.writeFileSync(updateCheckTSFile, `${Date.now()}`);
+
+  // re-run the current invocation with the updated build-tools
   const result = childProcess.spawnSync(
     process.execPath,
     process.argv[0] === process.execPath ? process.argv.slice(1) : process.argv,
@@ -30,6 +46,8 @@ if (isNaN(lastCheck) || Date.now() - lastCheck > 1000 * 60 * 60 * 4) {
   );
   process.exit(result.status);
 }
+
+maybeCheckForUpdates();
 
 program.description('Electron build tool').usage('<command> [commandArgs...]');
 
