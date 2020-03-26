@@ -176,6 +176,16 @@ program
     }
   });
 
+program
+  .command('gomadir')
+  .description('path to goma directory')
+  .action(() => console.log(goma.dir));
+
+program
+  .command('goma-gn-file')
+  .description('path to goma.gn file')
+  .action(() => console.log(goma.gnFilePath));
+
 program.parse(process.argv);
 
 if (process.argv.length < 3) {

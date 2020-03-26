@@ -135,6 +135,14 @@ program
   .command('check-for-updates', 'Check for build-tools updates');
 
 program
+  .command('update-goma')
+  .description('Ensure a fresh copy of Goma is installed')
+  .action(() => {
+    const checksum = goma.downloadAndPrepare();
+    console.log(`goma checksum: ${checksum}`);
+  });
+
+program
   .command('depot-tools')
   .alias('d')
   .description('Run a command from the depot-tools directory with the correct configuration')
