@@ -137,10 +137,7 @@ program
 program
   .command('update-goma')
   .description('Ensure a fresh copy of Goma is installed')
-  .action(() => {
-    const checksum = goma.downloadAndPrepare();
-    console.log(`goma checksum: ${checksum}`);
-  });
+  .action(() => console.log(`goma checksum: ${goma.downloadAndPrepare()}`));
 
 program
   .command('depot-tools')
