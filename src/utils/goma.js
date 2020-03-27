@@ -33,7 +33,7 @@ function downloadAndPrepareGoma() {
     fs.readFileSync(gomaShaFile, 'utf8') === sha &&
     !process.env.ELECTRON_FORGE_GOMA_REDOWNLOAD
   )
-    return;
+    return sha;
 
   const filename = {
     darwin: 'goma-mac.tgz',
@@ -82,6 +82,7 @@ function downloadAndPrepareGoma() {
   }
   rimraf.sync(tmpDownload);
   fs.writeFileSync(gomaShaFile, sha);
+  return sha;
 }
 
 function gomaIsAuthenticated() {
@@ -108,7 +109,10 @@ function authenticateGoma() {
 
   if (!gomaIsAuthenticated()) {
     console.log(color.childExec('goma_auth.py', ['login'], { cwd: gomaDir }));
-    childProcess.execFileSync('python', ['goma_auth.py', 'login'], { cwd: gomaDir, stdio: 'inherit' });
+    childProcess.execFileSync('python', ['goma_auth.py', 'login'], {
+      cwd: gomaDir,
+      stdio: 'inherit',
+    });
   }
 }
 
