@@ -181,11 +181,11 @@ try {
   // `e use` the new config
   const e = path.resolve(__dirname, 'e');
   const opts = { stdio: 'inherit' };
-  childProcess.execFileSync('node', [e, 'use', name], opts);
+  childProcess.execFileSync(process.execPath, [e, 'use', name], opts);
 
   // (maybe) run sync to ensure external binaries are downloaded
   if (program.bootstrap) {
-    childProcess.execFileSync('node', [e, 'sync', '-v', '--ignore_locks'], opts);
+    childProcess.execFileSync(process.execPath, [e, 'sync', '-v', '--ignore_locks'], opts);
   }
 
   // maybe authenticate with Goma
@@ -195,7 +195,7 @@ try {
 
   // (maybe) build Electron
   if (program.bootstrap) {
-    childProcess.execFileSync('node', [e, 'build'], opts);
+    childProcess.execFileSync(process.execPath, [e, 'build'], opts);
   }
 } catch (e) {
   fatal(e);

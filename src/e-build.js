@@ -107,7 +107,7 @@ try {
   if (process.platform === 'darwin') {
     const result = depot.spawnSync(
       config,
-      'node',
+      process.execPath,
       [path.resolve(__dirname, 'e-load-xcode.js'), '--quiet'],
       {
         stdio: 'inherit',

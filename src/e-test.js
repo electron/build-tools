@@ -26,7 +26,7 @@ function ensureNodeHeaders(config) {
   }
 
   if (needs_build) {
-    const exec = 'node';
+    const exec = process.execPath;
     const args = [path.resolve(__dirname, 'e'), 'build', 'node:headers'];
     const opts = { stdio: 'inherit', encoding: 'utf8' };
     childProcess.execFileSync(exec, args, opts);
@@ -42,7 +42,7 @@ function ensureNodeHeaders(config) {
 }
 
 function runSpecRunner(config, script, runnerArgs) {
-  const exec = 'node';
+  const exec = process.execPath;
   const args = [script, ...runnerArgs];
   const opts = {
     stdio: 'inherit',
