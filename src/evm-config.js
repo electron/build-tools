@@ -12,7 +12,10 @@ const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'conf
 
 // If you want your shell sessions to each have different active configs,
 // try this in your ~/.profile or ~/.zshrc or ~/.bashrc:
-// export EVM_CURRENT_FILE="$(mktemp --tmpdir evm-current.XXXXXXXX.txt)"
+//
+// if [[ -z "${EVM_CURRENT_FILE}" ]]; then
+//   export EVM_CURRENT_FILE="$(mktemp --tmpdir evm-current.XXXXXXXX.txt)"
+// fi
 const currentFiles = _.compact([
   process.env.EVM_CURRENT_FILE,
   path.resolve(configRoot, 'evm-current.txt'),
