@@ -22,10 +22,8 @@ Once they're installed, clone a copy of `build-tools`
 and add it to your path:
 
 ```sh
-# get build-tools:
-git clone https://github.com/electron/build-tools.git
-cd build-tools
-yarn install
+# Install build-tools package globally:
+npm i -g @electron/build-tools
 
 # then, if on Darwin / Linux:
 export PATH="$PATH:$PWD/src"
