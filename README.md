@@ -18,21 +18,9 @@ Windows if you install them, or use built-in tools like Windows'
 
 Please note that `build-tools` (due to nested dependencies) might not work properly in powershell, please use `cmd` on Windows for optimum results.
 
-Once they're installed, clone a copy of `build-tools`
-and add it to your path:
-
-```sh
-# Install build-tools package globally:
+```sh	
+# Install build-tools package globally:	
 npm i -g @electron/build-tools
-
-# then, if on Darwin / Linux:
-export PATH="$PATH:$PWD/src"
-# You should probably add this to your `~/.profile` too:
-export PATH="$PATH:/path/to/build-tools/src"
-
-# then, if in Windows' Command Prompt:
-cd src
-set PATH=%CD%;%PATH%
 ```
 
 ## Getting the Code and Building Electron
