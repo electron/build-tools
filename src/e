@@ -9,6 +9,10 @@ const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
+const { refreshPathVariable } = require('./utils/refresh-path');
+
+// Refresh the PATH variable at the top of this shell so that retries in the same shell get the latest PATH variable
+refreshPathVariable();
 
 function maybeCheckForUpdates() {
   // don't check if we already checked recently
