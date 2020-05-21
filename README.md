@@ -282,6 +282,16 @@ $ cd `e show src base` && pwd
 $ ripgrep --t h TakeHeapSnapshot `e show src`
 ```
 
+### `e open <commit | issue | PR>`
+
+Opens the GitHub page for the specified commit, pull request, or issue.
+
+For example, `e open 0920d01` will find the commit with an abbreviated
+sha1 of `0920d01`, see that it's associated with pull request #23450,
+and open https://github.com/electron/electron/pull/23450 in your browser.
+Since you can pass in a pull request or issue number as well,
+`e open 23450` would have the same effect.
+
 ### `e patches [patch-dir]`
 
 Exports patches to the desired patch folder in Electron source tree.
