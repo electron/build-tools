@@ -1,7 +1,6 @@
-# Electron GN Scripts
+# Electron Build Tools
 
-This repository contains helper/wrapper scripts to make working with GN
-easier, especially on Windows.
+This repository contains helper/wrapper scripts to make building Electron easier.
 
 ## Installation
 
