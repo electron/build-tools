@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
 const { ensureDir } = require('./paths');
-const { getIsArm } = require('../arm');
+const { getIsArm } = require('./arm');
 const evmConfig = require('../evm-config');
 
 const { color } = require('./logging');
