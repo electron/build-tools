@@ -29,7 +29,7 @@ const XcodeVersions = {
   },
   '11.5.0': {
     fileName: 'Xcode-11.5.zip',
-    md5: '809afa4ca4ce8e452c7fb04bf0361b35',
+    md5: '2665cc451d86e58bac68dcced0a22945',
   },
 };
 
