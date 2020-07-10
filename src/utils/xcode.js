@@ -31,6 +31,10 @@ const XcodeVersions = {
     fileName: 'Xcode-11.5.zip',
     md5: '2665cc451d86e58bac68dcced0a22945',
   },
+  '12.0.0-UA': {
+    fileName: 'Xcode-12.0.0-UA.zip',
+    md5: '28c3f8a906be53361260b01fa5792baa',
+  },
 };
 
 const fallbackXcode = '11.1.0';
