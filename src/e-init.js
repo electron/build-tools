@@ -145,10 +145,19 @@ try {
 
   checkPlatformDependencies();
 
+  const config = createConfig(options);
+
   // make sure the config name is new
   const filename = evmConfig.pathOf(name);
   if (!options.force && fs.existsSync(filename)) {
-    throw Error(`Build config ${color.config(name)} already exists! (${color.path(filename)})`);
+    const existing = evmConfig.fetchByName(name);
+    if (existing.root !== config.root) {
+      throw Error(
+        `Build config ${color.config(
+          name,
+        )} already exists and points at a different root folder! (${color.path(filename)})`,
+      );
+    }
   }
 
   // Make sure the goma options are valid
@@ -161,7 +170,6 @@ try {
   }
 
   // save the new config
-  const config = createConfig(options);
   ensureRoot(config);
   evmConfig.save(name, config);
   console.log(`New build config ${color.config(name)} created in ${color.path(filename)}`);

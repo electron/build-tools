@@ -188,4 +188,5 @@ module.exports = {
   pathOf,
   save,
   setCurrent,
+  fetchByName: name => sanitizeConfig(loadConfigFileRaw(name)),
 };
