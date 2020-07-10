@@ -23,7 +23,7 @@ function guessPRTarget(config) {
     const [major, minor] = [match[1], match[2]];
 
     //TODO(codebytere): remove this conditional when 7-1-x is EOL
-    return major >= '8' ? `${major}-x-y` : `${major}-${minor}-x`;
+    return parseInt(major, 10) >= 8 ? `${major}-x-y` : `${major}-${minor}-x`;
   }
 
   console.warn(
