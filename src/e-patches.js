@@ -20,10 +20,23 @@ function exportPatches(target) {
       targets[path.basename(key)] = val;
     }
 
-    if (!targets[target]) {
+    if (target === 'all') {
+      const script = path.resolve(srcdir, 'electron', 'script', 'export_all_patches.py');
+      childProcess.execFileSync('python', [script, patchesConfig], {
+        cwd: root,
+        stdio: 'inherit',
+        encoding: 'utf8',
+      });
+    } else if (targets[target]) {
+      childProcess.execFileSync(
+        path.resolve(srcdir, 'electron', 'script', 'git-export-patches'),
+        ['-o', path.resolve(srcdir, 'electron', 'patches', target)],
+        { cwd: path.resolve(root, targets[target]), stdio: 'inherit', encoding: 'utf8' },
+      );
+    } else {
       console.log(`${color.err} Unrecognized target ${color.cmd(target)}.`);
       console.log(
-        `${color.err} Supported targets: ${Object.keys(targets)
+        `${color.err} Supported targets: ${[...Object.keys(targets), 'all']
           .sort()
           .map(a => color.cmd(a))
           .join(', ')}`,
@@ -31,18 +44,13 @@ function exportPatches(target) {
       console.log(`${color.err} See ${color.path(patchesConfig)}`);
       process.exit(1);
     }
-    childProcess.execFileSync(
-      path.resolve(srcdir, 'electron', 'script', 'git-export-patches'),
-      ['-o', path.resolve(srcdir, 'electron', 'patches', target)],
-      { cwd: path.resolve(root, targets[target]), stdio: 'inherit', encoding: 'utf8' },
-    );
   } catch (e) {
     fatal(e);
   }
 }
 
 program
-  .arguments('<basename>')
-  .description('Refresh the patches in $root/src/electron/patches/$basename')
+  .arguments('<basename-or-all>')
+  .description('Refresh all patches,  or the patches in $root/src/electron/patches/$basename')
   .action(exportPatches)
   .parse(process.argv);
