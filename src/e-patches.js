@@ -50,7 +50,9 @@ function exportPatches(target) {
 }
 
 program
-  .arguments('<basename-or-all>')
-  .description('Refresh all patches,  or the patches in $root/src/electron/patches/$basename')
+  .arguments('<target>')
+  .description(
+    "Refresh all patches if 'all' is specified; otherwise, refresh patches in $root/src/electron/patches/$target",
+  )
   .action(exportPatches)
   .parse(process.argv);
