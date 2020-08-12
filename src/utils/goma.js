@@ -5,6 +5,7 @@ const path = require('path');
 const rimraf = require('rimraf');
 const { unzipSync } = require('cross-zip');
 const { color } = require('./logging');
+const depot = require('./depot-tools');
 
 const gomaDir = path.resolve(__dirname, '..', '..', 'third_party', 'goma');
 const gomaGnFile = path.resolve(__dirname, '..', '..', 'third_party', 'goma.gn');
@@ -19,7 +20,7 @@ const GOMA_PLATFORM_SHAS = {
 
 const isSupportedPlatform = !!GOMA_PLATFORM_SHAS[process.platform];
 
-function downloadAndPrepareGoma() {
+function downloadAndPrepareGoma(config) {
   if (!isSupportedPlatform) return;
 
   const gomaGnContents = `goma_dir = "${gomaDir}"\nuse_goma = true`;
@@ -40,6 +41,13 @@ function downloadAndPrepareGoma() {
     linux: 'goma-linux.tgz',
     win32: 'goma-win.zip',
   }[process.platform];
+
+  if (fs.existsSync(path.resolve(gomaDir, 'goma_ctl.py'))) {
+    depot.spawnSync(config, 'python', ['goma_ctl.py', 'stop'], {
+      cwd: gomaDir,
+      stdio: 'ignore',
+    });
+  }
 
   const tmpDownload = path.resolve(gomaDir, '..', filename);
   // Clean Up
@@ -102,10 +110,10 @@ function gomaIsAuthenticated() {
   return loggedInPattern.test(loggedInInfo.toString().trim());
 }
 
-function authenticateGoma() {
+function authenticateGoma(config) {
   if (!isSupportedPlatform) return;
 
-  downloadAndPrepareGoma();
+  downloadAndPrepareGoma(config);
 
   if (!gomaIsAuthenticated()) {
     console.log(color.childExec('goma_auth.py', ['login'], { cwd: gomaDir }));
