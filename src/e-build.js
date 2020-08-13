@@ -35,7 +35,7 @@ function ensureGNGen(config) {
 
 function runNinja(config, target, ninjaArgs) {
   if (config.goma !== 'none') {
-    goma.downloadAndPrepare();
+    goma.downloadAndPrepare(config);
 
     if (config.goma === 'cluster') {
       const authenticated = goma.isAuthenticated(config.root);

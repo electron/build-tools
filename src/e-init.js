@@ -186,7 +186,7 @@ try {
 
   // maybe authenticate with Goma
   if (config.goma === 'cluster') {
-    goma.auth();
+    goma.auth(config);
   }
 
   // (maybe) build Electron
