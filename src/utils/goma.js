@@ -136,7 +136,13 @@ function ensureGomaStart(config) {
 }
 
 function gomaEnv(config) {
-  if (config.goma === 'cache-only') {
+  let isCacheOnly = config && config.goma === 'cache-only';
+  if (!config) {
+    // If no config is provided we are running in CI, infer cache-only from the presence
+    // of the RAW_GOMA_AUTH env var
+    isCacheOnly = !process.env.RAW_GOMA_AUTH;
+  }
+  if (isCacheOnly) {
     return {
       GOMA_FALLBACK_ON_AUTH_FAILURE: 'true',
     };
