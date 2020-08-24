@@ -10,6 +10,7 @@ const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
 const { refreshPathVariable } = require('./utils/refresh-path');
+const packagejson = require('../package.json')
 
 // Refresh the PATH variable at the top of this shell so that retries in the same shell get the latest PATH variable
 refreshPathVariable();
@@ -54,6 +55,13 @@ function maybeCheckForUpdates() {
 maybeCheckForUpdates();
 
 program.description('Electron build tool').usage('<command> [commandArgs...]');
+
+program
+  .option('-v, --version', 'Output the current version of build-tools.');
+
+if(program.version) {
+  console.log(packagejson.version)
+}
 
 program
   .command('init [options] <name>', 'Create a new build config')
