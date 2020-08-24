@@ -124,9 +124,24 @@ function authenticateGoma(config) {
   }
 }
 
-function ensureGomaStart() {
+function ensureGomaStart(config) {
   console.log(color.childExec('goma_ctl.py', ['ensure_start'], { cwd: gomaDir }));
-  childProcess.execFileSync('python', ['goma_ctl.py', 'ensure_start'], { cwd: gomaDir });
+  childProcess.execFileSync('python', ['goma_ctl.py', 'ensure_start'], {
+    cwd: gomaDir,
+    env: {
+      ...process.env,
+      ...gomaEnv(config),
+    },
+  });
+}
+
+function gomaEnv(config) {
+  if (config.goma === 'cache-only') {
+    return {
+      GOMA_FALLBACK_ON_AUTH_FAILURE: 'true',
+    };
+  }
+  return {};
 }
 
 module.exports = {
@@ -136,4 +151,5 @@ module.exports = {
   dir: gomaDir,
   downloadAndPrepare: downloadAndPrepareGoma,
   gnFilePath: gomaGnFile,
+  env: gomaEnv,
 };

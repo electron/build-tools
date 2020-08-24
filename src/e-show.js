@@ -157,7 +157,11 @@ program
   .action(() => {
     try {
       const config = evmConfig.current();
-      const options = { env: { ...process.env, ...config.env }, stdio: 'inherit', cwd: goma.dir };
+      const options = {
+        env: { ...process.env, ...config.env, ...goma.env(config) },
+        stdio: 'inherit',
+        cwd: goma.dir,
+      };
       childProcess.execFileSync('python', ['goma_ctl.py', 'stat'], options);
     } catch (e) {
       fatal(e);
