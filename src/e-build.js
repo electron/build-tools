@@ -57,6 +57,8 @@ function runNinja(config, target, ninjaArgs) {
           );
           process.exit(status);
         }
+
+        goma.recordGomaLoginTime();
       }
     }
 
