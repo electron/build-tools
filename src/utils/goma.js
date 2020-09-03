@@ -11,6 +11,7 @@ const gomaDir = path.resolve(__dirname, '..', '..', 'third_party', 'goma');
 const gomaGnFile = path.resolve(__dirname, '..', '..', 'third_party', 'goma.gn');
 const gomaShaFile = path.resolve(__dirname, '..', '..', 'third_party', 'goma', '.sha');
 const gomaBaseURL = 'https://electron-build-tools.s3-us-west-2.amazonaws.com/build-dependencies';
+const gomaLoginFile = path.resolve(gomaDir, 'last-known-login');
 
 const GOMA_PLATFORM_SHAS = {
   darwin: '0c8c135d9f1833f181e4e09d177aafa76c1f1633b445c9674d231a07d2d3fbde',
@@ -95,6 +96,9 @@ function downloadAndPrepareGoma(config) {
 
 function gomaIsAuthenticated() {
   if (!isSupportedPlatform) return false;
+  const lastKnownLogin = getLastKnownLoginTime();
+  // Assume if we authed in the last 12 hours it is still valid
+  if (lastKnownLogin && Date.now() - lastKnownLogin.getTime() < 1000 * 60 * 60 * 12) return true;
 
   let loggedInInfo;
   try {
@@ -121,10 +125,26 @@ function authenticateGoma(config) {
       cwd: gomaDir,
       stdio: 'inherit',
     });
+    recordGomaLoginTime();
   }
 }
 
+function getLastKnownLoginTime() {
+  if (!fs.existsSync(gomaLoginFile)) return null;
+  const contents = fs.readFileSync(gomaLoginFile);
+  return new Date(parseInt(contents, 10));
+}
+
+function recordGomaLoginTime() {
+  fs.writeFileSync(gomaLoginFile, `${Date.now()}`);
+}
+
 function ensureGomaStart(config) {
+  // GomaCC is super fast and we can assume that a 0 exit code means we are good-to-go
+  const gomacc = path.resolve(gomaDir, process.platform === 'win32' ? 'gomacc.exe' : 'gomacc');
+  const { status } = childProcess.spawnSync(gomacc, ['port', '2']);
+  if (status === 0) return;
+
   console.log(color.childExec('goma_ctl.py', ['ensure_start'], { cwd: gomaDir }));
   childProcess.execFileSync('python', ['goma_ctl.py', 'ensure_start'], {
     cwd: gomaDir,
@@ -158,4 +178,5 @@ module.exports = {
   downloadAndPrepare: downloadAndPrepareGoma,
   gnFilePath: gomaGnFile,
   env: gomaEnv,
+  recordGomaLoginTime,
 };
