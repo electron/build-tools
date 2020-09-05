@@ -9,14 +9,16 @@ const { fatal } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
 const depot = require('./utils/depot-tools');
 
-function setOrigin(cwd, url) {
-  const cmd = 'git';
-  let args = ['remote', 'set-url', 'origin', url];
-  const opts = { cwd };
-  childProcess.execFileSync(cmd, args, opts);
+function setRemotes(cwd, repo) {
+  for (const remote in repo) {
+    const cmd = 'git';
+    let args = ['remote', 'set-url', remote, repo[remote]];
+    const opts = { cwd };
+    childProcess.execFileSync(cmd, args, opts);
 
-  args.splice(-1, 0, '--push');
-  childProcess.execFileSync(cmd, args, opts);
+    args.splice(-1, 0, '--push');
+    childProcess.execFileSync(cmd, args, opts);
+  }
 }
 
 function runGClientSync(config, syncArgs) {
@@ -35,8 +37,12 @@ function runGClientSync(config, syncArgs) {
     cwd: srcdir,
   };
   depot.execFileSync(config, exec, args, opts);
-  setOrigin(path.resolve(srcdir, 'electron'), config.origin.electron);
-  setOrigin(path.resolve(srcdir, 'third_party', 'electron_node'), config.origin.node);
+
+  const electronPath = path.resolve(srcdir, 'electron');
+  setRemotes(electronPath, config.remotes.electron);
+
+  const nodejsPath = path.resolve(srcdir, 'third_party', 'electron_node');
+  setRemotes(nodejsPath, config.remotes.node);
 }
 
 program

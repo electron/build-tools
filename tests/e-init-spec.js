@@ -34,6 +34,41 @@ describe('e-init', () => {
       expect(fs.statSync(gclient_file).isFile()).toStrictEqual(true);
     });
 
+    it('creates a config correctly reflecting options passed', () => {
+      const root = path.resolve(sandbox.tmpdir, 'master');
+
+      const result = sandbox
+        .eInitRunner()
+        .name('special')
+        .root(root)
+        .useHttps()
+        .fork('cool-fork/electron')
+        .run();
+
+      expect(result.exitCode).toStrictEqual(0);
+
+      const configDir = path.resolve(sandbox.tmpdir, 'evm-config');
+      expect(fs.statSync(configDir).isDirectory()).toStrictEqual(true);
+
+      const configPath = path.resolve(configDir, 'evm.special.json');
+      expect(fs.existsSync(configPath)).toStrictEqual(true);
+
+      const config = require(configPath);
+      expect(config.goma).toStrictEqual('cache-only');
+
+      expect(config.remotes).toHaveProperty('electron');
+      expect(config.remotes).toHaveProperty('node');
+
+      const remotes = config.remotes.electron;
+      expect(remotes.origin).toStrictEqual('https://github.com/electron/electron.git');
+      expect(remotes.fork).toStrictEqual('https://github.com/cool-fork/electron.git');
+
+      expect(config.env).toHaveProperty('CHROMIUM_BUILDTOOLS_PATH');
+      expect(config.env).toHaveProperty('GIT_CACHE_PATH');
+
+      expect(config.gen.out).toStrictEqual('Testing');
+    });
+
     it('logs an info message when the new build config root already has a .gclient file', () => {
       const root = path.resolve(sandbox.tmpdir, 'master');
 
