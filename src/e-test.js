@@ -70,6 +70,10 @@ program
   .arguments('[specRunnerArgs...]')
   .allowUnknownOption()
   .option('--node', 'Run node spec runner', false)
+  .option(
+    '--runners=<main|remote|native>',
+    "A subset of tests to run - either 'main', 'remote', or 'native'",
+  )
   .parse(process.argv);
 
 try {

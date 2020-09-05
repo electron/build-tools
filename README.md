@@ -79,6 +79,14 @@ and building the code. `e` wraps these tools:
 
 ### e init
 
+`e init` initializes a new local development environment for Electron.
+
+To see all potential options for this command, run:
+
+```
+$ e init --help
+```
+
 New build configs are created with `e init`. It has several command-line
 options to specify the build configuration, e.g. the path to the source
 code, compile-time options, and so on. See `e init --help` for in-depth
@@ -137,6 +145,12 @@ after creating the build config. Let's see what those do:
 
 ### `e sync`
 
+To see all potential options for this command, run:
+
+```
+$ e sync --help
+```
+
 'e sync' is a wrapper around 'gclient sync' from [Depot Tools][depot-tools].
 If you're starting from scratch, this will (slowly) fetch all the source
 code. It's also useful after switching Electron branches to synchronize
@@ -172,6 +186,14 @@ Running "gclient sync --with_branch_heads --with_tags -vvvv" in '~/src/electron/
 
 ### `e build`
 
+`e build` builds an Electron executable.
+
+To see all potential options for this command, run:
+
+```
+$ e build --help
+```
+
 Once you have the source, the next step is to build it with `e build [target]`.
 These build targets are supported:
 
@@ -204,7 +226,7 @@ As usual, any extra args are passed along to the executable. For example,
 
 ### `e debug`
 
-Runs your local Electron build inside of [lldb][lldb] or [gdb][gdb].
+`e debug` runs your local Electron build inside of [lldb][lldb] or [gdb][gdb].
 
 ```sh
 $ uname
@@ -225,9 +247,16 @@ target create "/Users/yourname/electron-gn/src/out/Testing/Electron.app/Contents
 
 ### `e test`
 
-Starts the local Electron build's test runner. Any extra args are passed
+`e test ` starts the local Electron build's test runner. Any extra args are passed
 along to the runner.
 
+To see all potential options for this command, run:
+
+```
+$ e test --help
+```
+
+Example:
 ```sh
 # run all tests
 e test
@@ -240,9 +269,15 @@ Possible extra arguments to pass:
 * `--node` - Run Node.js' own tests with Electron in `RUN_AS_NODE` mode.
 * `--runners=<main|remote|native>` - The set of tests to run, can be either `main`, `remote`, or `native`.
 
-## Getting Information
+## `e show`
 
 `e show` shows information about the current build config.
+
+To see all potential options for this command, run:
+
+```
+$ e show --help
+```
 
 | Command           | Description                                                    |
 |:------------------|:---------------------------------------------------------------|
@@ -283,7 +318,13 @@ $ ripgrep --t h TakeHeapSnapshot `e show src`
 
 ### `e open <commit | issue | PR>`
 
-Opens the GitHub page for the specified commit, pull request, or issue.
+`e open` opens the GitHub page for the specified commit, pull request, or issue.
+
+To see all potential options for this command, run:
+
+```
+$ e open --help
+```
 
 For example, `e open 0920d01` will find the commit with an abbreviated
 sha1 of `0920d01`, see that it's associated with pull request #23450,
@@ -293,7 +334,13 @@ Since you can pass in a pull request or issue number as well,
 
 ### `e patches [patch-dir]`
 
-Exports patches to the desired patch folder in Electron source tree.
+`e patches` exports patches to the specified patch directory in Electron source tree.
+
+To see all potential options for this command, run:
+
+```
+$ e patches --help
+```
 
 Valid patch directories can include:
 
