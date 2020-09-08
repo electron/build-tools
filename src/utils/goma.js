@@ -14,9 +14,9 @@ const gomaBaseURL = 'https://electron-build-tools.s3-us-west-2.amazonaws.com/bui
 const gomaLoginFile = path.resolve(gomaDir, 'last-known-login');
 
 const GOMA_PLATFORM_SHAS = {
-  darwin: '0c8c135d9f1833f181e4e09d177aafa76c1f1633b445c9674d231a07d2d3fbde',
-  linux: 'fda96d3903c57ca171ccb295bd428af2c2b7c8906f46cfb7b2c00a6f2c73fd66',
-  win32: 'f27b333b98b005657521ca35e825f207db26f2e3135d7aaca611a15bd66c451f',
+  darwin: 'cd0cb5235eff83f50e56925f6b6f71c22c4164140b9ffc19ed053f7c2bf2f74f',
+  linux: '91bbf22488b9c93428be99c36b987d651acdae18886094ee2878fb17e48f7ccd',
+  win32: '3a091c5a69fa32ab2449f0bf5d1b89907403008eed54815c461ed1d11b63d4ed',
 };
 
 const isSupportedPlatform = !!GOMA_PLATFORM_SHAS[process.platform];
