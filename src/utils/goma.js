@@ -155,7 +155,7 @@ function ensureGomaStart(config) {
   });
 }
 
-function gomaEnv(config) {
+function gomaAuthFailureEnv(config) {
   let isCacheOnly = config && config.goma === 'cache-only';
   if (!config) {
     // If no config is provided we are running in CI, infer cache-only from the presence
@@ -168,6 +168,23 @@ function gomaEnv(config) {
     };
   }
   return {};
+}
+
+function gomaCIEnv(config) {
+  if (!config && process.env.CI) {
+    return {
+      // Automatically start the compiler proxy when it dies in CI, random flakes be random
+      GOMA_START_COMPILER_PROXY: 'true',
+    };
+  }
+  return {};
+}
+
+function gomaEnv(config) {
+  return {
+    ...gomaAuthFailureEnv(config),
+    ...gomaCIEnv(config),
+  };
 }
 
 module.exports = {
