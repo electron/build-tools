@@ -74,12 +74,6 @@ function depotOpts(config, opts = {}) {
   return opts;
 }
 
-function depotExecSync(config, cmd, opts_in) {
-  const opts = depotOpts(config, opts_in);
-  console.log(color.childExec(cmd, null, opts));
-  childProcess.execSync(cmd, opts);
-}
-
 function depotSpawnSync(config, cmd, args, opts_in) {
   const opts = depotOpts(config, opts_in);
   if (opts_in.msg) {
@@ -103,6 +97,5 @@ module.exports = {
   path: DEPOT_TOOLS_DIR,
   ensure: ensureDepotTools,
   execFileSync: depotExecFileSync,
-  execSync: depotExecSync,
   spawnSync: depotSpawnSync,
 };
