@@ -6,6 +6,7 @@ const yml = require('js-yaml');
 const { color } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
 const goma = require('./utils/goma');
+const util = require('util');
 
 const preferredFormat = process.env.EVM_FORMAT || 'json'; // yaml yml json
 const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
@@ -148,6 +149,24 @@ function sanitizeConfig(config) {
         goma.gnFilePath,
       )}" in the gen args - we've put it there for you`,
     );
+  }
+
+  if (config.origin) {
+    const oldConfig = color.config(util.inspect({ origin: config.origin }));
+    console.warn(
+      `${color.warn} Your evm config ${configName} is using an old remote configuration "${oldConfig}" - we've updated it for you`,
+    );
+
+    config.remotes = {
+      electron: {
+        origin: config.origin.electron,
+      },
+      node: {
+        origin: config.origin.node,
+      },
+    };
+
+    delete config.origin;
   }
 
   if (

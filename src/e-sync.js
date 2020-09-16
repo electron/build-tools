@@ -39,9 +39,9 @@ function runGClientSync(config, syncArgs) {
   depot.execFileSync(config, exec, args, opts);
 
   const electronPath = path.resolve(srcdir, 'electron');
-  setRemotes(electronPath, config.remotes.electron);
-
   const nodejsPath = path.resolve(srcdir, 'third_party', 'electron_node');
+
+  setRemotes(electronPath, config.remotes.electron);
   setRemotes(nodejsPath, config.remotes.node);
 }
 
