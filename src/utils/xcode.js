@@ -102,13 +102,11 @@ function ensureXcode() {
   // if running on ARM / Apple Silicon
   if (shouldEnsureXcode && !isArm) {
     ensureDir(XcodeDir);
-    let shouldDownload = true;
     const expectedXcodeHash = XcodeVersions[expected].md5;
     const eventualVersionedPath = path.resolve(XcodeDir, `Xcode-${expected}.app`);
 
-    if (fs.existsSync(eventualVersionedPath)) {
-      shouldDownload = false;
-    } else {
+    if (!fs.existsSync(eventualVersionedPath)) {
+      let shouldDownload = true;
       if (fs.existsSync(XcodeZip)) {
         const existingHash = hashFile(XcodeZip);
         if (existingHash === expectedXcodeHash) {

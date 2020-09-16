@@ -1,14 +1,10 @@
 #!/usr/bin/env node
 
 const cp = require('child_process');
-const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const program = require('commander');
 
-const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
-const depot = require('./utils/depot-tools');
 
 program
   .allowUnknownOption()
