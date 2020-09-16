@@ -30,16 +30,29 @@ function createConfig(options) {
   if (options.msan) gn_args.push('is_msan=true');
   if (options.tsan) gn_args.push('is_tsan=true');
 
+  const electron = {
+    origin: options.useHttps
+      ? 'https://github.com/electron/electron.git'
+      : 'git@github.com:electron/electron.git',
+    ...(options.fork && {
+      fork: options.useHttps
+        ? `https://github.com/${options.fork}.git`
+        : `git@github.com:${options.fork}.git`,
+    }),
+  };
+
+  const node = {
+    origin: options.useHttps
+      ? 'https://github.com/electron/node.git'
+      : 'git@github.com:electron/node.git',
+  };
+
   return {
     goma: options.goma,
     root,
-    origin: {
-      electron: options.useHttps
-        ? 'https://github.com/electron/electron.git'
-        : 'git@github.com:electron/electron.git',
-      node: options.useHttps
-        ? 'https://github.com/electron/node.git'
-        : 'git@github.com:electron/node.git',
+    remotes: {
+      electron,
+      node,
     },
     gen: {
       args: gn_args,
@@ -124,6 +137,10 @@ program
     '--use-https',
     'During `e sync`, set remote origins with https://github... URLs instead of git@github...',
     false,
+  )
+  .option(
+    '--fork <username/electron>',
+    `Add a remote fork of Electron with the name 'fork'. This should take the format 'username/electron'`,
   )
   .parse(process.argv);
 

@@ -67,6 +67,14 @@ function eInitRunner(execOptions) {
       args.push('--force');
       return o;
     },
+    fork: name => {
+      args.push(`--fork=${name}`);
+      return o;
+    },
+    useHttps: () => {
+      args.push(`--use-https`);
+      return o;
+    },
     import: val => {
       args.push('--import', val);
       return o;
