@@ -269,7 +269,7 @@ Possible extra arguments to pass:
 * `--node` - Run Node.js' own tests with Electron in `RUN_AS_NODE` mode.
 * `--runners=<main|remote|native>` - The set of tests to run, can be either `main`, `remote`, or `native`.
 
-## `e show`
+### `e show`
 
 `e show` shows information about the current build config.
 
