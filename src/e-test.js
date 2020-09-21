@@ -1,45 +1,12 @@
 #!/usr/bin/env node
 
 const childProcess = require('child_process');
-const fs = require('fs');
 const path = require('path');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
+const { ensureNodeHeaders } = require('./utils/headers');
 const { color, fatal } = require('./utils/logging');
-const { ensureDir } = require('./utils/paths');
-
-function ensureNodeHeaders(config) {
-  const src_dir = path.resolve(config.root, 'src');
-  const out_dir = evmConfig.outDir(config);
-  const node_headers_dir = path.resolve(out_dir, 'gen', 'node_headers');
-  const electron_spec_dir = path.resolve(src_dir, 'electron', 'spec');
-
-  let needs_build;
-  try {
-    const filename = path.resolve(electron_spec_dir, 'package.json');
-    const package_time = fs.lstatSync(filename);
-    const headers_time = fs.lstatSync(node_headers_dir);
-    needs_build = package_time > headers_time;
-  } catch {
-    needs_build = true;
-  }
-
-  if (needs_build) {
-    const exec = process.execPath;
-    const args = [path.resolve(__dirname, 'e'), 'build', 'node:headers'];
-    const opts = { stdio: 'inherit', encoding: 'utf8' };
-    childProcess.execFileSync(exec, args, opts);
-  }
-
-  if (process.platform === 'win32') {
-    ensureDir(path.resolve(node_headers_dir, 'Release'));
-    fs.copyFileSync(
-      path.resolve(out_dir, 'electron.lib'),
-      path.resolve(node_headers_dir, 'Release', 'node.lib'),
-    );
-  }
-}
 
 function runSpecRunner(config, script, runnerArgs) {
   const exec = process.execPath;
@@ -70,16 +37,28 @@ program
   .arguments('[specRunnerArgs...]')
   .allowUnknownOption()
   .option('--node', 'Run node spec runner', false)
+  .option('--nan', 'Run nan spec runner', false)
   .option(
     '--runners=<main|remote|native>',
-    "A subset of tests to run - either 'main', 'remote', or 'native'",
+    "A subset of tests to run - either 'main', 'remote', or 'native', not used with either the node or nan specs",
   )
   .parse(process.argv);
 
 try {
   const runnerArgs = program.parseOptions(process.argv).unknown;
   const config = evmConfig.current();
-  const script = program.node ? './script/node-spec-runner.js' : './script/spec-runner.js';
+  if (program.node && program.nan) {
+    fatal(
+      'Can not run both node and nan specs at the same time, --node and --nan are mutually exclusive',
+    );
+  }
+  let script = './script/spec-runner.js';
+  if (program.node) {
+    script = './script/node-spec-runner.js';
+  }
+  if (program.nan) {
+    script = './script/nan-spec-runner.js';
+  }
   ensureNodeHeaders(config);
   runSpecRunner(config, script, runnerArgs);
 } catch (e) {
