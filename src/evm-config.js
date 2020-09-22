@@ -203,6 +203,8 @@ function sanitizeConfig(config) {
 }
 
 function remove(name) {
+  testConfigExists(name);
+
   let currentConfigName;
   try {
     currentConfigName = currentName();
@@ -213,7 +215,6 @@ function remove(name) {
     throw Error(`Config is currently in use`);
   }
 
-  testConfigExists(name);
   const filename = pathOf(name);
   try {
     return fs.unlinkSync(filename);
