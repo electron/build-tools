@@ -39,7 +39,7 @@ function filenameToConfigName(filename) {
   return match ? match[1] : null;
 }
 
-function ensureConfigExists(name) {
+function testConfigExists(name) {
   if (!fs.existsSync(pathOf(name))) {
     throw Error(
       `Build config ${color.config(name)} not found. (Tried ${buildPathCandidates(name)
@@ -58,7 +58,7 @@ function save(name, o) {
 }
 
 function setCurrent(name) {
-  ensureConfigExists(name);
+  testConfigExists(name);
   try {
     currentFiles.forEach(filename => fs.writeFileSync(filename, `${name}\n`));
   } catch (e) {
@@ -206,14 +206,14 @@ function remove(name) {
   let currentConfigName;
   try {
     currentConfigName = currentName();
-  } catch (_) {
+  } catch {
     currentConfigName = null;
   }
   if (currentConfigName && currentConfigName === name) {
     throw Error(`Config is currently in use`);
   }
 
-  ensureConfigExists(name);
+  testConfigExists(name);
   const filename = pathOf(name);
   try {
     return fs.unlinkSync(filename);
