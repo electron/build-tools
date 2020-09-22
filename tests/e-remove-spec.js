@@ -32,11 +32,6 @@ describe('e-show', () => {
     sandbox
       .eInitRunner()
       .root(root)
-      .name(name)
-      .run();
-    sandbox
-      .eInitRunner()
-      .root(root)
       .name(configNameToRemove)
       .run();
 
