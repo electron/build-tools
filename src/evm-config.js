@@ -39,6 +39,16 @@ function filenameToConfigName(filename) {
   return match ? match[1] : null;
 }
 
+function ensureConfigExists(name) {
+  if (!fs.existsSync(pathOf(name))) {
+    throw Error(
+      `Build config ${color.config(name)} not found. (Tried ${buildPathCandidates(name)
+        .map(f => color.path(f))
+        .join(', ')})`,
+    );
+  }
+}
+
 function save(name, o) {
   ensureDir(configRoot);
   const filename = pathOf(name);
@@ -48,13 +58,7 @@ function save(name, o) {
 }
 
 function setCurrent(name) {
-  if (!fs.existsSync(pathOf(name))) {
-    throw Error(
-      `Build config ${color.config(name)} not found. (Tried ${buildPathCandidates(name)
-        .map(f => color.path(f))
-        .join(', ')})`,
-    );
-  }
+  ensureConfigExists(name);
   try {
     currentFiles.forEach(filename => fs.writeFileSync(filename, `${name}\n`));
   } catch (e) {
@@ -198,6 +202,26 @@ function sanitizeConfig(config) {
   return config;
 }
 
+function remove(name) {
+  let currentConfigName;
+  try {
+    currentConfigName = currentName();
+  } catch (_) {
+    currentConfigName = null;
+  }
+  if (currentConfigName && currentConfigName === name) {
+    throw Error(`Config is currently in use`);
+  }
+
+  ensureConfigExists(name);
+  const filename = pathOf(name);
+  try {
+    return fs.unlinkSync(filename);
+  } catch (e) {
+    throw Error(`Unable to remove config ${color.config(name)} (${e})`);
+  }
+}
+
 module.exports = {
   current: () => sanitizeConfig(loadConfigFileRaw(currentName())),
   currentName,
@@ -208,4 +232,5 @@ module.exports = {
   save,
   setCurrent,
   fetchByName: name => sanitizeConfig(loadConfigFileRaw(name)),
+  remove,
 };
