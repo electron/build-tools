@@ -83,7 +83,7 @@ and building the code. `e` wraps these tools:
 
 To see all potential options for this command, run:
 
-```
+```sh
 $ e init --help
 ```
 
@@ -147,7 +147,7 @@ after creating the build config. Let's see what those do:
 
 To see all potential options for this command, run:
 
-```
+```sh
 $ e sync --help
 ```
 
@@ -190,7 +190,7 @@ Running "gclient sync --with_branch_heads --with_tags -vvvv" in '~/src/electron/
 
 To see all potential options for this command, run:
 
-```
+```sh
 $ e build --help
 ```
 
@@ -252,7 +252,7 @@ along to the runner.
 
 To see all potential options for this command, run:
 
-```
+```sh
 $ e test --help
 ```
 
@@ -275,7 +275,7 @@ Possible extra arguments to pass:
 
 To see all potential options for this command, run:
 
-```
+```sh
 $ e show --help
 ```
 
@@ -326,7 +326,7 @@ $ ripgrep --t h TakeHeapSnapshot `e show src`
 
 To see all potential options for this command, run:
 
-```
+```sh
 $ e open --help
 ```
 
@@ -342,7 +342,7 @@ Since you can pass in a pull request or issue number as well,
 
 To see all potential options for this command, run:
 
-```
+```sh
 $ e patches --help
 ```
 
@@ -373,6 +373,18 @@ Valid patch directories can include:
 [nvm]: https://github.com/nvm-sh/nvm
 [platform-prerequisites]: https://electronjs.org/docs/development/build-instructions-gn#platform-prerequisites
 [sanitizers]: https://github.com/google/sanitizers
+
+### `e sanitize-config <name>`
+
+`e sanitize-config` updates and/or overwrites an existing config to conform to latest `build-tools` updates.
+
+To see all potential options for this command, run:
+
+```sh
+$ e sanitize-config --help
+```
+
+Sometimes `build-tools` will make updates to its config requirements. In these events warnings will be output to console to inform you that `build-tools` has temporarily handled the issues. You can make these warnings go away either by manually updating your config files or by running this command to automatically overwrite the existing configs to update formatting.
 
 ## Advanced Usage
 

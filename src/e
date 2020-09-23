@@ -158,6 +158,18 @@ program
   .action(() => console.log(`goma checksum: ${goma.downloadAndPrepare()}`));
 
 program
+  .command('sanitize-config <name>')
+  .description('Update and overwrite an existing config to conform to latest build-tools updates')
+  .action(name => {
+    try {
+      evmConfig.sanitizeConfig(name, true);
+      console.log(`${color.success} Sanitized contents of ${color.config(name)}`);
+    } catch (e) {
+      fatal(e);
+    }
+  });
+
+program
   .command('depot-tools')
   .alias('d')
   .description('Run a command from the depot-tools directory with the correct configuration')

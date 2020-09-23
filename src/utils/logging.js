@@ -14,7 +14,7 @@ const color = {
     }
     return parts.join(' ');
   },
-  done: chalk.bgGreenBright.black('DONE! 🎉'),
+  success: chalk.bgGreenBright.black('SUCCESS'),
   err: chalk.bgRedBright.white('ERROR'),
   info: chalk.bgYellowBright.black('INFO'),
   warn: chalk.bgYellowBright.black('WARN'),
