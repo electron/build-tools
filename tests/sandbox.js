@@ -200,6 +200,27 @@ function eSyncRunner(execOptions) {
   return o;
 }
 
+// An `e remove` helper.
+// Example use: result = eRemoveRunner().name('test').run();
+// Returns { exitCode:number, stderr:string, stdout:string }
+function eRemoveRunner(execOptions) {
+  const stdio = 'pipe';
+  const cmd = path.resolve(buildToolsSrcDir, 'e');
+  const args = ['remove'];
+
+  const o = {
+    name: name => {
+      args.push(name);
+      return o;
+    },
+    run: () => {
+      return runSync([cmd, ...args], { ...execOptions, stdio });
+    },
+  };
+
+  return o;
+}
+
 function createSandbox() {
   // create new temporary directories
   const tmpdir = fs.mkdtempSync(path.join(process.cwd(), 'build-tools-spec-'));
@@ -230,6 +251,9 @@ function createSandbox() {
     },
     eSyncRunner: () => {
       return eSyncRunner(execOptions);
+    },
+    eRemoveRunner: () => {
+      return eRemoveRunner(execOptions);
     },
     randomString: () =>
       Math.random()

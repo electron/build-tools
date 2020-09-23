@@ -128,6 +128,19 @@ program
   });
 
 program
+  .command('remove <name>')
+  .alias('rm')
+  .description('Remove build config <name> from list')
+  .action(name => {
+    try {
+      evmConfig.remove(name);
+      console.log(`Removed config ${color.config(name)}`);
+    } catch (e) {
+      fatal(e);
+    }
+  });
+
+program
   .command('show <subcommand>', 'Show info about the current build config')
   .command('test [specRunnerArgs...]', `Run Electron's spec runner`)
   .command('pr [options]', 'Open a GitHub URL where you can PR your changes')
