@@ -198,14 +198,30 @@ function sanitizeConfig(config) {
   return config;
 }
 
+function refreshConfig(name) {
+  const config = loadConfigFileRaw(name);
+
+  // if the config file contains outdated settings,
+  // replace it with updated settings
+  const serialize = item => yml.safeDump(item);
+  const oldval = serialize(config);
+  sanitizeConfig(config);
+  const newval = serialize(config);
+  if (oldval !== newval) {
+    save(name, config);
+  }
+
+  return config;
+}
+
 module.exports = {
-  current: () => sanitizeConfig(loadConfigFileRaw(currentName())),
+  current: () => refreshConfig(currentName()),
   currentName,
   execOf,
+  fetchByName: name => refreshConfig(name),
   names,
   outDir,
   pathOf,
   save,
   setCurrent,
-  fetchByName: name => sanitizeConfig(loadConfigFileRaw(name)),
 };
