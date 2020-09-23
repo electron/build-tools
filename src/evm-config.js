@@ -42,8 +42,8 @@ function filenameToConfigName(filename) {
 function save(name, o) {
   ensureDir(configRoot);
   const filename = pathOf(name);
-  const txt =
-    (path.extname(filename) === '.json' ? JSON.stringify(o, null, 2) : yml.safeDump(o)) + '\n';
+  const isJSON = path.extname(filename) === '.json';
+  const txt = (isJSON ? JSON.stringify(o, null, 2) : yml.safeDump(o)) + '\n';
   fs.writeFileSync(filename, txt);
 }
 
@@ -83,7 +83,7 @@ function currentName() {
   if (name) {
     return name;
   }
-  throw Error('No current build configuration');
+  throw Error('No current build configuration.');
 }
 
 function outDir(config) {
@@ -118,23 +118,31 @@ function maybeExtendConfig(config) {
 }
 
 function loadConfigFileRaw(name) {
-  const configFile = pathOf(name);
-  const configContents = fs.readFileSync(configFile);
+  const configPath = pathOf(name);
+
+  if (!fs.existsSync(configPath)) {
+    throw Error(`Build config ${color.config(name)} not found.`);
+  }
+
+  const configContents = fs.readFileSync(configPath);
   return maybeExtendConfig(yml.safeLoad(configContents));
 }
 
-function sanitizeConfig(config) {
+function sanitizeConfig(name, overwrite = false) {
+  const config = loadConfigFileRaw(name);
   const configName = color.config(currentName());
 
   if (!['none', 'cluster', 'cache-only'].includes(config.goma)) {
     config.goma = 'cache-only';
-    console.warn(
-      `${color.warn} Your evm config ${configName} does not define the ${color.config(
-        'goma',
-      )} property as one of "none", "cluster" or "cache-only" - we are defaulting to ${color.config(
-        'cache-only',
-      )} for you`,
-    );
+    if (!overwrite) {
+      console.warn(
+        `${color.warn} Your evm config ${configName} does not define the ${color.config(
+          'goma',
+        )} property as one of "none", "cluster" or "cache-only" - we're temporarily defaulting to ${color.config(
+          'cache-only',
+        )} for you.`,
+      );
+    }
   }
 
   if (
@@ -142,20 +150,19 @@ function sanitizeConfig(config) {
     (!config.gen || !config.gen.args || !config.gen.args.find(arg => arg.includes(goma.gnFilePath)))
   ) {
     config.gen.args.push(`import("${goma.gnFilePath}")`);
-    console.warn(
-      `${
-        color.warn
-      } Your evm config ${configName} has goma enabled but did not include the goma gn file "${color.path(
-        goma.gnFilePath,
-      )}" in the gen args - we've put it there for you`,
-    );
+    if (!overwrite) {
+      console.warn(
+        `${
+          color.warn
+        } Your evm config ${configName} has goma enabled but did not include the goma gn file "${color.path(
+          goma.gnFilePath,
+        )}" in the gen args - we've temporarily put it there for you.`,
+      );
+    }
   }
 
   if (config.origin) {
     const oldConfig = color.config(util.inspect({ origin: config.origin }));
-    console.warn(
-      `${color.warn} Your evm config ${configName} is using an old remote configuration "${oldConfig}" - we've updated it for you`,
-    );
 
     config.remotes = {
       electron: {
@@ -167,6 +174,12 @@ function sanitizeConfig(config) {
     };
 
     delete config.origin;
+
+    if (!overwrite) {
+      console.warn(
+        `${color.warn} Your evm config ${configName} is using an old remote configuration "${oldConfig}" - we've temporarily updated it for you.`,
+      );
+    }
   }
 
   if (
@@ -176,36 +189,47 @@ function sanitizeConfig(config) {
     config.gen.args.find(arg => arg.includes('cc_wrapper'))
   ) {
     config.gen.args = config.gen.args.filter(arg => !arg.includes('cc_wrapper'));
-    console.warn(
-      `${
-        color.warn
-      } Your evm config ${configName} has goma enabled but also defines a ${color.config(
-        'cc_wrapper',
-      )} argument - we have removed it for you`,
-    );
+
+    if (!overwrite) {
+      console.warn(
+        `${
+          color.warn
+        } Your evm config ${configName} has goma enabled but also defines a ${color.config(
+          'cc_wrapper',
+        )} argument - we've temporarily removed it for you`,
+      );
+    }
   }
 
   if (!config.env || !config.env.CHROMIUM_BUILDTOOLS_PATH) {
     const toolsPath = path.resolve(config.root, 'src', 'buildtools');
     config.env.CHROMIUM_BUILDTOOLS_PATH = toolsPath;
-    console.warn(
-      `${color.warn} Your evm config ${configName} has not defined ${color.config(
-        'CHROMIUM_BUILDTOOLS_PATH',
-      )} - we have added it for you`,
-    );
+
+    if (!overwrite) {
+      console.warn(
+        `${color.warn} Your evm config ${configName} has not defined ${color.config(
+          'CHROMIUM_BUILDTOOLS_PATH',
+        )} - we've temporarily added it for you`,
+      );
+    }
+  }
+
+  if (overwrite) {
+    save(name, config);
   }
 
   return config;
 }
 
 module.exports = {
-  current: () => sanitizeConfig(loadConfigFileRaw(currentName())),
+  current: () => sanitizeConfig(currentName()),
   currentName,
   execOf,
   names,
   outDir,
   pathOf,
+  sanitizeConfig,
   save,
   setCurrent,
-  fetchByName: name => sanitizeConfig(loadConfigFileRaw(name)),
+  fetchByName: name => sanitizeConfig(name),
 };
