@@ -158,12 +158,13 @@ program
   .action(() => console.log(`goma checksum: ${goma.downloadAndPrepare()}`));
 
 program
-  .command('sanitize-config <name>')
+  .command('sanitize-config [name]')
   .description('Update and overwrite an existing config to conform to latest build-tools updates')
   .action(name => {
     try {
-      evmConfig.sanitizeConfig(name, true);
-      console.log(`${color.success} Sanitized contents of ${color.config(name)}`);
+      const configName = name || evmConfig.currentName();
+      evmConfig.sanitizeConfig(configName, true);
+      console.log(`${color.success} Sanitized contents of ${color.config(configName)}`);
     } catch (e) {
       fatal(e);
     }
