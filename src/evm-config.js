@@ -135,7 +135,7 @@ function sanitizeConfig(name, overwrite = false) {
 
   if (!['none', 'cluster', 'cache-only'].includes(config.goma)) {
     config.goma = 'cache-only';
-    changes.push(`${color.config(goma)} property not found; defaulting to ${config.goma}`);
+    changes.push(`${color.config('goma')} property not found; defaulting to ${config.goma}`);
   }
 
   if (
