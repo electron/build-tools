@@ -36,7 +36,7 @@ try {
   if (choice) {
     choice.runner(evmConfig.current());
   } else {
-    throw Error(
+    fatal(
       `No debugger found in PATH! Looked for [${choices
         .map(choice => `'${choice.exec}'`)
         .join(', ')}]`,

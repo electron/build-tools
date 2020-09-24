@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
 const { unzipSync } = require('cross-zip');
-const { color } = require('./logging');
+const { color, fatal } = require('./logging');
 const depot = require('./depot-tools');
 
 const gomaDir = path.resolve(__dirname, '..', '..', 'third_party', 'goma');
@@ -84,7 +84,7 @@ function downloadAndPrepareGoma(config) {
       cwd: targetDir,
     });
     if (result.status !== 0) {
-      throw new Error('Failed to extract goma');
+      fatal('Failed to extract goma');
     }
   } else {
     unzipSync(tmpDownload, targetDir);

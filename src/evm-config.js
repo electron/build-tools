@@ -3,7 +3,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const yml = require('js-yaml');
-const { color } = require('./utils/logging');
+const { color, fatal } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
 const goma = require('./utils/goma');
 const util = require('util');
@@ -41,7 +41,7 @@ function filenameToConfigName(filename) {
 
 function testConfigExists(name) {
   if (!fs.existsSync(pathOf(name))) {
-    throw Error(
+    fatal(
       `Build config ${color.config(name)} not found. (Tried ${buildPathCandidates(name)
         .map(f => color.path(f))
         .join(', ')})`,
@@ -62,7 +62,7 @@ function setCurrent(name) {
   try {
     currentFiles.forEach(filename => fs.writeFileSync(filename, `${name}\n`));
   } catch (e) {
-    throw Error(`Unable to set evm config ${color.config(name)} (${e})`);
+    fatal(`Unable to set config ${color.config(name)}: `, e);
   }
 }
 
@@ -84,10 +84,9 @@ function currentName() {
       return;
     }
   }, null);
-  if (name) {
-    return name;
-  }
-  throw Error('No current build configuration.');
+
+  if (name) return name;
+  fatal('No current build configuration.');
 }
 
 function outDir(config) {
@@ -125,7 +124,7 @@ function loadConfigFileRaw(name) {
   const configPath = pathOf(name);
 
   if (!fs.existsSync(configPath)) {
-    throw Error(`Build config ${color.config(name)} not found.`);
+    fatal(`Build config ${color.config(name)} not found.`);
   }
 
   const configContents = fs.readFileSync(configPath);
@@ -134,7 +133,6 @@ function loadConfigFileRaw(name) {
 
 function sanitizeConfig(name, overwrite = false) {
   const config = loadConfigFileRaw(name);
-  const configName = color.config(currentName());
   const changes = [];
 
   if (!['none', 'cluster', 'cache-only'].includes(config.goma)) {
@@ -189,7 +187,7 @@ function sanitizeConfig(name, overwrite = false) {
     } else {
       console.warn(`${color.warn} We've made these temporary changes to your configuration:`);
       console.warn(changes.map(change => ` * ${change}`).join('\n'));
-      console.warn(`See ${color.cmd('e sanitize-config')} to make these changes permanent.`);
+      console.warn(`Run ${color.cmd('e sanitize-config')} to make these changes permanent.`);
     }
   }
 
@@ -206,14 +204,14 @@ function remove(name) {
     currentConfigName = null;
   }
   if (currentConfigName && currentConfigName === name) {
-    throw Error(`Config is currently in use`);
+    fatal(`Config is currently in use`);
   }
 
   const filename = pathOf(name);
   try {
     return fs.unlinkSync(filename);
   } catch (e) {
-    throw Error(`Unable to remove config ${color.config(name)} (${e})`);
+    fatal(`Unable to remove config ${color.config(name)}: `, e);
   }
 }
 

@@ -95,7 +95,7 @@ function ensureRoot(config) {
     console.info(`${color.info} Root ${color.path(root)} already exists.`);
     console.info(`${color.info} (OK if you are sharing $root between multiple build configs)`);
   } else if (fs.readdirSync(root).length > 0) {
-    throw Error(
+    fatal(
       `Root ${color.path(root)} exists and is not empty. Please choose a different root directory.`,
     );
   }
@@ -169,7 +169,7 @@ try {
   if (!options.force && fs.existsSync(filename)) {
     const existing = evmConfig.fetchByName(name);
     if (existing.root !== config.root) {
-      throw Error(
+      fatal(
         `Build config ${color.config(
           name,
         )} already exists and points at a different root folder! (${color.path(filename)})`,
@@ -179,7 +179,7 @@ try {
 
   // Make sure the goma options are valid
   if (!['none', 'cache-only', 'cluster'].includes(options.goma)) {
-    throw new Error(
+    fatal(
       `Config property ${color.config('goma')} must be one of ${color.config(
         'cache-only',
       )} or ${color.config('cluster')} but you provided ${color.config(options.goma)}`,
