@@ -1,6 +1,6 @@
 const cp = require('child_process');
 
-const { color } = require('./logging');
+const { color, fatal } = require('./logging');
 const { refreshPathVariable } = require('./refresh-path');
 const { whichAndFix } = require('./which');
 
@@ -69,7 +69,7 @@ const checkPlatformDependencies = () => {
     depsToResolve = newDeps;
 
     if (previousLength === depsToResolve.length) {
-      throw new Error(
+      fatal(
         'Unable to resolve dependencies, this is impossible so please raise an issue on the build-tools repository',
       );
     }

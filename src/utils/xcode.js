@@ -6,7 +6,7 @@ const { ensureDir } = require('./paths');
 const { getIsArm } = require('./arm');
 const evmConfig = require('../evm-config');
 
-const { color } = require('./logging');
+const { color, fatal } = require('./logging');
 
 const XcodeDir = path.resolve(__dirname, '..', '..', 'third_party', 'Xcode');
 const XcodePath = path.resolve(XcodeDir, 'Xcode.app');
@@ -139,7 +139,7 @@ function ensureXcode() {
         const newHash = hashFile(XcodeZip);
         if (newHash !== expectedXcodeHash) {
           rimraf.sync(XcodeZip);
-          throw new Error(
+          fatal(
             `Downloaded Xcode zip had hash "${newHash}" which does not match expected hash "${expectedXcodeHash}"`,
           );
         }

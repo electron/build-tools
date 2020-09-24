@@ -29,7 +29,7 @@ try {
     .trim();
 
   if (currentBranch !== 'master') {
-    throw new Error(
+    fatal(
       `build-tools is checked out on ${currentBranch} and not 'master' - please switch and try again.`,
     );
   }
