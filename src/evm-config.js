@@ -179,7 +179,7 @@ function sanitizeConfig(name, overwrite = false) {
     changes.push(`added ${color.config('CHROMIUM_BUILDTOOLS_PATH')} definition`);
   }
 
-  if (changes.length !== 0) {
+  if (changes.length > 0) {
     if (overwrite) {
       save(name, config);
     } else {
