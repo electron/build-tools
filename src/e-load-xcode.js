@@ -66,4 +66,4 @@ for (const sdk of SDK_TO_UNLINK) {
   childProcess.execFileSync('unlink', [targetDirectory]);
 }
 
-if (!process.argv.includes('--quiet')) console.log(color.done);
+if (!process.argv.includes('--quiet')) console.log(color.success);
