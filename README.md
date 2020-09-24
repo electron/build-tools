@@ -5,7 +5,7 @@ This repository contains helper/wrapper scripts to make building Electron easier
 ## Installation
 
 A handful of prerequisites, such as git, python, and npm, are
-required for building Electron itself; these can be found in 
+required for building Electron itself; these can be found in
 [Platform Prerequisites][platform-prerequisites]. `npm` can be used
 with `build-tools` itself as well, but we've configured it to run
 with `yarn`, so we also recommend you [install it to your system](https://yarnpkg.com/lang/en/docs/install/).
@@ -17,8 +17,8 @@ Windows if you install them, or use built-in tools like Windows'
 
 Please note that `build-tools` (due to nested dependencies) might not work properly in powershell, please use `cmd` on Windows for optimum results.
 
-```sh	
-# Install build-tools package globally:	
+```sh
+# Install build-tools package globally:
 npm i -g @electron/build-tools
 ```
 
@@ -315,6 +315,10 @@ $ cd `e show src base` && pwd
 
 $ ripgrep --t h TakeHeapSnapshot `e show src`
 ```
+
+### `e remove <name>`
+
+`e remove|rm <name>` removes a build config from the list.
 
 ### `e open <commit | issue | PR>`
 

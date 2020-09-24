@@ -39,6 +39,16 @@ function filenameToConfigName(filename) {
   return match ? match[1] : null;
 }
 
+function testConfigExists(name) {
+  if (!fs.existsSync(pathOf(name))) {
+    throw Error(
+      `Build config ${color.config(name)} not found. (Tried ${buildPathCandidates(name)
+        .map(f => color.path(f))
+        .join(', ')})`,
+    );
+  }
+}
+
 function save(name, o) {
   ensureDir(configRoot);
   const filename = pathOf(name);
@@ -48,13 +58,7 @@ function save(name, o) {
 }
 
 function setCurrent(name) {
-  if (!fs.existsSync(pathOf(name))) {
-    throw Error(
-      `Build config ${color.config(name)} not found. (Tried ${buildPathCandidates(name)
-        .map(f => color.path(f))
-        .join(', ')})`,
-    );
-  }
+  testConfigExists(name);
   try {
     currentFiles.forEach(filename => fs.writeFileSync(filename, `${name}\n`));
   } catch (e) {
@@ -135,7 +139,7 @@ function sanitizeConfig(name, overwrite = false) {
 
   if (!['none', 'cluster', 'cache-only'].includes(config.goma)) {
     config.goma = 'cache-only';
-    changes.push(`${color.config('goma')} property not found; defaulting to ${config.goma}`);
+    changes.push(`added missing property ${color.config('goma: cache-only')}`);
   }
 
   if (
@@ -160,7 +164,7 @@ function sanitizeConfig(name, overwrite = false) {
     };
 
     delete config.origin;
-    changes.push('replaced deprecated "origin" property with "remotes" property');
+    changes.push(`replaced superceded 'origin' property with 'remotes' property`);
   }
 
   if (
@@ -170,13 +174,13 @@ function sanitizeConfig(name, overwrite = false) {
     config.gen.args.find(arg => arg.includes('cc_wrapper'))
   ) {
     config.gen.args = config.gen.args.filter(arg => !arg.includes('cc_wrapper'));
-    changes.push(`removed a ${color.config('cc_wrapper')} definition because goma is enabled`);
+    changes.push(`removed ${color.config('cc_wrapper')} definition because goma is enabled`);
   }
 
   if (!config.env || !config.env.CHROMIUM_BUILDTOOLS_PATH) {
     const toolsPath = path.resolve(config.root, 'src', 'buildtools');
     config.env.CHROMIUM_BUILDTOOLS_PATH = toolsPath;
-    changes.push(`added ${color.config('CHROMIUM_BUILDTOOLS_PATH')} definition`);
+    changes.push(`defined ${color.config('CHROMIUM_BUILDTOOLS_PATH')}`);
   }
 
   if (changes.length > 0) {
@@ -192,15 +196,37 @@ function sanitizeConfig(name, overwrite = false) {
   return config;
 }
 
+function remove(name) {
+  testConfigExists(name);
+
+  let currentConfigName;
+  try {
+    currentConfigName = currentName();
+  } catch {
+    currentConfigName = null;
+  }
+  if (currentConfigName && currentConfigName === name) {
+    throw Error(`Config is currently in use`);
+  }
+
+  const filename = pathOf(name);
+  try {
+    return fs.unlinkSync(filename);
+  } catch (e) {
+    throw Error(`Unable to remove config ${color.config(name)} (${e})`);
+  }
+}
+
 module.exports = {
   current: () => sanitizeConfig(currentName()),
   currentName,
   execOf,
+  fetchByName: name => sanitizeConfig(name),
   names,
   outDir,
   pathOf,
+  remove,
   sanitizeConfig,
   save,
   setCurrent,
-  fetchByName: name => sanitizeConfig(name),
 };
