@@ -135,34 +135,20 @@ function loadConfigFileRaw(name) {
 function sanitizeConfig(name, overwrite = false) {
   const config = loadConfigFileRaw(name);
   const configName = color.config(currentName());
+  const changes = [];
 
   if (!['none', 'cluster', 'cache-only'].includes(config.goma)) {
     config.goma = 'cache-only';
-    if (!overwrite) {
-      console.warn(
-        `${color.warn} Your evm config ${configName} does not define the ${color.config(
-          'goma',
-        )} property as one of "none", "cluster" or "cache-only" - we're temporarily defaulting to ${color.config(
-          'cache-only',
-        )} for you.`,
-      );
-    }
+    changes.push(`added missing property ${color.config('goma: cache-only')}`);
   }
 
   if (
     config.goma !== 'none' &&
     (!config.gen || !config.gen.args || !config.gen.args.find(arg => arg.includes(goma.gnFilePath)))
   ) {
-    config.gen.args.push(`import("${goma.gnFilePath}")`);
-    if (!overwrite) {
-      console.warn(
-        `${
-          color.warn
-        } Your evm config ${configName} has goma enabled but did not include the goma gn file "${color.path(
-          goma.gnFilePath,
-        )}" in the gen args - we've temporarily put it there for you.`,
-      );
-    }
+    const str = `import("${goma.gnFilePath}")`;
+    config.gen.args.push(str);
+    changes.push(`added ${color.cmd(str)} needed by goma`);
   }
 
   if (config.origin) {
@@ -178,12 +164,7 @@ function sanitizeConfig(name, overwrite = false) {
     };
 
     delete config.origin;
-
-    if (!overwrite) {
-      console.warn(
-        `${color.warn} Your evm config ${configName} is using an old remote configuration "${oldConfig}" - we've temporarily updated it for you.`,
-      );
-    }
+    changes.push(`replaced superceded 'origin' property with 'remotes' property`);
   }
 
   if (
@@ -193,33 +174,23 @@ function sanitizeConfig(name, overwrite = false) {
     config.gen.args.find(arg => arg.includes('cc_wrapper'))
   ) {
     config.gen.args = config.gen.args.filter(arg => !arg.includes('cc_wrapper'));
-
-    if (!overwrite) {
-      console.warn(
-        `${
-          color.warn
-        } Your evm config ${configName} has goma enabled but also defines a ${color.config(
-          'cc_wrapper',
-        )} argument - we've temporarily removed it for you`,
-      );
-    }
+    changes.push(`removed ${color.config('cc_wrapper')} definition because goma is enabled`);
   }
 
   if (!config.env || !config.env.CHROMIUM_BUILDTOOLS_PATH) {
     const toolsPath = path.resolve(config.root, 'src', 'buildtools');
     config.env.CHROMIUM_BUILDTOOLS_PATH = toolsPath;
-
-    if (!overwrite) {
-      console.warn(
-        `${color.warn} Your evm config ${configName} has not defined ${color.config(
-          'CHROMIUM_BUILDTOOLS_PATH',
-        )} - we've temporarily added it for you`,
-      );
-    }
+    changes.push(`defined ${color.config('CHROMIUM_BUILDTOOLS_PATH')}`);
   }
 
-  if (overwrite) {
-    save(name, config);
+  if (changes.length > 0) {
+    if (overwrite) {
+      save(name, config);
+    } else {
+      console.warn(`${color.warn} We've made these temporary changes to your configuration:`);
+      console.warn(changes.map(change => ` * ${change}`).join('\n'));
+      console.warn(`See ${color.cmd('e sanitize-config')} to make these changes permanent.`);
+    }
   }
 
   return config;
@@ -250,6 +221,7 @@ module.exports = {
   current: () => sanitizeConfig(currentName()),
   currentName,
   execOf,
+  fetchByName: name => sanitizeConfig(name),
   names,
   outDir,
   pathOf,
@@ -257,5 +229,4 @@ module.exports = {
   sanitizeConfig,
   save,
   setCurrent,
-  fetchByName: name => sanitizeConfig(name),
 };
