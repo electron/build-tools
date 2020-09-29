@@ -20,6 +20,26 @@ function runGNGen(config) {
   depot.execFileSync(config, gnPath, execArgs, execOpts);
 }
 
+function runStrip(config) {
+  depot.ensure();
+  //console.log(evmConfig.outDir(config));
+  const gnPath = 'electron/script/strip-binaries.py';
+  const execArgs = ['-d', `out/${config.gen.out}` ];
+  const execOpts = { cwd: path.resolve(config.root, 'src') };
+
+  //delete dist.zip file
+  const distfile = [path.resolve(evmConfig.outDir(config),'dist.zip')];
+  if (fs.existsSync(distfile[0])){
+    console.log('dist.zip delete.');
+    depot.execFileSync(config, 'rm', distfile, execOpts);
+  }else{
+    console.log('dist.zip not found.');
+  }
+
+  //strip electron
+  depot.execFileSync(config, gnPath, execArgs, execOpts);
+}
+
 function ensureGNGen(config) {
   const buildfile = path.resolve(evmConfig.outDir(config), 'build.ninja');
   if (!fs.existsSync(buildfile)) return runGNGen(config);
@@ -128,7 +148,11 @@ try {
   if (index != -1) {
     args.splice(index, 1);
   }
-
+  console.log(pretty_targets[pretty]);
+  if(pretty_targets[pretty] =='electron:electron_dist_zip'){
+    console.log("====");
+    runStrip(config);
+  }
   runNinja(config, program.target || pretty_targets[pretty], args);
 } catch (e) {
   fatal(e);
