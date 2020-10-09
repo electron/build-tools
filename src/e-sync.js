@@ -10,14 +10,24 @@ const { ensureDir } = require('./utils/paths');
 const depot = require('./utils/depot-tools');
 
 function setRemotes(cwd, repo) {
-  for (const remote in repo) {
-    const cmd = 'git';
-    let args = ['remote', 'set-url', remote, repo[remote]];
-    const opts = { cwd };
-    childProcess.execFileSync(cmd, args, opts);
+  const cmd = 'git';
+  const opts = { cwd };
 
-    args.splice(-1, 0, '--push');
-    childProcess.execFileSync(cmd, args, opts);
+  const remotes = childProcess
+    .execFileSync(cmd, ['remote'], opts)
+    .toString('utf8')
+    .trim()
+    .split('\n');
+
+  for (const remote in repo) {
+    const remoteArgs = [remote, repo[remote]];
+
+    childProcess.execFileSync(
+      cmd,
+      ['remote', remotes.includes(remote) ? 'set-url' : 'add', ...remoteArgs],
+      opts,
+    );
+    childProcess.execFileSync(cmd, ['remote', 'set-url', '--push', ...remoteArgs], opts);
   }
 }
 
