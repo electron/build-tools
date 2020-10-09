@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const childProcess = require('child_process');
+const cp = require('child_process');
 const path = require('path');
 const program = require('commander');
 
@@ -11,13 +11,23 @@ const depot = require('./utils/depot-tools');
 
 function setRemotes(cwd, repo) {
   for (const remote in repo) {
-    const cmd = 'git';
-    let args = ['remote', 'set-url', remote, repo[remote]];
-    const opts = { cwd };
-    childProcess.execFileSync(cmd, args, opts);
+    // First check that the fork remote exists.
+    if (remote === 'fork') {
+      const remotes = cp
+        .execSync('git remote')
+        .toString()
+        .trim()
+        .split('\n');
 
-    args.splice(-1, 0, '--push');
-    childProcess.execFileSync(cmd, args, opts);
+      // If we've not added the fork remote, add it instead of updating the url.
+      if (!remotes.includes('fork')) {
+        cp.execSync(`git remote add ${remote} ${repo[remote]}`, { cwd });
+        break;
+      }
+    }
+
+    cp.execSync(`git remote set-url ${remote} ${repo[remote]}`, { cwd });
+    cp.execSync(`git remote set-url --push ${remote} ${repo[remote]}`, { cwd });
   }
 }
 
