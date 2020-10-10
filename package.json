@@ -7,8 +7,8 @@
   "main": "null",
   "private": true,
   "scripts": {
-    "lint": "prettier --check \"src/*.js\" \"tests/*.js\" \"src/e\"",
-    "prettier:write": "prettier --write \"src/*.js\" \"tests/*.js\" \"src/e\"",
+    "lint": "prettier --check \"src/**/*.js\" \"tests/*.js\" \"src/e\"",
+    "prettier:write": "prettier --write \"src/**/*.js\" \"tests/*.js\" \"src/e\"",
     "test": "nyc --reporter=lcov --reporter=text-summary jest --config=jest.fast.json",
     "test:all": "nyc --reporter=lcov --reporter=text-summary jest --config=jest.slow.json"
   },
