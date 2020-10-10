@@ -14,7 +14,7 @@ function setRemotes(cwd, repo) {
     // First check that the fork remote exists.
     if (remote === 'fork') {
       const remotes = cp
-        .execSync('git remote')
+        .execSync('git remote', { cwd })
         .toString()
         .trim()
         .split('\n');
