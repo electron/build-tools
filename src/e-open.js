@@ -80,7 +80,7 @@ async function getPullURLs(ref) {
     return [makeURL(parsed)];
   }
 
-  console.log(`${color.err} ${color.cmd(object)} is not a git object or pull request number`);
+  console.log(`${color.err} ${color.cmd(ref)} is not a git object or pull request number`);
   return [];
 }
 
