@@ -106,8 +106,8 @@ let name;
 let options;
 
 program
-  .arguments('<name>')
-  .description('Create a new build configuration')
+  .arguments('<sha1|PR#>')
+  .description('Open a GitHub URL for the given commit hash / pull # / issue #')
   .option('--print', 'Print the URL instead of opening it', false)
   .action((name_in, options_in) => {
     name = name_in;
