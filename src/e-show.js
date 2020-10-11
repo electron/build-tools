@@ -107,7 +107,7 @@ program
 
 program
   .command('root')
-  .description('Path of the top directory. Home of the .glient file')
+  .description('Path of the top directory. Home of the .gclient file')
   .action(() => {
     try {
       console.log(color.path(evmConfig.current().root));
