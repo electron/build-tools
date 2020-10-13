@@ -46,7 +46,7 @@ function downloadAndPrepareGoma(config) {
   if (fs.existsSync(path.resolve(gomaDir, 'goma_ctl.py'))) {
     depot.spawnSync(config, 'python', ['goma_ctl.py', 'stop'], {
       cwd: gomaDir,
-      stdio: 'ignore',
+      stdio: ['ignore'],
     });
   }
 
@@ -152,6 +152,7 @@ function ensureGomaStart(config) {
       ...process.env,
       ...gomaEnv(config),
     },
+    stdio: ['ignore'],
   });
 }
 
