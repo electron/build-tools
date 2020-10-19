@@ -2,6 +2,7 @@
 
 const childProcess = require('child_process');
 const open = require('open');
+const os = require('os');
 const path = require('path');
 const program = require('commander');
 
@@ -86,7 +87,8 @@ program
   .description('Environment variables set when building Electron')
   .action(() => {
     try {
-      const logger = ([key, val]) => console.log(`export ${key}=${val}`);
+      const exportKeyword = os.platform() === 'win32' ? 'set' : 'export';
+      const logger = ([key, val]) => console.log(`${exportKeyword} ${key}=${val}`);
       Object.entries(evmConfig.current().env).forEach(logger);
     } catch (e) {
       fatal(e);
