@@ -85,11 +85,18 @@ program
 program
   .command('env')
   .description('Environment variables set when building Electron')
-  .action(() => {
+  .option('--json', 'Output as JSON')
+  .action(options => {
     try {
-      const exportKeyword = os.platform() === 'win32' ? 'set' : 'export';
-      const logger = ([key, val]) => console.log(`${exportKeyword} ${key}=${val}`);
-      Object.entries(evmConfig.current().env).forEach(logger);
+      const { env } = evmConfig.current();
+
+      if (options.json) {
+        console.log(JSON.stringify(env, null, 2));
+      } else {
+        const exportKeyword = os.platform() === 'win32' ? 'set' : 'export';
+        const logger = ([key, val]) => console.log(`${exportKeyword} ${key}=${val}`);
+        Object.entries(env).forEach(logger);
+      }
     } catch (e) {
       fatal(e);
     }
