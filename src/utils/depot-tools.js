@@ -94,6 +94,7 @@ function depotExecFileSync(config, exec, args, opts_in) {
 }
 
 module.exports = {
+  opts: depotOpts,
   path: DEPOT_TOOLS_DIR,
   ensure: ensureDepotTools,
   execFileSync: depotExecFileSync,

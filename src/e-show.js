@@ -9,6 +9,7 @@ const program = require('commander');
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const goma = require('./utils/goma');
+const depot = require('./utils/depot-tools');
 
 function gitStatus(config) {
   const exec = 'git';
@@ -88,7 +89,15 @@ program
   .option('--json', 'Output as JSON')
   .action(options => {
     try {
-      const { env } = evmConfig.current();
+      const { env } = depot.opts(evmConfig.current());
+
+      // This command shows the difference between the current
+      // process.env and the env that is needed for running commands
+      for (const key of Object.keys(env)) {
+        if (process.env[key] === env[key]) {
+          delete env[key];
+        }
+      }
 
       if (options.json) {
         console.log(JSON.stringify(env, null, 2));
