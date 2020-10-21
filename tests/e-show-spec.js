@@ -1,3 +1,4 @@
+const os = require('os');
 const path = require('path');
 const createSandbox = require('./sandbox');
 
@@ -131,9 +132,10 @@ describe('e-show', () => {
       .env()
       .run();
     expect(result.exitCode).toBe(0);
+    const exportKeyword = os.platform() === 'win32' ? 'set' : 'export';
     const env = result.stdout
       .split('\n')
-      .map(line => line.slice('export '.length).split('=', 2))
+      .map(line => line.slice(`${exportKeyword} `.length).split('=', 2))
       .reduce((acc, [k, v]) => {
         acc[k] = v;
         return acc;
