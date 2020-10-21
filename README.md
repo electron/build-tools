@@ -247,8 +247,10 @@ target create "/Users/yourname/electron-gn/src/out/Testing/Electron.app/Contents
 
 ### `e test`
 
-`e test ` starts the local Electron build's test runner. Any extra args are passed
+`e test ` starts the local Electron build's test runner by default. Any extra args are passed
 along to the runner.
+
+You can also optionally specify an Electron executable to run by passing the path to a directory containing an Electron executable, as well as set a configuration option allowing you to specify a directory containing multiple Electron executable files by setting `config.electronBinaryDirectory` and then passing `--v=x.y.z`.
 
 To see all potential options for this command, run:
 
@@ -265,7 +267,7 @@ e test
 e test --runners=main
 ```
 
-Possible extra arguments to pass:
+Possible extra arguments to pass to the runner:
 * `--node` - Run Node.js' own tests with Electron in `RUN_AS_NODE` mode.
 * `--runners=<main|remote|native>` - The set of tests to run, can be either `main`, `remote`, or `native`.
 

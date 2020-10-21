@@ -93,18 +93,22 @@ function outDir(config) {
   return path.resolve(config.root, 'src', 'out', config.gen.out);
 }
 
+function electronExecPath(execName = 'electron') {
+  switch (os.type()) {
+    case 'Linux':
+      return execName;
+    case 'Darwin':
+      const upperExecName = execName[0].toUpperCase() + execName.slice(1);
+      return path.join(`${upperExecName}.app`, 'Contents', 'MacOS', upperExecName);
+    default:
+      return `${execName}.exe`;
+  }
+}
+
 function execOf(config) {
   const execName = (config.execName || 'electron').toLowerCase();
   const builddir = outDir(config);
-  switch (os.type()) {
-    case 'Linux':
-      return path.resolve(builddir, execName);
-    case 'Darwin':
-      const upperExecName = execName[0].toUpperCase() + execName.slice(1);
-      return path.resolve(builddir, `${upperExecName}.app`, 'Contents', 'MacOS', upperExecName);
-    default:
-      return path.resolve(builddir, `${execName}.exe`);
-  }
+  return path.resolve(builddir, electronExecPath(execName));
 }
 
 function maybeExtendConfig(config) {
@@ -150,8 +154,6 @@ function sanitizeConfig(name, overwrite = false) {
   }
 
   if (config.origin) {
-    const oldConfig = color.config(util.inspect({ origin: config.origin }));
-
     config.remotes = {
       electron: {
         origin: config.origin.electron,
@@ -162,7 +164,7 @@ function sanitizeConfig(name, overwrite = false) {
     };
 
     delete config.origin;
-    changes.push(`replaced superceded 'origin' property with 'remotes' property`);
+    changes.push(`replaced superseded 'origin' property with 'remotes' property`);
   }
 
   if (
@@ -218,6 +220,7 @@ function remove(name) {
 module.exports = {
   current: () => sanitizeConfig(currentName()),
   currentName,
+  electronExecPath,
   execOf,
   fetchByName: name => sanitizeConfig(name),
   names,
