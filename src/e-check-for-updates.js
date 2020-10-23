@@ -34,8 +34,8 @@ try {
     );
   }
 
-  console.log(color.childExec('git', ['pull'], execOpts));
-  cp.execSync('git pull', execOpts);
+  console.log(color.childExec('git', ['pull', '--rebase', '--autostash'], execOpts));
+  cp.execSync('git pull --rebase --autostash', execOpts);
   const headAfter = cp
     .execSync('git rev-parse --verify HEAD', execOpts)
     .toString('utf8')
