@@ -8,6 +8,7 @@ const program = require('commander');
 
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
+const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
 
 function gitStatus(config) {
@@ -81,6 +82,11 @@ program
       fatal(e);
     }
   });
+
+program
+  .command('depotdir')
+  .description('Path of the depot-tools directory')
+  .action(() => console.log(depot.path));
 
 program
   .command('env')
