@@ -28,7 +28,14 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 12.x
-    - name: yarn install and test
-      run: |
-        yarn install
-        yarn test
+    - name: Cache node_modules
+      id: cache-node-modules
+      uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}-node-modules
+    - name: Install
+      if: steps.cache-node-modules.outputs.cache-hit != 'true'
+      run: yarn install
+    - name: Test
+      run: yarn test
