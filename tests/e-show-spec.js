@@ -1,5 +1,6 @@
 const os = require('os');
 const path = require('path');
+const pathKey = require('path-key');
 const createSandbox = require('./sandbox');
 
 describe('e-show', () => {
@@ -141,7 +142,7 @@ describe('e-show', () => {
         return acc;
       }, {});
     expect(Object.keys(env).sort()).toEqual(
-      expect.arrayContaining(['CHROMIUM_BUILDTOOLS_PATH', 'GIT_CACHE_PATH']),
+      expect.arrayContaining(['CHROMIUM_BUILDTOOLS_PATH', 'GIT_CACHE_PATH', pathKey()]),
     );
   });
 });
