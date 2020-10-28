@@ -10,7 +10,6 @@ const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
-const depot = require('./utils/depot-tools');
 
 function gitStatus(config) {
   const exec = 'git';
