@@ -63,6 +63,31 @@ program
   .alias('make');
 
 program
+  .command('start')
+  .alias('run')
+  .description('Run the Electron executable')
+  .allowUnknownOption()
+  .action(() => {
+    try {
+      const exec = evmConfig.execOf(evmConfig.current());
+      const args = program.rawArgs.slice(3);
+      const opts = { stdio: 'inherit' };
+      console.log(color.childExec(exec, args, opts));
+      childProcess.execFileSync(exec, args, opts);
+    } catch (e) {
+      fatal(e);
+    }
+  })
+  .on('--help', () => {
+    console.log('');
+    console.log('Examples:');
+    console.log('');
+    console.log('  $ e start .');
+    console.log('  $ e start /path/to/app');
+    console.log('  $ e start /path/to/app --js-flags');
+  });
+
+program
   .command('node')
   .description('Run the Electron build as if it were a Node.js executable')
   .allowUnknownOption()
@@ -118,7 +143,7 @@ program
 program
   .command('show <subcommand>', 'Show info about the current build config')
   .command('test [specRunnerArgs...]', `Run Electron's spec runner`)
-  .command('start [version] ', 'Run the Electron executable')
+  .command('bin <version|path>', 'Run a specific Electron executable')
   .command('pr [options]', 'Open a GitHub URL where you can PR your changes')
   .command('patches <basename>', 'Refresh the patches in $root/src/electron/patches/$basename')
   .command('open <sha1|PR#>', 'Open a GitHub URL for the given commit hash / pull # / issue #')

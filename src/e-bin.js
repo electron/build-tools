@@ -20,11 +20,9 @@ program
     console.log('');
     console.log('Examples:');
     console.log('');
-    console.log('  $ e start .');
-    console.log('  $ e start /path/to/app');
-    console.log('  $ e start --v=1.2.3 /path/to/app');
-    console.log('  $ e start --path=/path/to/electron/exec /path/to/app');
-    console.log('  $ e start /path/to/app --js-flags');
+    console.log('  $ e bin --v=1.2.3 /path/to/app');
+    console.log('  $ e bin --path=/path/to/electron/exec /path/to/app');
+    console.log('  $ e bin /path/to/app --js-flags');
   })
   .parse(process.argv);
 
@@ -65,8 +63,8 @@ try {
     args = program.rawArgs.slice(4);
     exec = path.join(program.path, evmConfig.electronExecPath());
   } else {
-    args = program.rawArgs.slice(2);
-    exec = evmConfig.execOf(config);
+    console.error(`${color.err} Must provide either a version or path.`);
+    process.exit(1);
   }
 
   const opts = { stdio: 'inherit' };
