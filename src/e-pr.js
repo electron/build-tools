@@ -32,12 +32,12 @@ function guessPRTarget(config) {
 }
 
 function guessPRSource(config) {
-  const command = 'git rev-parse --abbrev-ref --symbolic-full-name @{upstream}';
+  const command = 'git rev-parse --abbrev-ref HEAD';
+
   const cwd = path.resolve(config.root, 'src', 'electron');
   const options = { cwd, encoding: 'utf8' };
-  const branch = childProcess.execSync(command, options).trim();
 
-  return branch.startsWith('origin/') ? branch.slice(7) : branch;
+  return childProcess.execSync(command, options).trim();
 }
 
 function pullRequestSource(source) {
@@ -48,7 +48,7 @@ function pullRequestSource(source) {
 
   const config = evmConfig.current();
 
-  if (source.startsWith('fork/')) {
+  if (config.remotes.electron.fork) {
     const command = 'git remote get-url fork';
     const cwd = path.resolve(config.root, 'src', 'electron');
     const options = { cwd, encoding: 'utf8' };
@@ -56,7 +56,7 @@ function pullRequestSource(source) {
 
     for (const regex of regexes) {
       if (regex.test(remoteUrl)) {
-        return `${regex.exec(remoteUrl)[1]}:${source.slice(5)}`;
+        return `${regex.exec(remoteUrl)[1]}:${source}`;
       }
     }
   }
