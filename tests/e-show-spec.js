@@ -133,7 +133,8 @@ describe('e-show', () => {
       .env()
       .run();
     expect(result.exitCode).toBe(0);
-    const exportKeyword = os.platform() === 'win32' ? 'set' : 'export';
+    const isWindows = os.platform() === 'win32';
+    const exportKeyword = isWindows ? 'set' : 'export';
     const env = result.stdout
       .split('\n')
       .map(line => line.slice(`${exportKeyword} `.length).split('=', 2))
@@ -141,8 +142,12 @@ describe('e-show', () => {
         acc[k] = v;
         return acc;
       }, {});
-    expect(Object.keys(env).sort()).toEqual(
+    const envKeys = Object.keys(env).sort();
+    expect(envKeys).toEqual(
       expect.arrayContaining(['CHROMIUM_BUILDTOOLS_PATH', 'GIT_CACHE_PATH', pathKey()]),
+    );
+    expect(envKeys).toEqual(
+      (isWindows ? expect : expect.not).arrayContaining(['DEPOT_TOOLS_WIN_TOOLCHAIN']),
     );
   });
 });
