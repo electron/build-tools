@@ -1,13 +1,20 @@
-name: Lint
+name: Continuous Integration
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
-  lint:
-    name: Lint
+  build:
+    name: Test
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
+      fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
     - name: Set git global config (Windows)
@@ -15,7 +22,14 @@ jobs:
       run: |
         git config --global core.autocrlf false
         git config --global core.eol lf
+        git config --global core.filemode false
+        git config --global branch.autosetuprebase always
+    - name: Install dependencies (Windows)
+      if: ${{ matrix.os == 'windows-latest' }}
+      run: pip install pywin32
     - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
     - name: Use Node.js v12.x
       uses: actions/setup-node@v1
       with:
@@ -29,5 +43,5 @@ jobs:
     - name: Install
       if: steps.cache-node-modules.outputs.cache-hit != 'true'
       run: yarn install
-    - name: Lint
-      run: yarn lint
+    - name: Test
+      run: yarn test

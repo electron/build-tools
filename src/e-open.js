@@ -80,7 +80,7 @@ async function getPullURLs(ref) {
     return [makeURL(parsed)];
   }
 
-  console.log(`${color.err} ${color.cmd(object)} is not a git object or pull request number`);
+  console.log(`${color.err} ${color.cmd(ref)} is not a git object or pull request number`);
   return [];
 }
 
@@ -106,8 +106,8 @@ let name;
 let options;
 
 program
-  .arguments('<name>')
-  .description('Create a new build configuration')
+  .arguments('<sha1|PR#>')
+  .description('Open a GitHub URL for the given commit hash / pull # / issue #')
   .option('--print', 'Print the URL instead of opening it', false)
   .action((name_in, options_in) => {
     name = name_in;

@@ -73,7 +73,7 @@ function expectedXcodeVersion() {
   if (!XcodeVersions[version]) {
     console.warn(
       color.warn,
-      `automatically detected an unkown version of Xcode ${color.path(
+      `automatically detected an unknown version of Xcode ${color.path(
         version,
       )}, falling back to default of`,
       fallbackXcode,

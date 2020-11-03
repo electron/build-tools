@@ -1,4 +1,6 @@
+const os = require('os');
 const path = require('path');
+const pathKey = require('path-key');
 const createSandbox = require('./sandbox');
 
 describe('e-show', () => {
@@ -131,15 +133,21 @@ describe('e-show', () => {
       .env()
       .run();
     expect(result.exitCode).toBe(0);
+    const isWindows = os.platform() === 'win32';
+    const exportKeyword = isWindows ? 'set' : 'export';
     const env = result.stdout
       .split('\n')
-      .map(line => line.slice('export '.length).split('=', 2))
+      .map(line => line.slice(`${exportKeyword} `.length).split('=', 2))
       .reduce((acc, [k, v]) => {
         acc[k] = v;
         return acc;
       }, {});
-    expect(Object.keys(env).sort()).toEqual(
-      expect.arrayContaining(['CHROMIUM_BUILDTOOLS_PATH', 'GIT_CACHE_PATH']),
+    const envKeys = Object.keys(env).sort();
+    expect(envKeys).toEqual(
+      expect.arrayContaining(['CHROMIUM_BUILDTOOLS_PATH', 'GIT_CACHE_PATH', pathKey()]),
+    );
+    expect(envKeys).toEqual(
+      (isWindows ? expect : expect.not).arrayContaining(['DEPOT_TOOLS_WIN_TOOLCHAIN']),
     );
   });
 });

@@ -2,11 +2,13 @@
 
 const childProcess = require('child_process');
 const open = require('open');
+const os = require('os');
 const path = require('path');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
+const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
 
 function gitStatus(config) {
@@ -82,12 +84,33 @@ program
   });
 
 program
+  .command('depotdir')
+  .description('Path of the depot-tools directory')
+  .action(() => console.log(depot.path));
+
+program
   .command('env')
   .description('Environment variables set when building Electron')
-  .action(() => {
+  .option('--json', 'Output as JSON')
+  .action(options => {
     try {
-      const logger = ([key, val]) => console.log(`export ${key}=${val}`);
-      Object.entries(evmConfig.current().env).forEach(logger);
+      const { env } = depot.opts(evmConfig.current());
+
+      // This command shows the difference between the current
+      // process.env and the env that is needed for running commands
+      for (const key of Object.keys(env)) {
+        if (process.env[key] === env[key]) {
+          delete env[key];
+        }
+      }
+
+      if (options.json) {
+        console.log(JSON.stringify(env, null, 2));
+      } else {
+        const exportKeyword = os.platform() === 'win32' ? 'set' : 'export';
+        const logger = ([key, val]) => console.log(`${exportKeyword} ${key}=${val}`);
+        Object.entries(env).forEach(logger);
+      }
     } catch (e) {
       fatal(e);
     }
@@ -107,7 +130,7 @@ program
 
 program
   .command('root')
-  .description('Path of the top directory. Home of the .glient file')
+  .description('Path of the top directory. Home of the .gclient file')
   .action(() => {
     try {
       console.log(color.path(evmConfig.current().root));

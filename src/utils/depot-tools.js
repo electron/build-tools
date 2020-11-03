@@ -41,6 +41,25 @@ function ensureDepotTools() {
   }
 }
 
+function platformOpts() {
+  let opts = {};
+
+  switch (os.platform()) {
+    case 'win32':
+      opts = {
+        DEPOT_TOOLS_WIN_TOOLCHAIN: '1',
+        DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL:
+          'https://electron-build-tools.s3-us-west-2.amazonaws.com/win32/toolchains/_',
+        GYP_MSVS_HASH_9ff60e43ba91947baca460d0ca3b1b980c3a2c23:
+          '6d205e765a23d3cbe0fcc8d1191ae406d8bf9c04',
+        GYP_MSVS_HASH_a687d8e2e4114d9015eb550e1b156af21381faac:
+          'b1bdbc45421e4e0ff0584c4dbe583e93b046a411',
+      };
+  }
+
+  return opts;
+}
+
 function depotOpts(config, opts = {}) {
   // some defaults
   opts = {
@@ -54,13 +73,7 @@ function depotOpts(config, opts = {}) {
     PYTHONDONTWRITEBYTECODE: '1', // depot needs it
     DEPOT_TOOLS_METRICS: '0', // disable depot metrics
     ...process.env,
-    DEPOT_TOOLS_WIN_TOOLCHAIN: '1',
-    DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL:
-      'https://electron-build-tools.s3-us-west-2.amazonaws.com/win32/toolchains/_',
-    GYP_MSVS_HASH_9ff60e43ba91947baca460d0ca3b1b980c3a2c23:
-      '6d205e765a23d3cbe0fcc8d1191ae406d8bf9c04',
-    GYP_MSVS_HASH_a687d8e2e4114d9015eb550e1b156af21381faac:
-      'b1bdbc45421e4e0ff0584c4dbe583e93b046a411',
+    ...platformOpts(),
     ...config.env,
     ...opts.env,
     // Circular reference so we have to delay load
@@ -94,6 +107,7 @@ function depotExecFileSync(config, exec, args, opts_in) {
 }
 
 module.exports = {
+  opts: depotOpts,
   path: DEPOT_TOOLS_DIR,
   ensure: ensureDepotTools,
   execFileSync: depotExecFileSync,

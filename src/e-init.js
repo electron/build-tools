@@ -198,7 +198,7 @@ try {
 
   // (maybe) run sync to ensure external binaries are downloaded
   if (program.bootstrap) {
-    childProcess.execFileSync(process.execPath, [e, 'sync', '-v', '--ignore_locks'], opts);
+    childProcess.execFileSync(process.execPath, [e, 'sync', '-v'], opts);
   }
 
   // maybe authenticate with Goma

@@ -51,8 +51,8 @@ function ensureGNGen(config) {
     return runGNGen(config);
 }
 
-function runNinja(config, target, ninjaArgs) {
-  if (config.goma !== 'none') {
+function runNinja(config, target, useGoma, ninjaArgs) {
+  if (useGoma && config.goma !== 'none') {
     goma.downloadAndPrepare(config);
 
     if (config.goma === 'cluster') {
@@ -91,7 +91,10 @@ function runNinja(config, target, ninjaArgs) {
 
   const exec = os.platform === 'win32' ? 'ninja.exe' : 'ninja';
   const args = [...ninjaArgs, target];
-  const opts = { cwd: evmConfig.outDir(config) };
+  const opts = {
+    cwd: evmConfig.outDir(config),
+    ...(useGoma ? {} : { env: { GOMA_DISABLED: true } }),
+  };
   depot.execFileSync(config, exec, args, opts);
 }
 
@@ -102,6 +105,7 @@ program
   .option('--list-targets', 'Show all supported targets', false)
   .option('--gen', 'Force a re-run of `gn gen` before building', false)
   .option('-t|--target [target]', 'Forces a specific ninja target')
+  .option('--no-goma', 'Build without goma', false)
   .parse(process.argv);
 
 try {
@@ -148,12 +152,12 @@ try {
   if (index != -1) {
     args.splice(index, 1);
   }
+
   console.log(pretty_targets[pretty]);
   if(pretty_targets[pretty] =='electron:electron_dist_zip'){
-    console.log("====");
     runStrip(config);
   }
-  runNinja(config, program.target || pretty_targets[pretty], args);
+  runNinja(config, program.target || pretty_targets[pretty], program.goma, args);
 } catch (e) {
   fatal(e);
 }
