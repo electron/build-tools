@@ -28,9 +28,10 @@ function exportPatches(target) {
         encoding: 'utf8',
       });
     } else if (targets[target]) {
+      const script = path.resolve(srcdir, 'electron', 'script', 'git-export-patches');
       childProcess.execFileSync(
-        path.resolve(srcdir, 'electron', 'script', 'git-export-patches'),
-        ['-o', path.resolve(srcdir, 'electron', 'patches', target)],
+        'python',
+        [script, '-o', path.resolve(srcdir, 'electron', 'patches', target)],
         { cwd: path.resolve(root, targets[target]), stdio: 'inherit', encoding: 'utf8' },
       );
     } else {
