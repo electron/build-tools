@@ -82,7 +82,18 @@ function depotOpts(config, opts = {}) {
 
   // put depot tools at the front of the path
   const key = pathKey();
-  opts.env[key] = [DEPOT_TOOLS_DIR, process.env[key]].join(path.delimiter);
+  const paths = [DEPOT_TOOLS_DIR];
+
+  // On apple silicon the default python2 binary does not work
+  // with vpython.  The one depot tools vends _does_ work.  So we
+  // add that one to the path ahead of your default python
+  if (process.platform === 'darwin' && process.arch === 'arm64') {
+    const pythonRelDirFile = path.resolve(DEPOT_TOOLS_DIR, 'python_bin_reldir.txt');
+    if (fs.existsSync(pythonRelDirFile)) {
+      paths.push(path.resolve(DEPOT_TOOLS_DIR, fs.readFileSync(pythonRelDirFile, 'utf8').trim()));
+    }
+  }
+  opts.env[key] = [...paths, process.env[key]].join(path.delimiter);
 
   return opts;
 }
