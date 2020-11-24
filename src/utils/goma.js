@@ -19,6 +19,12 @@ const GOMA_PLATFORM_SHAS = {
   win32: 'cf73db544caf077fdf50b73c5c56d4d3a4cfca3c9e333c3494523e00a9d667a0',
 };
 
+const GOMA_ONE_FOR_ALL_PLATFORMS_SHAS = {
+  darwin: '97bfea30079f4376773f48e0a5c4cd4ffeaa9c455d1c2e91881fd8696b01c205',
+  linux: 'f615bf878f8eeee7bb8bc87034cc22e3a8a5a88e8ad63f45bdd6441979c63b8a',
+  win32: '064e0beb3c11b82b66ae4b4959e6c0cdaa2116d77c50841e4a213d4f4fb1aeaf',
+};
+
 const isSupportedPlatform = !!GOMA_PLATFORM_SHAS[process.platform];
 
 function downloadAndPrepareGoma(config) {
@@ -29,7 +35,9 @@ function downloadAndPrepareGoma(config) {
     console.log(`Writing new goma.gn file ${color.path(gomaGnFile)}`);
     fs.writeFileSync(gomaGnFile, gomaGnContents);
   }
-  const sha = GOMA_PLATFORM_SHAS[process.platform];
+  const sha = config.gomaOneForAll
+    ? GOMA_ONE_FOR_ALL_PLATFORMS_SHAS[process.platform]
+    : GOMA_PLATFORM_SHAS[process.platform];
   if (
     fs.existsSync(gomaShaFile) &&
     fs.readFileSync(gomaShaFile, 'utf8') === sha &&
