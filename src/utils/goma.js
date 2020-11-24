@@ -35,9 +35,10 @@ function downloadAndPrepareGoma(config) {
     console.log(`Writing new goma.gn file ${color.path(gomaGnFile)}`);
     fs.writeFileSync(gomaGnFile, gomaGnContents);
   }
-  const sha = config.gomaOneForAll
-    ? GOMA_ONE_FOR_ALL_PLATFORMS_SHAS[process.platform]
-    : GOMA_PLATFORM_SHAS[process.platform];
+  const sha =
+    config && config.gomaOneForAll
+      ? GOMA_ONE_FOR_ALL_PLATFORMS_SHAS[process.platform]
+      : GOMA_PLATFORM_SHAS[process.platform];
   if (
     fs.existsSync(gomaShaFile) &&
     fs.readFileSync(gomaShaFile, 'utf8') === sha &&
