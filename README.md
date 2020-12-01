@@ -398,3 +398,19 @@ export EVM_CURRENT_FILE="$(mktemp --tmpdir evm-current.XXXXXXXX.txt)"
 
 This will create per-shell temporary files in which he active config file can be changed with `e use`.
 
+### Disabling Automatic Updates
+
+With the default configuration, build-tools will automatically check for updates every 4 hours.
+
+You can enable and disable these automatic updates with the following commands:
+
+```
+e auto-update enable
+e auto-update disable
+```
+
+Regardless of whether automatic updates are enabled, you can manually call the following command to immediately trigger an update.
+
+```
+e auto-update check
+```
