@@ -31,7 +31,7 @@ function setRemotes(cwd, repo) {
   }
 }
 
-function runGClientSync(config, syncArgs) {
+function runGClientSync(config, syncArgs, syncOpts) {
   const srcdir = path.resolve(config.root, 'src');
   ensureDir(srcdir);
 
@@ -45,6 +45,11 @@ function runGClientSync(config, syncArgs) {
   const args = ['gclient.py', 'sync', '--with_branch_heads', '--with_tags', '-vv', ...syncArgs];
   const opts = {
     cwd: srcdir,
+    env: syncOpts.threeWay
+      ? {
+          ELECTRON_USE_THREE_WAY_MERGE_FOR_PATCHES: 'true',
+        }
+      : {},
   };
   depot.execFileSync(config, exec, args, opts);
 
@@ -55,15 +60,22 @@ function runGClientSync(config, syncArgs) {
   setRemotes(nodejsPath, config.remotes.node);
 }
 
-program
+const opts = program
+  .option(
+    '--3|--three-way',
+    'Apply Electron patches using a three-way merge, useful when upgrading Chromium',
+  )
   .arguments('[gclientArgs...]')
   .allowUnknownOption()
   .description('Fetch source / synchronize repository checkouts')
   .parse(process.argv);
 
 try {
-  const syncArgs = program.parseOptions(process.argv).unknown;
-  runGClientSync(evmConfig.current(), syncArgs);
+  const { threeWay } = opts;
+  const { unknown: syncArgs } = program.parseOptions(process.argv);
+  runGClientSync(evmConfig.current(), syncArgs, {
+    threeWay,
+  });
 } catch (e) {
   fatal(e);
 }
