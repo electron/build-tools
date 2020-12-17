@@ -14,12 +14,6 @@ const gomaBaseURL = 'https://electron-build-tools.s3-us-west-2.amazonaws.com/bui
 const gomaLoginFile = path.resolve(gomaDir, 'last-known-login');
 
 const GOMA_PLATFORM_SHAS = {
-  darwin: 'df03a27c01478fef5c6be70f01e4ea0a34410f931867badf1a25e02d0d7391d2',
-  linux: '6c87b74069b6a900dd3e46a34493320981d4a358ca6ce05f615bb2d44970c61d',
-  win32: 'cf73db544caf077fdf50b73c5c56d4d3a4cfca3c9e333c3494523e00a9d667a0',
-};
-
-const GOMA_ONE_FOR_ALL_PLATFORMS_SHAS = {
   darwin: '97bfea30079f4376773f48e0a5c4cd4ffeaa9c455d1c2e91881fd8696b01c205',
   linux: 'f615bf878f8eeee7bb8bc87034cc22e3a8a5a88e8ad63f45bdd6441979c63b8a',
   win32: '064e0beb3c11b82b66ae4b4959e6c0cdaa2116d77c50841e4a213d4f4fb1aeaf',
@@ -35,10 +29,7 @@ function downloadAndPrepareGoma(config) {
     console.log(`Writing new goma.gn file ${color.path(gomaGnFile)}`);
     fs.writeFileSync(gomaGnFile, gomaGnContents);
   }
-  const sha =
-    config && config.gomaOneForAll
-      ? GOMA_ONE_FOR_ALL_PLATFORMS_SHAS[process.platform]
-      : GOMA_PLATFORM_SHAS[process.platform];
+  const sha = GOMA_PLATFORM_SHAS[process.platform];
   if (
     fs.existsSync(gomaShaFile) &&
     fs.readFileSync(gomaShaFile, 'utf8') === sha &&

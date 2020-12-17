@@ -62,11 +62,7 @@ function runNinja(config, target, useGoma, ninjaArgs) {
 
     goma.ensure(config);
     if (!ninjaArgs.includes('-j') && !ninjaArgs.find(arg => /^-j[0-9]+$/.test(arg.trim()))) {
-      if (config.gomaOneForAll) {
-        ninjaArgs.push('-j', 200);
-      } else {
-        ninjaArgs.push('-j', process.platform === 'darwin' ? 50 : 200);
-      }
+      ninjaArgs.push('-j', 200);
     }
   }
 
