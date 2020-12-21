@@ -386,6 +386,26 @@ $ e sanitize-config --help
 
 Sometimes `build-tools` will make updates to its config requirements. In these events warnings will be output to console to inform you that `build-tools` has temporarily handled the issues. You can make these warnings go away either by manually updating your config files or by running this command to automatically overwrite the existing configs to update formatting.
 
+## Common Usage
+
+### Building a Specific Electron Version
+
+`e init` checks out the HEAD of the master branch. To build against a specific version of Electron, checkout that version with these commands:
+
+```sh
+# Change working directory to the Electron source directory
+cd `e show src`
+
+# Checkout the desired Electron version (in this case, 11.0.0)
+git checkout tags/v11.0.0 -b v11.0.0
+
+# Sync dependencies with the current branch
+e sync
+
+# Build Electron
+e build
+```
+
 ## Advanced Usage
 
 ### Per-Session Active Configs
