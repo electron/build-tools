@@ -187,7 +187,7 @@ program
       goma.downloadAndPrepare(evmConfig.current());
       cwd = goma.dir;
       args[0] = `${args[0]}.py`;
-      args.unshift(paths.python2);
+      args.unshift(paths.python);
     }
 
     const { status, error } = depot.spawnSync(evmConfig.current(), args[0], args.slice(1), {
