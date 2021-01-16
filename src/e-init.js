@@ -71,7 +71,7 @@ function createConfig(options) {
 function runGClientConfig(config) {
   const { root } = config;
   depot.ensure();
-  const exec = paths.python2;
+  const exec = paths.python;
   const args = [
     'gclient.py',
     'config',

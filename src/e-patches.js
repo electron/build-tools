@@ -23,7 +23,7 @@ function exportPatches(target) {
 
     if (target === 'all') {
       const script = path.resolve(srcdir, 'electron', 'script', 'export_all_patches.py');
-      childProcess.execFileSync(paths.python2, [script, patchesConfig], {
+      childProcess.execFileSync(paths.python, [script, patchesConfig], {
         cwd: root,
         stdio: 'inherit',
         encoding: 'utf8',
@@ -31,7 +31,7 @@ function exportPatches(target) {
     } else if (targets[target]) {
       const script = path.resolve(srcdir, 'electron', 'script', 'git-export-patches');
       childProcess.execFileSync(
-        paths.python2,
+        paths.python,
         [script, '-o', path.resolve(srcdir, 'electron', 'patches', target)],
         { cwd: path.resolve(root, targets[target]), stdio: 'inherit', encoding: 'utf8' },
       );

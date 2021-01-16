@@ -42,7 +42,7 @@ function runNinja(config, target, useGoma, ninjaArgs) {
         console.log('Not Authenticated - Triggering Goma Login');
         const { status, error } = depot.spawnSync(
           evmConfig.current(),
-          paths.python2,
+          paths.python,
           ['goma_auth.py', 'login'],
           {
             cwd: goma.dir,

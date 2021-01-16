@@ -186,7 +186,7 @@ program
         stdio: 'inherit',
         cwd: goma.dir,
       };
-      childProcess.execFileSync(paths.python2, ['goma_ctl.py', 'stat'], options);
+      childProcess.execFileSync(paths.python, ['goma_ctl.py', 'stat'], options);
     } catch (e) {
       fatal(e);
     }

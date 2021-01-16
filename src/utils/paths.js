@@ -20,6 +20,6 @@ function ensureDir(dir) {
 
 module.exports = {
   ensureDir,
-  python2: which.sync('python2') || which.sync('python'),
+  python: which.sync('python2') || which.sync('python'),
   resolvePath,
 };
