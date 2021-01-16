@@ -6,6 +6,7 @@ const program = require('commander');
 const childProcess = require('child_process');
 
 const evmConfig = require('./evm-config.js');
+const paths = require('./utils/paths');
 const { color, fatal } = require('./utils/logging');
 
 function exportPatches(target) {
@@ -22,7 +23,7 @@ function exportPatches(target) {
 
     if (target === 'all') {
       const script = path.resolve(srcdir, 'electron', 'script', 'export_all_patches.py');
-      childProcess.execFileSync('python', [script, patchesConfig], {
+      childProcess.execFileSync(paths.python2, [script, patchesConfig], {
         cwd: root,
         stdio: 'inherit',
         encoding: 'utf8',
@@ -30,7 +31,7 @@ function exportPatches(target) {
     } else if (targets[target]) {
       const script = path.resolve(srcdir, 'electron', 'script', 'git-export-patches');
       childProcess.execFileSync(
-        'python',
+        paths.python2,
         [script, '-o', path.resolve(srcdir, 'electron', 'patches', target)],
         { cwd: path.resolve(root, targets[target]), stdio: 'inherit', encoding: 'utf8' },
       );

@@ -8,6 +8,7 @@ const evmConfig = require('./evm-config');
 const { fatal } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
 const depot = require('./utils/depot-tools');
+const paths = require('./utils/paths');
 
 function setRemotes(cwd, repo) {
   for (const remote in repo) {
@@ -41,7 +42,7 @@ function runGClientSync(config, syncArgs, syncOpts) {
 
   depot.ensure();
 
-  const exec = 'python';
+  const exec = paths.python2;
   const args = ['gclient.py', 'sync', '--with_branch_heads', '--with_tags', '-vv', ...syncArgs];
   const opts = {
     cwd: srcdir,

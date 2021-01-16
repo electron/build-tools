@@ -10,6 +10,7 @@ const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
+const paths = require('./utils/paths');
 
 function gitStatus(config) {
   const exec = 'git';
@@ -185,7 +186,7 @@ program
         stdio: 'inherit',
         cwd: goma.dir,
       };
-      childProcess.execFileSync('python', ['goma_ctl.py', 'stat'], options);
+      childProcess.execFileSync(paths.python2, ['goma_ctl.py', 'stat'], options);
     } catch (e) {
       fatal(e);
     }

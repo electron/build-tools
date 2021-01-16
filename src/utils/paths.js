@@ -1,6 +1,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const which = require('which');
 const { color } = require('./logging');
 
 function resolvePath(p) {
@@ -18,6 +19,7 @@ function ensureDir(dir) {
 }
 
 module.exports = {
-  resolvePath,
   ensureDir,
+  python2: which.sync('python2') || which.sync('python'),
+  resolvePath,
 };

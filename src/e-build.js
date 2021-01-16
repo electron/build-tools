@@ -9,6 +9,7 @@ const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
+const paths = require('./utils/paths');
 
 function runGNGen(config) {
   depot.ensure();
@@ -41,7 +42,7 @@ function runNinja(config, target, useGoma, ninjaArgs) {
         console.log('Not Authenticated - Triggering Goma Login');
         const { status, error } = depot.spawnSync(
           evmConfig.current(),
-          'python',
+          paths.python2,
           ['goma_auth.py', 'login'],
           {
             cwd: goma.dir,

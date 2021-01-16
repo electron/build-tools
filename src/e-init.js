@@ -11,6 +11,7 @@ const { color, fatal } = require('./utils/logging');
 const { resolvePath, ensureDir } = require('./utils/paths');
 const goma = require('./utils/goma');
 const depot = require('./utils/depot-tools');
+const paths = require('./utils/paths');
 const { checkGlobalGitConfig } = require('./utils/git');
 const { checkPlatformDependencies } = require('./utils/deps-check');
 
@@ -70,7 +71,7 @@ function createConfig(options) {
 function runGClientConfig(config) {
   const { root } = config;
   depot.ensure();
-  const exec = 'python';
+  const exec = paths.python2;
   const args = [
     'gclient.py',
     'config',
