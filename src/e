@@ -175,6 +175,7 @@ program
   .alias('d')
   .description('Run a command from the depot-tools directory with the correct configuration')
   .allowUnknownOption()
+  .helpOption('\0')
   .action(() => {
     const args = process.argv.slice(3);
     if (args.length === 0) {
