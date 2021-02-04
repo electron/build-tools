@@ -155,7 +155,14 @@ program
 program
   .command('update-goma')
   .description('Ensure a fresh copy of Goma is installed')
-  .action(() => console.log(`goma checksum: ${goma.downloadAndPrepare()}`));
+  .action(() => {
+    const args = process.argv.slice(3);
+    const config = {};
+    if (args.length > 0 && args[0] === 'msftGoma') {
+      config.gomaSource = 'msft';
+    }
+    console.log(`goma checksum: ${goma.downloadAndPrepare(config)}`);
+  });
 
 program
   .command('sanitize-config [name]')
