@@ -19,6 +19,12 @@ const GOMA_PLATFORM_SHAS = {
   win32: '064e0beb3c11b82b66ae4b4959e6c0cdaa2116d77c50841e4a213d4f4fb1aeaf',
 };
 
+const MSFT_GOMA_PLATFORM_SHAS = {
+  darwin: '5d359172ddd9221b36f837f84551a6e8358269e12b2e85ccbf25e7270feb107f',
+  linux: 'a747621216f3184887b78a032aa2971279be896d9fdb2334f45eaa238abb8393',
+  win32: '5ed885f2e33df8a1bf7fb81e180d8cb49a51815afe1b736223f7f2c67ebe6354',
+};
+
 const isSupportedPlatform = !!GOMA_PLATFORM_SHAS[process.platform];
 
 function downloadAndPrepareGoma(config) {
@@ -29,7 +35,10 @@ function downloadAndPrepareGoma(config) {
     console.log(`Writing new goma.gn file ${color.path(gomaGnFile)}`);
     fs.writeFileSync(gomaGnFile, gomaGnContents);
   }
-  const sha = GOMA_PLATFORM_SHAS[process.platform];
+  let sha = GOMA_PLATFORM_SHAS[process.platform];
+  if (config && config.gomaSource === 'msft') {
+    sha = MSFT_GOMA_PLATFORM_SHAS[process.platform];
+  }
   if (
     fs.existsSync(gomaShaFile) &&
     fs.readFileSync(gomaShaFile, 'utf8') === sha &&
