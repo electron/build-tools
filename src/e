@@ -15,6 +15,11 @@ const { refreshPathVariable } = require('./utils/refresh-path');
 refreshPathVariable();
 
 function maybeCheckForUpdates() {
+  // skip auto-update check if disabled
+  const disableAutoUpdatesFile = path.resolve(__dirname, '..', '.disable-auto-updates');
+  if (fs.existsSync(disableAutoUpdatesFile)) {
+    return;
+  }
   // don't check if we already checked recently
   const intervalHours = 4;
   const updateCheckTSFile = path.resolve(__dirname, '..', '.update');
@@ -31,7 +36,7 @@ function maybeCheckForUpdates() {
   // NB: send updater's stdout to stderr so its log messages are visible
   // but don't pollute stdout. For example, calling `FOO="$(e show exec)"`
   // should not get a FOO that includes "Checking for build-tools updates".
-  childProcess.spawnSync(process.execPath, ['e-check-for-updates.js'], {
+  childProcess.spawnSync(process.execPath, ['e-auto-update.js'], {
     cwd: __dirname,
     stdio: [0, 2, 2],
   });
@@ -150,7 +155,8 @@ program
     'load-xcode',
     'Loads required versions of Xcode and the macOS SDK and symlinks them.  This may require sudo',
   )
-  .command('check-for-updates', 'Check for build-tools updates');
+  .command('auto-update', 'Check for build-tools updates or enable/disable automatic updates')
+  .alias('check-for-updates');
 
 program
   .command('update-goma')

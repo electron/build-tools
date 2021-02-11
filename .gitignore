@@ -5,3 +5,4 @@ node_modules
 package-lock.json
 third_party
 .update
+.disable-auto-updates
