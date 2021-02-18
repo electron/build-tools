@@ -199,8 +199,12 @@ program
     if (args[0] === 'goma_ctl' || args[0] === 'goma_auth') {
       goma.downloadAndPrepare(evmConfig.current());
       cwd = goma.dir;
-      args[0] = `${args[0]}.py`;
-      args.unshift('python');
+      if (process.platform === 'win32') {
+        args[0] = `${args[0]}.bat`;
+      } else {
+        args[0] = `${args[0]}.py`;
+        args.unshift('python');
+      }
     }
 
     const { status, error } = depot.spawnSync(evmConfig.current(), args[0], args.slice(1), {
