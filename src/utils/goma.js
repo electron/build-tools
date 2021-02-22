@@ -162,7 +162,7 @@ function ensureGomaStart(config) {
     subprocs = {
       GOMA_MAX_SUBPROCS: cpus.toString(),
       GOMA_MAX_SUBPROCS_LOW: cpus.toString(),
-    }
+    };
   }
 
   console.log(color.childExec('goma_ctl.py', ['ensure_start'], { cwd: gomaDir }));
