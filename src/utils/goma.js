@@ -156,9 +156,9 @@ function ensureGomaStart(config) {
   if (status === 0) return;
 
   // Set number of subprocs to equal number of CPUs for MacOS
-  var subprocs = {};
+  let subprocs = {};
   if (process.platform === 'darwin') {
-    var cpus = os.cpus().length;
+    const cpus = os.cpus().length;
     subprocs = {
       GOMA_MAX_SUBPROCS: cpus.toString(),
       GOMA_MAX_SUBPROCS_LOW: cpus.toString(),
