@@ -6,6 +6,7 @@ const rimraf = require('rimraf');
 const { unzipSync } = require('cross-zip');
 const { color, fatal } = require('./logging');
 const depot = require('./depot-tools');
+const os = require('os');
 
 const gomaDir = path.resolve(__dirname, '..', '..', 'third_party', 'goma');
 const gomaGnFile = path.resolve(__dirname, '..', '..', 'third_party', 'goma.gn');
@@ -154,12 +155,23 @@ function ensureGomaStart(config) {
   const { status } = childProcess.spawnSync(gomacc, ['port', '2']);
   if (status === 0) return;
 
+  // Set number of subprocs to equal number of CPUs for MacOS
+  var subprocs = {};
+  if (process.platform === 'darwin') {
+    var cpus = os.cpus().length;
+    subprocs = {
+      GOMA_MAX_SUBPROCS: cpus.toString(),
+      GOMA_MAX_SUBPROCS_LOW: cpus.toString(),
+    }
+  }
+
   console.log(color.childExec('goma_ctl.py', ['ensure_start'], { cwd: gomaDir }));
   childProcess.execFileSync('python', ['goma_ctl.py', 'ensure_start'], {
     cwd: gomaDir,
     env: {
       ...process.env,
       ...gomaEnv(config),
+      ...subprocs,
     },
     stdio: ['ignore'],
   });
