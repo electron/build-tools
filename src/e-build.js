@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const program = require('commander');
 
@@ -12,7 +11,7 @@ const goma = require('./utils/goma');
 
 function runGNGen(config) {
   depot.ensure();
-  const gnBasename = os.platform() === 'win32' ? 'gn.bat' : 'gn';
+  const gnBasename = process.platform === 'win32' ? 'gn.bat' : 'gn';
   const gnPath = path.resolve(depot.path, gnBasename);
   const gnArgs = config.gen.args.join(' ');
   const execArgs = ['gen', `out/${config.gen.out}`, `--args=${gnArgs}`];
@@ -39,15 +38,16 @@ function runNinja(config, target, useGoma, ninjaArgs) {
       const authenticated = goma.isAuthenticated(config.root);
       if (!authenticated) {
         console.log('Not Authenticated - Triggering Goma Login');
-        const { status, error } = depot.spawnSync(
-          evmConfig.current(),
-          'python',
-          ['goma_auth.py', 'login'],
-          {
-            cwd: goma.dir,
-            stdio: 'inherit',
-          },
-        );
+        let program = 'python';
+        let programArgs = ['goma_auth.py', 'login'];
+        if (process.platform === 'win32') {
+          program = 'goma_auth.bat';
+          programArgs = ['login'];
+        }
+        const { status, error } = depot.spawnSync(evmConfig.current(), program, programArgs, {
+          cwd: goma.dir,
+          stdio: 'inherit',
+        });
 
         if (status !== 0) {
           console.error(
@@ -69,7 +69,7 @@ function runNinja(config, target, useGoma, ninjaArgs) {
   depot.ensure(config);
   ensureGNGen(config);
 
-  const exec = os.platform === 'win32' ? 'ninja.exe' : 'ninja';
+  const exec = process.platform === 'win32' ? 'ninja.exe' : 'ninja';
   const args = [...ninjaArgs, target];
   const opts = {
     cwd: evmConfig.outDir(config),

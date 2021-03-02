@@ -185,7 +185,11 @@ program
         stdio: 'inherit',
         cwd: goma.dir,
       };
-      childProcess.execFileSync('python', ['goma_ctl.py', 'stat'], options);
+      if (process.platform === 'win32') {
+        childProcess.execFileSync('goma_ctl.bat', ['stat'], options);
+      } else {
+        childProcess.execFileSync('python', ['goma_ctl.py', 'stat'], options);
+      }
     } catch (e) {
       fatal(e);
     }
