@@ -53,19 +53,14 @@ function downloadAndPrepareGoma(config) {
     win32: 'goma-win.zip',
   }[process.platform];
 
+  const stopParams = { cwd: gomaDir, stdio: ['ignore'] };
   if (process.platform === 'win32') {
     if (fs.existsSync(path.resolve(gomaDir, 'goma_ctl.bat'))) {
-      depot.spawnSync(config, 'goma_ctl.bat', ['stop'], {
-        cwd: gomaDir,
-        stdio: ['ignore'],
-      });
+      depot.spawnSync(config, 'goma_ctl.bat', ['stop'], stopParams);
     }
   } else {
     if (fs.existsSync(path.resolve(gomaDir, 'goma_ctl.py'))) {
-      depot.spawnSync(config, 'python', ['goma_ctl.py', 'stop'], {
-        cwd: gomaDir,
-        stdio: ['ignore'],
-      });
+      depot.spawnSync(config, 'python', ['goma_ctl.py', 'stop'], stopParams);
     }
   }
 
@@ -121,16 +116,11 @@ function gomaIsAuthenticated() {
 
   let loggedInInfo;
   try {
+    const infoParams = { cwd: gomaDir, stdio: ['ignore'] };
     if (process.platform === 'win32') {
-      loggedInInfo = childProcess.execFileSync('goma_auth.bat', ['info'], {
-        cwd: gomaDir,
-        stdio: ['ignore'],
-      });
+      loggedInInfo = childProcess.execFileSync('goma_auth.bat', ['info'], infoParams);
     } else {
-      loggedInInfo = childProcess.execFileSync('python', ['goma_auth.py', 'info'], {
-        cwd: gomaDir,
-        stdio: ['ignore'],
-      });
+      loggedInInfo = childProcess.execFileSync('python', ['goma_auth.py', 'info'], infoParams);
     }
   } catch {
     return false;
@@ -146,18 +136,13 @@ function authenticateGoma(config) {
   downloadAndPrepareGoma(config);
 
   if (!gomaIsAuthenticated()) {
+    const loginParams = { cwd: gomaDir, stdio: 'inherit' };
     if (process.platform === 'win32') {
       console.log(color.childExec('goma_auth.bat', ['login'], { cwd: gomaDir }));
-      childProcess.execFileSync('goma_auth.bat', ['login'], {
-        cwd: gomaDir,
-        stdio: 'inherit',
-      });
+      childProcess.execFileSync('goma_auth.bat', ['login'], loginParams);
     } else {
       console.log(color.childExec('goma_auth.py', ['login'], { cwd: gomaDir }));
-      childProcess.execFileSync('python', ['goma_auth.py', 'login'], {
-        cwd: gomaDir,
-        stdio: 'inherit',
-      });
+      childProcess.execFileSync('python', ['goma_auth.py', 'login'], loginParams);
     }
     recordGomaLoginTime();
   }
@@ -189,26 +174,22 @@ function ensureGomaStart(config) {
     };
   }
 
+  const ensureStartParams = {
+    cwd: gomaDir,
+    env: {
+      ...process.env,
+      ...gomaEnv(config),
+      ...subprocs,
+    },
+    stdio: ['ignore'],
+  };
+
   if (process.platform === 'win32') {
     console.log(color.childExec('goma_ctl.bat', ['ensure_start'], { cwd: gomaDir }));
-    childProcess.execFileSync('goma_ctl.bat', ['ensure_start'], {
-      cwd: gomaDir,
-      env: {
-        ...process.env,
-        ...gomaEnv(config),
-      },
-      stdio: ['ignore'],
-    });
+    childProcess.execFileSync('goma_ctl.bat', ['ensure_start'], ensureStartParams);
   } else {
     console.log(color.childExec('goma_ctl.py', ['ensure_start'], { cwd: gomaDir }));
-    childProcess.execFileSync('python', ['goma_ctl.py', 'ensure_start'], {
-      cwd: gomaDir,
-      env: {
-        ...process.env,
-        ...gomaEnv(config),
-      },
-      stdio: ['ignore'],
-    });
+    childProcess.execFileSync('python', ['goma_ctl.py', 'ensure_start'], ensureStartParams);
   }
 }
 
