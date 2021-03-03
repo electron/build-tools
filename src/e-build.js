@@ -38,12 +38,8 @@ function runNinja(config, target, useGoma, ninjaArgs) {
       const authenticated = goma.isAuthenticated(config.root);
       if (!authenticated) {
         console.log('Not Authenticated - Triggering Goma Login');
-        let program = 'python';
-        let programArgs = ['goma_auth.py', 'login'];
-        if (process.platform === 'win32') {
-          program = 'goma_auth.bat';
-          programArgs = ['login'];
-        }
+        const program = process.platform === 'win32' ? 'vpython' : 'python';
+        const programArgs = ['goma_auth.py', 'login'];
         const { status, error } = depot.spawnSync(evmConfig.current(), program, programArgs, {
           cwd: goma.dir,
           stdio: 'inherit',

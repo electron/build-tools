@@ -186,7 +186,7 @@ program
         cwd: goma.dir,
       };
       if (process.platform === 'win32') {
-        childProcess.execFileSync('goma_ctl.bat', ['stat'], options);
+        childProcess.execFileSync('vpython', ['goma_ctl.py', 'stat'], options);
       } else {
         childProcess.execFileSync('python', ['goma_ctl.py', 'stat'], options);
       }
