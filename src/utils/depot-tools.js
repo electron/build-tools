@@ -54,6 +54,7 @@ function platformOpts() {
           '6d205e765a23d3cbe0fcc8d1191ae406d8bf9c04',
         GYP_MSVS_HASH_a687d8e2e4114d9015eb550e1b156af21381faac:
           'b1bdbc45421e4e0ff0584c4dbe583e93b046a411',
+        GYP_MSVS_HASH_20d5f2553f: 'b1bdbc45421e4e0ff0584c4dbe583e93b046a411',
       };
   }
 
