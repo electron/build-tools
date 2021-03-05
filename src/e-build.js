@@ -43,6 +43,7 @@ function runNinja(config, target, useGoma, ninjaArgs) {
         const { status, error } = depot.spawnSync(evmConfig.current(), program, programArgs, {
           cwd: goma.dir,
           stdio: 'inherit',
+          shell: true,
         });
 
         if (status !== 0) {
