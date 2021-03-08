@@ -184,7 +184,6 @@ program
         env: { ...process.env, ...config.env, ...goma.env(config) },
         stdio: 'inherit',
         cwd: goma.dir,
-        shell: true,
       };
       if (process.platform === 'win32') {
         childProcess.execFileSync('vpython', ['goma_ctl.py', 'stat'], options);
