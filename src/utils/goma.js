@@ -54,7 +54,7 @@ function downloadAndPrepareGoma(config) {
     win32: 'goma-win.zip',
   }[process.platform];
 
-  const stopParams = { cwd: gomaDir, stdio: ['ignore'] };
+  const stopParams = { cwd: gomaDir, stdio: ['ignore'], shell: true };
   if (fs.existsSync(path.resolve(gomaDir, 'goma_ctl.py'))) {
     depot.spawnSync(config, pythonToUse, ['goma_ctl.py', 'stop'], stopParams);
   }
@@ -111,7 +111,7 @@ function gomaIsAuthenticated() {
 
   let loggedInInfo;
   try {
-    const infoParams = { cwd: gomaDir, stdio: ['ignore'] };
+    const infoParams = { cwd: gomaDir, stdio: ['ignore'], shell: true };
     loggedInInfo = childProcess.execFileSync(pythonToUse, ['goma_auth.py', 'info'], infoParams);
   } catch {
     return false;
@@ -127,7 +127,7 @@ function authenticateGoma(config) {
   downloadAndPrepareGoma(config);
 
   if (!gomaIsAuthenticated()) {
-    const loginParams = { cwd: gomaDir, stdio: 'inherit' };
+    const loginParams = { cwd: gomaDir, stdio: 'inherit', shell: true };
     console.log(color.childExec('goma_auth.py', ['login'], { cwd: gomaDir }));
     childProcess.execFileSync(pythonToUse, ['goma_auth.py', 'login'], loginParams);
     recordGomaLoginTime();
@@ -168,6 +168,7 @@ function ensureGomaStart(config) {
       ...subprocs,
     },
     stdio: ['ignore'],
+    shell: true,
   };
 
   console.log(color.childExec('goma_ctl.py', ['ensure_start'], { cwd: gomaDir }));

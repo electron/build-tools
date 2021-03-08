@@ -210,6 +210,7 @@ program
     const { status, error } = depot.spawnSync(evmConfig.current(), args[0], args.slice(1), {
       cwd,
       stdio: 'inherit',
+      shell: true,
     });
     if (status !== 0) {
       console.error(
