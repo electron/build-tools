@@ -200,11 +200,7 @@ program
       goma.downloadAndPrepare(evmConfig.current());
       cwd = goma.dir;
       args[0] = `${args[0]}.py`;
-      if (process.platform === 'win32') {
-        args.unshift('vpython');
-      } else {
-        args.unshift('python');
-      }
+      args.unshift('python');
     }
 
     const { status, error } = depot.spawnSync(evmConfig.current(), args[0], args.slice(1), {
