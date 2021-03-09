@@ -27,7 +27,6 @@ const MSFT_GOMA_PLATFORM_SHAS = {
 };
 
 const isSupportedPlatform = !!GOMA_PLATFORM_SHAS[process.platform];
-const pythonToUse = process.platform === 'win32' ? 'vpython' : 'python';
 
 function downloadAndPrepareGoma(config) {
   if (!isSupportedPlatform) return;
@@ -54,9 +53,11 @@ function downloadAndPrepareGoma(config) {
     win32: 'goma-win.zip',
   }[process.platform];
 
-  const stopParams = { cwd: gomaDir, stdio: ['ignore'] };
   if (fs.existsSync(path.resolve(gomaDir, 'goma_ctl.py'))) {
-    depot.spawnSync(config, pythonToUse, ['goma_ctl.py', 'stop'], stopParams);
+    depot.spawnSync(config, 'python', ['goma_ctl.py', 'stop'], {
+      cwd: gomaDir,
+      stdio: ['ignore'],
+    });
   }
 
   const tmpDownload = path.resolve(gomaDir, '..', filename);
@@ -111,8 +112,10 @@ function gomaIsAuthenticated() {
 
   let loggedInInfo;
   try {
-    const infoParams = { cwd: gomaDir, stdio: ['ignore'] };
-    loggedInInfo = childProcess.execFileSync(pythonToUse, ['goma_auth.py', 'info'], infoParams);
+    loggedInInfo = childProcess.execFileSync('python', ['goma_auth.py', 'info'], {
+      cwd: gomaDir,
+      stdio: ['ignore'],
+    });
   } catch {
     return false;
   }
@@ -127,9 +130,11 @@ function authenticateGoma(config) {
   downloadAndPrepareGoma(config);
 
   if (!gomaIsAuthenticated()) {
-    const loginParams = { cwd: gomaDir, stdio: 'inherit' };
     console.log(color.childExec('goma_auth.py', ['login'], { cwd: gomaDir }));
-    childProcess.execFileSync(pythonToUse, ['goma_auth.py', 'login'], loginParams);
+    childProcess.execFileSync('python', ['goma_auth.py', 'login'], {
+      cwd: gomaDir,
+      stdio: 'inherit',
+    });
     recordGomaLoginTime();
   }
 }
@@ -160,7 +165,8 @@ function ensureGomaStart(config) {
     };
   }
 
-  const ensureStartParams = {
+  console.log(color.childExec('goma_ctl.py', ['ensure_start'], { cwd: gomaDir }));
+  childProcess.execFileSync('python', ['goma_ctl.py', 'ensure_start'], {
     cwd: gomaDir,
     env: {
       ...process.env,
@@ -168,10 +174,7 @@ function ensureGomaStart(config) {
       ...subprocs,
     },
     stdio: ['ignore'],
-  };
-
-  console.log(color.childExec('goma_ctl.py', ['ensure_start'], { cwd: gomaDir }));
-  childProcess.execFileSync(pythonToUse, ['goma_ctl.py', 'ensure_start'], ensureStartParams);
+  });
 }
 
 function gomaAuthFailureEnv(config) {
