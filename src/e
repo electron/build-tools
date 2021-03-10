@@ -184,6 +184,34 @@ program
   });
 
 program
+  .command('npm')
+  .description(
+    'Run a command that eventually spawns the electron NPM package but override the Electron binary that is used to be your local from-source electron',
+  )
+  .allowUnknownOption()
+  .helpOption('\0')
+  .action(() => {
+    const args = process.argv.slice(3);
+    if (args.length === 0) {
+      console.error(`${color.err} Must provide a command to 'e npm'`);
+      process.exit(1);
+    }
+
+    const { status, error } = depot.spawnSync(evmConfig.current(), args[0], args.slice(1), {
+      stdio: 'inherit',
+      env: {
+        ELECTRON_OVERRIDE_DIST_PATH: evmConfig.outDir(evmConfig.current()),
+      },
+    });
+    if (status !== 0) {
+      console.error(
+        `${color.err} Failed to run command, exit code was "${status}", error was '${error}'`,
+      );
+    }
+    process.exit(status);
+  });
+
+program
   .command('depot-tools')
   .alias('d')
   .description('Run a command from the depot-tools directory with the correct configuration')
