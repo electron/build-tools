@@ -156,7 +156,12 @@ program
     'Loads required versions of Xcode and the macOS SDK and symlinks them.  This may require sudo',
   )
   .command('auto-update', 'Check for build-tools updates or enable/disable automatic updates')
-  .alias('check-for-updates');
+  .alias('check-for-updates')
+  .command(
+    'cherry-pick <patch-url> <target-branch> [additionBranches...]',
+    'Opens a PR to electron/electron that backport the given CL into our patches folder',
+  )
+  .alias('auto-cherry-pick');
 
 program
   .command('update-goma')
