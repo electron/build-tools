@@ -6,3 +6,5 @@ package-lock.json
 third_party
 .update
 .disable-auto-updates
+/*.yml
+generated.env.sh
