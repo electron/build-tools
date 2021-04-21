@@ -5,14 +5,7 @@ const program = require('commander');
 const https = require('https');
 const { Octokit } = require('@octokit/rest');
 
-if (!process.env.GITHUB_TOKEN) {
-  console.error('Cannot run cherry-pick without $GITHUB_TOKEN');
-  process.exit(1);
-}
-
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
-});
+const { getGitHubAuthToken } = require('./utils/github-auth');
 
 function fetchBase64(url) {
   return new Promise((resolve, reject) => {
@@ -37,6 +30,9 @@ program
   .option('--security', 'Whether this backport is for security reasons')
   .description('Opens a PR to electron/electron that backport the given CL into our patches folder')
   .action(async (patchUrlStr, targetBranch, additionalBranches) => {
+    const octokit = new Octokit({
+      auth: await getGitHubAuthToken(),
+    });
     try {
       const {
         data: { permissions },
