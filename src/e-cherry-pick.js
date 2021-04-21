@@ -31,7 +31,7 @@ program
   .description('Opens a PR to electron/electron that backport the given CL into our patches folder')
   .action(async (patchUrlStr, targetBranch, additionalBranches) => {
     const octokit = new Octokit({
-      auth: await getGitHubAuthToken(),
+      auth: await getGitHubAuthToken(['repo']),
     });
     try {
       const {
