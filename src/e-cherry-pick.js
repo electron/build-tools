@@ -173,7 +173,7 @@ program
               ? program.security
                 ? `Security: backported fix for ${bugNumber}.`
                 : `Backported fix for ${bugNumber}.`
-              : `<!-- couldn't find bug number -->`
+              : `None <!-- couldn't find bug number -->`
           }`,
           maintainer_can_modify: true,
         });
