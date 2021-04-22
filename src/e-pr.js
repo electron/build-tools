@@ -114,6 +114,10 @@ async function createPR(source, target, backport = undefined) {
   const queryParams = { expand: 1 };
 
   if (backport) {
+    if (!/^\d+$/.test(backport)) {
+      fatal(`${backport} is not a valid GitHub backport number - try again`);
+    }
+
     const notes = (await getPullRequestNotes(backport)) || '';
     queryParams.body = `Backport of #${backport}.\n\nSee that PR for details.\n\nNotes: ${notes}`;
   }
