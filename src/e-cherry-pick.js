@@ -41,10 +41,9 @@ program
         repo: 'electron',
       });
       if (!permissions || !permissions.push) {
-        console.error(
-          'The supplied $GITHUB_TOKEN does not have write access to electron/electron, this script will bail now',
+        fatal(
+          'The supplied $GITHUB_TOKEN does not have write access to electron/electron - exiting',
         );
-        process.exit(1);
       }
 
       const targetBranches = [targetBranch, ...additionalBranches];
@@ -54,10 +53,9 @@ program
         gerritUrl.host !== 'chromium-review.googlesource.com' &&
         gerritUrl.host !== 'skia-review.googlesource.com'
       ) {
-        console.error(
+        fatal(
           'Expected a gerrit URL (e.g. https://chromium-review.googlesource.com/c/v8/v8/+/2465830)',
         );
-        process.exit(1);
       }
       const [, repo, number] = /^\/c\/(.+?)\/\+\/(\d+)/.exec(gerritUrl.pathname);
 
@@ -194,8 +192,8 @@ program
         console.log(`Created cherry-pick PR to ${target}: ${pr.html_url}`);
       }
     } catch (err) {
-      console.error('Failed to cherry-pick:', err);
-      process.exit(1);
+      console.error('Failed to cherry-pick');
+      fatal(err);
     }
   })
   .parse(process.argv);
