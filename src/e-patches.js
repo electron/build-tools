@@ -13,7 +13,7 @@ function exportPatches(target) {
     const { root } = evmConfig.current();
     const srcdir = path.resolve(root, 'src');
 
-    // build the list of targets
+    // Build the list of targets.
     const targets = {};
     const patchesConfig = path.resolve(root, 'src', 'electron', 'patches', 'config.json');
     for (const [key, val] of Object.entries(JSON.parse(fs.readFileSync(patchesConfig)))) {

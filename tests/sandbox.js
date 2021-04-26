@@ -54,7 +54,6 @@ const buildToolsSrcDir = path.resolve(__dirname, '..', 'src');
 //   .name('master-testing').import('testing').run();
 // Returns { exitCode:number, stderr:string, stdout:string }
 function eInitRunner(execOptions) {
-  const stdio = 'pipe';
   const cmd = path.resolve(buildToolsSrcDir, 'e-init.js');
   const args = [];
 
@@ -92,7 +91,7 @@ function eInitRunner(execOptions) {
       return o;
     },
     run: () => {
-      return runSync([cmd, ...args], { ...execOptions, stdio });
+      return runSync([cmd, ...args], { ...execOptions, stdio: 'pipe' });
     },
   };
 
@@ -103,7 +102,8 @@ function eInitRunner(execOptions) {
 // Example use: result = eMakeRunner().run();
 // Returns { exitCode:number, stderr:string, stdout:string }
 function eMakeRunner(execOptions) {
-  let stdio = 'inherit'; // runs a really long time, so dump output to parent
+  // Runs a really long time, so dump output to parent.
+  let stdio = 'inherit';
   const cmd = path.resolve(buildToolsSrcDir, 'e-build.js');
   const args = [];
 
@@ -129,7 +129,6 @@ function eMakeRunner(execOptions) {
 // Example use: result = eShowRunner().src('base').run();
 // Returns { exitCode:number, stderr:string, stdout:string }
 function eShowRunner(execOptions) {
-  const stdio = 'pipe';
   const cmd = path.resolve(buildToolsSrcDir, 'e-show.js');
   const args = [];
 
@@ -167,7 +166,7 @@ function eShowRunner(execOptions) {
       return o;
     },
     run: () => {
-      return runSync([cmd, ...args], { ...execOptions, stdio });
+      return runSync([cmd, ...args], { ...execOptions, stdio: 'pipe' });
     },
     src: name => {
       args.push('src');
@@ -183,11 +182,35 @@ function eShowRunner(execOptions) {
   return o;
 }
 
+function ePatchesRunner() {
+  const cmd = path.resolve(buildToolsSrcDir, 'e-patches.js');
+  const args = [];
+
+  const o = {
+    target: target => {
+      args.push(target);
+      return o;
+    },
+    run: () => {
+      return runSync([cmd, ...args], {
+        stdio: 'pipe',
+        env: {
+          ...process.env,
+          FORCE_COLOR: '1',
+        },
+      });
+    },
+  };
+
+  return o;
+}
+
 // An `e sync` helper.
 // Example use: result = eSyncRunner().run(); // not many options in this one!
 // Returns { exitCode:number, stderr:string, stdout:string }
 function eSyncRunner(execOptions) {
-  let stdio = 'inherit'; // runs a really long time, so dump output to parent
+  // Runs a really long time, so dump output to parent.
+  let stdio = 'inherit';
   const cmd = path.resolve(buildToolsSrcDir, 'e-sync.js');
   const args = [];
 
@@ -204,7 +227,6 @@ function eSyncRunner(execOptions) {
 // Example use: result = eRemoveRunner().name('test').run();
 // Returns { exitCode:number, stderr:string, stdout:string }
 function eRemoveRunner(execOptions) {
-  const stdio = 'pipe';
   const cmd = path.resolve(buildToolsSrcDir, 'e');
   const args = ['remove'];
 
@@ -214,7 +236,7 @@ function eRemoveRunner(execOptions) {
       return o;
     },
     run: () => {
-      return runSync([cmd, ...args], { ...execOptions, stdio });
+      return runSync([cmd, ...args], { ...execOptions, stdio: 'pipe' });
     },
   };
 
@@ -245,6 +267,9 @@ function createSandbox() {
     },
     eMakeRunner: () => {
       return eMakeRunner(execOptions);
+    },
+    ePatchesRunner: () => {
+      return ePatchesRunner();
     },
     eShowRunner: () => {
       return eShowRunner(execOptions);
