@@ -88,16 +88,18 @@ function runGClientConfig(config) {
 function ensureRoot(config) {
   const { root } = config;
 
-  if (!fs.existsSync(root)) {
-    ensureDir(root);
-    runGClientConfig(config);
-  } else if (fs.existsSync(path.resolve(root, '.gclient'))) {
+  ensureDir(root);
+
+  const hasOtherFiles = fs.readdirSync(root).some(file => file !== '.gclient');
+  if (hasOtherFiles) {
+    fatal(`Root ${color.path(root)} is not empty. Please choose a different root directory.`);
+  }
+
+  if (fs.existsSync(path.resolve(root, '.gclient'))) {
     console.info(`${color.info} Root ${color.path(root)} already exists.`);
-    console.info(`${color.info} (OK if you are sharing $root between multiple build configs)`);
-  } else if (fs.readdirSync(root).length > 0) {
-    fatal(
-      `Root ${color.path(root)} exists and is not empty. Please choose a different root directory.`,
-    );
+    console.info(`${color.info} (OK if you are sharing ${root} between multiple build configs)`);
+  } else {
+    runGClientConfig(config);
   }
 }
 

@@ -22,9 +22,8 @@ describe('e-remove', () => {
       .name(name)
       .run();
     expect(result.exitCode).toStrictEqual(1);
-    expect(result.stderr).toEqual(
-      expect.stringContaining('ERR') && expect.stringContaining('not found'),
-    );
+    expect(result.stderr).toMatch(/ERR/);
+    expect(result.stderr).toMatch(/not found/);
   });
 
   it('fails if trying to remove a configuration that is currently in use', () => {
@@ -39,10 +38,10 @@ describe('e-remove', () => {
       .eRemoveRunner()
       .name(configNameToRemove)
       .run();
+
     expect(result.exitCode).toStrictEqual(1);
-    expect(result.stderr).toEqual(
-      expect.stringContaining('ERR') && expect.stringContaining('in use'),
-    );
+    expect(result.stderr).toMatch(/ERR/);
+    expect(result.stderr).toMatch(/in use/);
   });
 
   it('removes the specified configuration from our list', () => {
@@ -65,6 +64,6 @@ describe('e-remove', () => {
       .name(configNameToRemove)
       .run();
     expect(result.exitCode).toStrictEqual(0);
-    expect(result.stdout.toLowerCase()).toEqual(expect.stringContaining('removed'));
+    expect(result.stdout.toLowerCase()).toMatch(/removed/);
   });
 });
