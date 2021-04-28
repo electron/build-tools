@@ -1,12 +1,13 @@
 const createSandbox = require('./sandbox');
-
-const { color } = require('../src/utils/logging');
+const path = require('path');
 
 describe('e-patches', () => {
   let sandbox;
+  let root;
 
   beforeEach(() => {
     sandbox = createSandbox();
+    root = path.resolve(sandbox.tmpdir, 'master');
   });
 
   afterEach(() => {
@@ -14,24 +15,35 @@ describe('e-patches', () => {
   });
 
   it('correctly throws with an unrecognized target', () => {
-    const badTarget = 'i-definitely-dont-exist';
-    const { exitCode, stdout } = sandbox
+    sandbox
+      .eInitRunner()
+      .root(root)
+      .name('name')
+      .run();
+
+    const { exitCode, stderr } = sandbox
       .ePatchesRunner()
-      .target(badTarget)
+      .target('i-definitely-dont-exist')
       .run();
 
     expect(exitCode).toStrictEqual(1);
-    expect(stdout).toMatch(/Unrecognized target/);
+    expect(stderr).toMatch(/Unrecognized target/);
   });
 
   it('correctly exports patches for a recognized target', () => {
-    const knownTargets = ['chromium', 'v8', 'node', 'all'];
+    sandbox
+      .eInitRunner()
+      .root(root)
+      .name('name')
+      .run();
 
-    for (const target of knownTargets) {
-      const { exitCode } = sandbox
+    for (const target of ['chromium', 'v8', 'node', 'all']) {
+      const { exitCode, stderr } = sandbox
         .ePatchesRunner()
         .target(target)
         .run();
+
+      console.debug(stderr);
 
       expect(exitCode).toStrictEqual(0);
     }

@@ -35,14 +35,14 @@ function exportPatches(target) {
         { cwd: path.resolve(root, targets[target]), stdio: 'inherit', encoding: 'utf8' },
       );
     } else {
-      console.log(`${color.err} Unrecognized target ${color.cmd(target)}.`);
-      console.log(
+      console.error(`${color.err} Unrecognized target ${color.cmd(target)}.`);
+      console.error(
         `${color.err} Supported targets: ${[...Object.keys(targets), 'all']
           .sort()
           .map(a => color.cmd(a))
           .join(', ')}`,
       );
-      console.log(`${color.err} See ${color.path(patchesConfig)}`);
+      console.error(`${color.err} See ${color.path(patchesConfig)}`);
       process.exit(1);
     }
   } catch (e) {

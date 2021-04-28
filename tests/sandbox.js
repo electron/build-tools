@@ -182,6 +182,9 @@ function eShowRunner(execOptions) {
   return o;
 }
 
+// An `e patches` helper.
+// Example use: result = ePatchesRunner().target('chromium').run();
+// Returns { exitCode:number, stderr:string, stdout:string }
 function ePatchesRunner() {
   const cmd = path.resolve(buildToolsSrcDir, 'e-patches.js');
   const args = [];
@@ -192,13 +195,7 @@ function ePatchesRunner() {
       return o;
     },
     run: () => {
-      return runSync([cmd, ...args], {
-        stdio: 'pipe',
-        env: {
-          ...process.env,
-          FORCE_COLOR: '1',
-        },
-      });
+      return runSync([cmd, ...args], { stdio: 'pipe' });
     },
   };
 
