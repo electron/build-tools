@@ -64,6 +64,8 @@ function runNinja(config, target, useGoma, ninjaArgs) {
     if (!ninjaArgs.includes('-j') && !ninjaArgs.find(arg => /^-j[0-9]+$/.test(arg.trim()))) {
       ninjaArgs.push('-j', 200);
     }
+  } else {
+    console.info(`${color.info} Building ${target} with Goma disabled`);
   }
 
   depot.ensure(config);
