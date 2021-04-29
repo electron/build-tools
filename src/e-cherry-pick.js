@@ -155,7 +155,8 @@ program
           sha: commit.sha,
         });
 
-        const bugNumber = (/^Bug: (.+)$/m.exec(patch) || [])[1];
+        const bugNumber =
+          (/^Bug: (.+)$/m.exec(patch) || [])[1] || (/^Bug= ?chromium:(.+)$/m.exec(patch) || [])[1];
 
         const commitMessage = /Subject: \[PATCH\] (.+?)^---$/ms.exec(patch)[1];
 
