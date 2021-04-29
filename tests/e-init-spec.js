@@ -85,10 +85,10 @@ describe('e-init', () => {
         .name('name2')
         .run();
 
-      // confirm that it works but gave an info message about it
       expect(result.exitCode).toStrictEqual(0);
-      expect(result.stdout).toEqual(expect.stringContaining('INFO'));
-      expect(result.stdout).toEqual(expect.stringContaining('already exists'));
+      expect(result.stdout).toMatch('INFO');
+      expect(result.stdout).toMatch('already exists');
+      expect(result.stdout).toMatch(`OK if you are sharing ${root} between multiple build configs`);
     });
 
     it('refuses to use a pre-existing directory that lacks its own .gclient file', () => {
