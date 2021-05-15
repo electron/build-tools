@@ -173,7 +173,8 @@ function ensureGomaStart(config) {
       ...gomaEnv(config),
       ...subprocs,
     },
-    stdio: ['ignore'],
+    // Inherit stdio on Windows because otherwise this never terminates
+    stdio: process.platform === 'win32' ? 'inherit' : ['ignore'],
   });
 }
 
