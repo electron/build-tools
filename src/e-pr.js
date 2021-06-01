@@ -71,7 +71,7 @@ function guessPRTarget(config) {
   }
 
   console.warn(
-    `Unable to guess default target PR branch -- ${filename}'s version '${version}' should include 'nightly' or match ${pattern}`,
+    `Unable to guess default target PR branch -- ${filename}'s version '${version}' should include 'nightly' or match ${versionPattern}`,
   );
 }
 
