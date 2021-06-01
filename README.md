@@ -27,11 +27,11 @@ npm i -g @electron/build-tools
 You can run a new Electron build with this command:
 
 ```sh
-# The 'Hello, World!' of build-tools: get and build `master`
+# The 'Hello, World!' of build-tools: get and build `main`
 # Choose the directory where Electron's source and build files will reside.
 # You can specify any path you like; this command defaults to ~/projects/electron.
 # If you're going to use multiple branches, you may want something like:
-# `--root=~/electron/branch` (e.g. `~/electron-gn/master`)
+# `--root=~/electron/branch` (e.g. `~/electron-gn/main`)
 e init --root=~/electron --bootstrap testing
 ```
 
@@ -49,7 +49,7 @@ that you can switch between so that one is the current, active configuration.
 Many choices go into an Electron build:
 
 * Which [Electron branch](https://github.com/electron/electron/branches)
-  is used (e.g. `master`, `7-0-x`)
+  is used (e.g. `main`, `13-x-y`)
 * Which [.gn config file][gn-configs] is imported (e.g.
   [testing](https://github.com/electron/electron/blob/master/build/args/testing.gn) or
   [release](https://github.com/electron/electron/blob/master/build/args/release.gn))
@@ -104,38 +104,38 @@ want to make multiple build types of the same branch, you can reuse
 an existing root to share it between build configs.
 
 As an example, let's say you're starting from scratch and want both
-testing and release builds of the master branch in `electron/electron`.
+testing and release builds of the main branch in `electron/electron`.
 You might do this:
 
 ```sh
-# making 'release' and 'testing' builds from master
+# making 'release' and 'testing' builds from main
 
-$ e init master-testing -i testing --root=~/src/electron
+$ e init main-testing -i testing --root=~/src/electron
 Creating '~/src/electron'
-New build config 'master-testing' created
-Now using config 'master-testing'
+New build config 'main-testing' created
+Now using config 'main-testing'
 $ e show current
-master-testing
+main-testing
 
-$ e init master-release -i release --root=~/src/electron
+$ e init main-release -i release --root=~/src/electron
 INFO Root '~/src/electron' already exists.
 INFO (OK if you are sharing $root between multiple build configs)
-New build config 'master-release' created
-Now using config 'master-release'
+New build config 'main-release' created
+Now using config 'main-release'
 
 $ e show configs
-* master-release
-  master-testing
+* main-release
+  main-testing
 
 $ e show current
-master-release
+main-release
 $ e show root
 ~/src/electron
 
-$ e use master-testing
-Now using config 'master-testing'
+$ e use main-testing
+Now using config 'main-testing'
 $ e show current
-master-testing
+main-testing
 $ e show root
 ~/src/electron
 ```
@@ -160,7 +160,7 @@ the rest of the sources to the versions needed by the new Electron branch.
 
 ```sh
 $ e show current
-master-testing
+main-testing
 
 $ e show root
 ~/src/electron
@@ -232,7 +232,7 @@ As usual, any extra args are passed along to the executable. For example,
 $ uname
 Linux
 $ e debug
-Reading symbols from /home/yourname/electron/gn/master/src/out/Testing/electron...
+Reading symbols from /home/yourname/electron/gn/main/src/out/Testing/electron...
 (gdb)
 ```
 
@@ -390,7 +390,7 @@ Sometimes `build-tools` will make updates to its config requirements. In these e
 
 ### Building a Specific Electron Version
 
-`e init` checks out the HEAD of the master branch. To build against a specific version of Electron, checkout that version with these commands:
+`e init` checks out the HEAD of the main branch. To build against a specific version of Electron, checkout that version with these commands:
 
 ```sh
 # Change working directory to the Electron source directory

@@ -57,8 +57,8 @@ function guessPRTarget(config) {
   const filename = path.resolve(config.root, 'src', 'electron', 'package.json');
   const version = JSON.parse(fs.readFileSync(filename)).version;
 
-  // Nightlies are only released off of master, so we can safely make this assumption
-  if (version.includes('nightly')) return 'master';
+  // Nightlies are only released off of main, so we can safely make this assumption
+  if (version.includes('nightly')) return 'main';
 
   const versionPattern = /^(?<major>\d+)\.(?<minor>\d+)\.\d+.*$/;
   const match = versionPattern.exec(version);

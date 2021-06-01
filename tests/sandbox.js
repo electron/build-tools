@@ -51,7 +51,7 @@ const buildToolsSrcDir = path.resolve(__dirname, '..', 'src');
 
 // An `e init` helper.
 // Example use: result = eInitRunner().root('~/electron-src')
-//   .name('master-testing').import('testing').run();
+//   .name('main-testing').import('testing').run();
 // Returns { exitCode:number, stderr:string, stdout:string }
 function eInitRunner(execOptions) {
   const stdio = 'pipe';
