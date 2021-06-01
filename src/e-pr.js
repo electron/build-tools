@@ -109,6 +109,12 @@ function pullRequestSource(source) {
 }
 
 async function createPR(source, target, backport = undefined) {
+  if (!source) {
+    fatal(`'source' is required to create a PR`);
+  } else if (!target) {
+    fatal(`'target' is required to create a PR`);
+  }
+
   const repoBaseUrl = 'https://github.com/electron/electron';
   const comparePath = `${target}...${pullRequestSource(source)}`;
   const queryParams = { expand: 1 };
