@@ -60,14 +60,11 @@ function guessPRTarget(config) {
   // Nightlies are only released off of master, so we can safely make this assumption
   if (version.includes('nightly')) return 'master';
 
-  const versionPattern = /^(\d+)\.(\d+)\.\d+.*$/;
+  const versionPattern = /^(?<major>\d+)\.(?<minor>\d+)\.\d+.*$/;
   const match = versionPattern.exec(version);
 
   if (match) {
-    const [major, minor] = [match[1], match[2]];
-
-    //TODO(codebytere): remove this conditional when 7-1-x is EOL
-    return parseInt(major, 10) >= 8 ? `${major}-x-y` : `${major}-${minor}-x`;
+    return `${match.groups.major}-x-y`;
   }
 
   console.warn(
