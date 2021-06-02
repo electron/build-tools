@@ -14,7 +14,7 @@ describe('e-init', () => {
 
   describe('--root', () => {
     it('creates a new directory with a .gclient file', () => {
-      const root = path.resolve(sandbox.tmpdir, 'master');
+      const root = path.resolve(sandbox.tmpdir, 'main');
       const gclient_file = path.resolve(root, '.gclient');
 
       // confirm these files don't exist when the test starts
@@ -35,7 +35,7 @@ describe('e-init', () => {
     });
 
     it('creates a config correctly reflecting options passed', () => {
-      const root = path.resolve(sandbox.tmpdir, 'master');
+      const root = path.resolve(sandbox.tmpdir, 'main');
 
       const result = sandbox
         .eInitRunner()
@@ -70,7 +70,7 @@ describe('e-init', () => {
     });
 
     it('logs an info message when the new build config root already has a .gclient file', () => {
-      const root = path.resolve(sandbox.tmpdir, 'master');
+      const root = path.resolve(sandbox.tmpdir, 'main');
 
       // run `e init` twice on the same directory with two names
       let result;
@@ -121,7 +121,7 @@ describe('e-init', () => {
 
   it('does not overwrite existing configs unless --force', () => {
     // confirm that `e init` with the same name twice doesn't work...
-    const root = path.resolve(sandbox.tmpdir, 'master');
+    const root = path.resolve(sandbox.tmpdir, 'main');
     let result;
     result = sandbox
       .eInitRunner()
@@ -171,7 +171,7 @@ describe('e-init', () => {
   });
 
   it('Defaults to an outdir that fits the import name', () => {
-    const root = path.resolve(sandbox.tmpdir, 'master');
+    const root = path.resolve(sandbox.tmpdir, 'main');
     sandbox
       .eInitRunner()
       .root(root)

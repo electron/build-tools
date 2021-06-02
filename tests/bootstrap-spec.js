@@ -3,7 +3,7 @@ const path = require('path');
 const createSandbox = require('./sandbox');
 
 describe('full-test', () => {
-  const branch = 'master';
+  const branch = 'main';
   const importType = 'testing';
   let sandbox;
   let name;
