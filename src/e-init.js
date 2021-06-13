@@ -85,13 +85,13 @@ function runGClientConfig(config) {
   depot.execFileSync(config, exec, args, opts);
 }
 
-function ensureRoot(config) {
+function ensureRoot(config, force) {
   const { root } = config;
 
   ensureDir(root);
 
   const hasOtherFiles = fs.readdirSync(root).some(file => file !== '.gclient');
-  if (hasOtherFiles) {
+  if (hasOtherFiles && !force) {
     fatal(`Root ${color.path(root)} is not empty. Please choose a different root directory.`);
   }
 
@@ -124,7 +124,7 @@ program
     'testing',
   )
   .option('-o, --out <name>', 'Built files will be placed in $root/src/out/$out')
-  .option('-f, --force', 'Overwrite existing build config with that name', false)
+  .option('-f, --force', 'Overwrite existing build config', false)
   .option('--asan', `When building, enable clang's address sanitizer`, false)
   .option('--tsan', `When building, enable clang's thread sanitizer`, false)
   .option('--msan', `When building, enable clang's memory sanitizer`, false)
@@ -189,7 +189,7 @@ try {
   }
 
   // save the new config
-  ensureRoot(config);
+  ensureRoot(config, !!options.force);
   evmConfig.save(name, config);
   console.log(`New build config ${color.config(name)} created in ${color.path(filename)}`);
 
