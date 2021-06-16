@@ -150,8 +150,6 @@ function sanitizeConfig(name, overwrite = false) {
   }
 
   if (config.origin) {
-    const oldConfig = color.config(util.inspect({ origin: config.origin }));
-
     config.remotes = {
       electron: {
         origin: config.origin.electron,
