@@ -6,6 +6,7 @@ const https = require('https');
 const { Octokit } = require('@octokit/rest');
 
 const { getGitHubAuthToken } = require('./utils/github-auth');
+const { fatal } = require('./utils/logging');
 
 function fetchBase64(url) {
   return new Promise((resolve, reject) => {
@@ -29,7 +30,13 @@ program
   .arguments('<patch-url> <target-branch> [additionalBranches...]')
   .option('--security', 'Whether this backport is for security reasons')
   .description('Opens a PR to electron/electron that backport the given CL into our patches folder')
-  .action(async (patchUrlStr, targetBranch, additionalBranches) => {
+  .allowUnknownOption(false)
+  .action(async (patchUrlStr, targetBranch, additionalBranches, { security }) => {
+    if (targetBranch.startsWith('https://')) {
+      let tmp = patchUrlStr;
+      patchUrlStr = targetBranch;
+      targetBranch = tmp;
+    }
     const octokit = new Octokit({
       auth: await getGitHubAuthToken(['repo']),
     });
@@ -169,7 +176,7 @@ program
           title: `chore: cherry-pick ${shortCommit} from ${patchDirName}`,
           body: `${commitMessage}\n\nNotes: ${
             bugNumber
-              ? program.security
+              ? security
                 ? `Security: backported fix for ${bugNumber}.`
                 : `Backported fix for ${bugNumber}.`
               : `<!-- couldn't find bug number -->`
@@ -186,7 +193,7 @@ program
             target,
             'backport-check-skip',
             'semver/patch',
-            ...(program.security ? ['security 🔒'] : []),
+            ...(security ? ['security 🔒'] : []),
           ],
         });
 
