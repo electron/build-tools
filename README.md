@@ -41,7 +41,7 @@ cup of hot caffeine and read about what your computer is doing:
 ### Concepts
 
 Electron's build-tools command is named `e`. Like [nvm][nvm] and git,
-you'll invoke e with commands and subcommands. See `e --help` or `e help <cmd>`
+you'll invoke `e` with commands and subcommands. See `e --help` or `e help <cmd>`
 for many more details.
 
 `e` also borrows another inspiration from nvm: having multiple configurations
@@ -151,7 +151,7 @@ To see all potential options for this command, run:
 $ e sync --help
 ```
 
-'e sync' is a wrapper around 'gclient sync' from [Depot Tools][depot-tools].
+`e sync` is a wrapper around `gclient sync` from [Depot Tools][depot-tools].
 If you're starting from scratch, this will (slowly) fetch all the source
 code. It's also useful after switching Electron branches to synchronize
 the rest of the sources to the versions needed by the new Electron branch.
@@ -247,7 +247,7 @@ target create "/Users/yourname/electron-gn/src/out/Testing/Electron.app/Contents
 
 ### `e test`
 
-`e test ` starts the local Electron build's test runner. Any extra args are passed
+`e test` starts the local Electron build's test runner. Any extra args are passed
 along to the runner.
 
 To see all potential options for this command, run:
@@ -416,7 +416,7 @@ If you want your shell sessions to each have different active configs, try this 
 export EVM_CURRENT_FILE="$(mktemp --tmpdir evm-current.XXXXXXXX.txt)"
 ```
 
-This will create per-shell temporary files in which he active config file can be changed with `e use`.
+This will create per-shell temporary files in which the active config file can be changed with `e use`.
 
 ### Disabling Automatic Updates
 
