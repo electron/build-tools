@@ -15,9 +15,9 @@ const gomaBaseURL = 'https://electron-build-tools.s3-us-west-2.amazonaws.com/bui
 const gomaLoginFile = path.resolve(gomaDir, 'last-known-login');
 
 const GOMA_PLATFORM_SHAS = {
-  darwin: '884546f598e15ae7c70074b1968202e0a624ef7bcc5336196d629a6fe62830ac',
-  linux: 'fff4dcf6fe324b2f0862e73d9371dc97e2d56432ca7162aed23fcacb4a476e78',
-  win32: '39510f2442d8e938a86bc14c9c2141041b597b99c1ca945eee5a3e13f8ba96d0',
+  darwin: 'ca2b01eeb15741e70b2be746510de68386a51ffc6a5d062e35365e956d4a01d4',
+  linux: '58954608f72de06fed86c166d737cdad0c2be221d82657b44ca12d23b5960094',
+  win32: '91fdd84fefb9ea24fa6426751b3fa2e53e6b368dc6304af4410e84e46864ef75',
 };
 
 const MSFT_GOMA_PLATFORM_SHAS = {
@@ -134,6 +134,10 @@ function authenticateGoma(config) {
     childProcess.execFileSync('python', ['goma_auth.py', 'login'], {
       cwd: gomaDir,
       stdio: 'inherit',
+      env: {
+        ...process.env,
+        AGREE_NOTGOMA_TOS: '1',
+      },
     });
     recordGomaLoginTime();
   }

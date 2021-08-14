@@ -46,6 +46,10 @@ function runNinja(config, target, useGoma, ninjaArgs) {
           {
             cwd: goma.dir,
             stdio: 'inherit',
+            env: {
+              ...process.env,
+              AGREE_NOTGOMA_TOS: '1',
+            },
           },
         );
 
