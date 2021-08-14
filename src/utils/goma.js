@@ -31,6 +31,10 @@ const isSupportedPlatform = !!GOMA_PLATFORM_SHAS[process.platform];
 function downloadAndPrepareGoma(config) {
   if (!isSupportedPlatform) return;
 
+  if (!fs.existsSync(path.dirname(gomaDir))) {
+    fs.mkdirSync(path.dirname(gomaDir));
+  }
+
   const gomaGnContents = `goma_dir = "${gomaDir}"\nuse_goma = true`;
   if (!fs.existsSync(gomaGnFile) || fs.readFileSync(gomaGnFile, 'utf8') !== gomaGnContents) {
     console.log(`Writing new goma.gn file ${color.path(gomaGnFile)}`);
