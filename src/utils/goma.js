@@ -7,6 +7,7 @@ const { unzipSync } = require('cross-zip');
 const { color, fatal } = require('./logging');
 const depot = require('./depot-tools');
 const os = require('os');
+const { getIsArm } = require('./arm');
 
 const gomaDir = path.resolve(__dirname, '..', '..', 'third_party', 'goma');
 const gomaGnFile = path.resolve(__dirname, '..', '..', 'third_party', 'goma.gn');
@@ -14,8 +15,15 @@ const gomaShaFile = path.resolve(__dirname, '..', '..', 'third_party', 'goma', '
 const gomaBaseURL = 'https://electron-build-tools.s3-us-west-2.amazonaws.com/build-dependencies';
 const gomaLoginFile = path.resolve(gomaDir, 'last-known-login');
 
+let gomaPlatform = process.platform;
+
+if (gomaPlatform === 'darwin' && getIsArm()) {
+  gomaPlatform = 'darwin-arm64';
+}
+
 const GOMA_PLATFORM_SHAS = {
   darwin: 'b21bf1da9ba63449e32a955c1feb3e4a54aa751863a33a7f0171d62ee1a39273',
+  'darwin-arm64': 'c7f4a22b4ea7d30ef19fa26975b1d1d67e53575d2c3aeb02a0e07ab76ac76548',
   linux: '83386ba85e93e43a435e216cba7f9f58978554f3f7c0974c8e66ac33e395c306',
   win32: '70a8b67592561b9640937e9a3e329d5aae69a3afad857d5103a44d8dd88556c1',
 };
@@ -26,7 +34,7 @@ const MSFT_GOMA_PLATFORM_SHAS = {
   win32: 'a80c73929777ca22382ed521a992873025a1ce9c6b475538eca5f82cf843a8e6',
 };
 
-const isSupportedPlatform = !!GOMA_PLATFORM_SHAS[process.platform];
+const isSupportedPlatform = !!GOMA_PLATFORM_SHAS[gomaPlatform];
 
 function downloadAndPrepareGoma(config) {
   if (!isSupportedPlatform) return;
@@ -40,9 +48,9 @@ function downloadAndPrepareGoma(config) {
     console.log(`Writing new goma.gn file ${color.path(gomaGnFile)}`);
     fs.writeFileSync(gomaGnFile, gomaGnContents);
   }
-  let sha = GOMA_PLATFORM_SHAS[process.platform];
+  let sha = GOMA_PLATFORM_SHAS[gomaPlatform];
   if (config && config.gomaSource === 'msft') {
-    sha = MSFT_GOMA_PLATFORM_SHAS[process.platform];
+    sha = MSFT_GOMA_PLATFORM_SHAS[gomaPlatform];
   }
   if (
     fs.existsSync(gomaShaFile) &&
@@ -53,9 +61,10 @@ function downloadAndPrepareGoma(config) {
 
   const filename = {
     darwin: 'goma-mac.tgz',
+    'darwin-arm64': 'goma-mac-arm64.tgz',
     linux: 'goma-linux.tgz',
     win32: 'goma-win.zip',
-  }[process.platform];
+  }[gomaPlatform];
 
   if (fs.existsSync(path.resolve(gomaDir, 'goma_ctl.py'))) {
     depot.spawnSync(config, 'python', ['goma_ctl.py', 'stop'], {

@@ -106,6 +106,8 @@ function ensureXcode() {
   const shouldEnsureXcode = !fs.existsSync(XcodePath) || getXcodeVersion() !== expected;
   const isArm = getIsArm();
 
+  if (isArm) return false;
+
   // For now, do not download a custom version of Xcode
   // if running on ARM / Apple Silicon
   if (shouldEnsureXcode && !isArm) {
@@ -180,6 +182,8 @@ function ensureXcode() {
     fs.symlinkSync(eventualVersionedPath, XcodePath);
   }
   rimraf.sync(XcodeZip);
+
+  return true;
 }
 
 function hashFile(file) {

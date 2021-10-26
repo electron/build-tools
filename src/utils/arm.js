@@ -1,9 +1,12 @@
 const cp = require('child_process');
 
 const getIsArm = () => {
-  const output = cp.execSync('uname -m');
+  const isCurrentlyTranslated = cp.execSync('sysctl sysctl.proc_translated');
 
-  return output.includes('arm');
+  return (
+    process.arch === 'arm64' ||
+    isCurrentlyTranslated.toString().startsWith('sysctl.proc_translated: 1')
+  );
 };
 
 module.exports = {

@@ -12,7 +12,9 @@ if (process.platform !== 'darwin') {
   process.exit(1);
 }
 
-Xcode.ensureXcode();
+if (Xcode.ensureXcode() === false) {
+  process.exit(0);
+}
 
 // Select our new xcode
 const output = childProcess.execFileSync('xcode-select', ['-p']).toString();
@@ -20,7 +22,9 @@ if (!output.trim().startsWith(Xcode.XcodePath)) {
   console.info(
     `Setting your Xcode installation to ${color.path(Xcode.XcodePath)}, this will require sudo`,
   );
-  childProcess.execFileSync('sudo', ['xcode-select', '-s', Xcode.XcodePath]);
+  childProcess.execFileSync('sudo', ['xcode-select', '-s', Xcode.XcodePath], {
+    stdio: 'inherit',
+  });
 }
 
 // Ensure that we have accepted the Xcode license agreement
