@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
 const { ensureDir } = require('./paths');
-const { getIsArm } = require('./arm');
 const evmConfig = require('../evm-config');
 
 const { color, fatal } = require('./logging');
@@ -104,13 +103,8 @@ function ensureXcode() {
   fixBadVersioned103();
 
   const shouldEnsureXcode = !fs.existsSync(XcodePath) || getXcodeVersion() !== expected;
-  const isArm = getIsArm();
 
-  if (isArm) return false;
-
-  // For now, do not download a custom version of Xcode
-  // if running on ARM / Apple Silicon
-  if (shouldEnsureXcode && !isArm) {
+  if (shouldEnsureXcode) {
     ensureDir(XcodeDir);
     const expectedXcodeHash = XcodeVersions[expected].md5;
     const eventualVersionedPath = path.resolve(XcodeDir, `Xcode-${expected}.app`);
