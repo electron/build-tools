@@ -10,6 +10,11 @@ const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
 
+const targets = {
+  ELECTRON: 'electron',
+  CHROMIUM: 'chrome',
+};
+
 function runGNGen(config) {
   depot.ensure();
   const gnBasename = os.platform() === 'win32' ? 'gn.bat' : 'gn';
@@ -100,11 +105,11 @@ try {
   const pretty_targets = {
     breakpad: 'third_party/breakpad:dump_sym',
     chromedriver: 'electron:electron_chromedriver_zip',
-    electron: 'electron',
+    electron: targets.ELECTRON,
     'electron:dist': 'electron:electron_dist_zip',
     mksnapshot: 'electron:electron_mksnapshot_zip',
     'node:headers': 'third_party/electron_node:headers',
-    default: config.defaultTarget || 'electron',
+    default: config.defaultTarget || targets.ELECTRON,
   };
 
   if (program.listTargets) {
@@ -114,7 +119,9 @@ try {
     return;
   }
 
-  if (process.platform === 'darwin') {
+  // Only ensure XCode version if we're building an Electron target.
+  const isChromium = pretty_targets.default === targets.CHROMIUM;
+  if (process.platform === 'darwin' && !isChromium) {
     const result = depot.spawnSync(
       config,
       process.execPath,
