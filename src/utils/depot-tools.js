@@ -22,7 +22,7 @@ function updateDepotTools() {
 function ensureDepotTools() {
   const depot_dir = DEPOT_TOOLS_DIR;
 
-  // if it doesn't exist, create it
+  // If it doesn't exist, create it.
   if (!fs.existsSync(depot_dir)) {
     console.log(`Cloning ${color.cmd('depot_tools')} into ${color.path(depot_dir)}`);
     const url = 'https://chromium.googlesource.com/chromium/tools/depot_tools.git';
@@ -30,7 +30,7 @@ function ensureDepotTools() {
     updateDepotTools();
   }
 
-  // if it's been awhile, update it
+  // If it's been awhile, update it.
   const now = new Date();
   const msec_per_day = 86400000;
   const days_before_pull = 14;
