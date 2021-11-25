@@ -69,6 +69,23 @@ describe('e-init', () => {
       expect(config.gen.out).toStrictEqual('Testing');
     });
 
+    it('allow build-tools to be used with non-standard (e.g. non-github) repositories.', () => {
+      const root = path.resolve(sandbox.tmpdir, 'non-github');
+      const gclient_file = path.resolve(root, '.gclient');
+
+      const repoURL = 'https://repo_url.com/extra/repo/info';
+      const result = sandbox
+        .eInitRunner()
+        .name('non-standard')
+        .root(root)
+        .repo(repoURL)
+        .run();
+
+      expect(result.exitCode).toStrictEqual(0);
+      expect(fs.statSync(gclient_file).isFile()).toStrictEqual(true);
+      expect(fs.readFileSync(gclient_file, 'utf8').indexOf(repoURL) !== -1).toStrictEqual(true);
+    });
+
     it('logs an info message when the new build config root already has a .gclient file', () => {
       const root = path.resolve(sandbox.tmpdir, 'main');
 

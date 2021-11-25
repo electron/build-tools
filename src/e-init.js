@@ -31,9 +31,11 @@ function createConfig(options) {
   if (options.tsan) gn_args.push('is_tsan=true');
 
   const electron = {
-    origin: options.useHttps
-      ? 'https://github.com/electron/electron.git'
-      : 'git@github.com:electron/electron.git',
+    origin:
+      options.repo ||
+      (options.useHttps
+        ? 'https://github.com/electron/electron.git'
+        : 'git@github.com:electron/electron.git'),
     ...(options.fork && {
       fork: options.useHttps
         ? `https://github.com/${options.fork}.git`
@@ -77,7 +79,7 @@ function runGClientConfig(config) {
     '--name',
     'src/electron',
     '--unmanaged',
-    'https://github.com/electron/electron',
+    config.remotes.electron.origin,
   ];
   const opts = {
     cwd: root,
@@ -144,6 +146,7 @@ program
     '--fork <username/electron>',
     `Add a remote fork of Electron with the name 'fork'. This should take the format 'username/electron'`,
   )
+  .option('--repo <url>', `Use other repositories(e.g. GitLab / Azure Devops)`)
   .parse(process.argv);
 
 if (!name) {

@@ -75,6 +75,10 @@ function eInitRunner(execOptions) {
       args.push(`--use-https`);
       return o;
     },
+    repo: url => {
+      args.push(`--repo=${url}`);
+      return o;
+    },
     import: val => {
       args.push('--import', val);
       return o;
