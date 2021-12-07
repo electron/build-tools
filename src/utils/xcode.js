@@ -66,14 +66,14 @@ function expectedXcodeVersion() {
   // NOTE: the location of CI's xcode definition changed in PR #31741 (or commit
   // 43f36b5 on the main branch)
 
-  // First check CI config.yml
-  const configYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config.yml');
-  let match = /xcode: "(.+?)"/.exec(fs.readFileSync(configYaml, 'utf8'));
+  // First check CI build_config.yml
+  const buildConfYaml = path.resolve(root, 'src', 'electron', '.circleci', 'build_config.yml');
+  let match = /xcode: "(.+?)"/.exec(fs.readFileSync(buildConfYaml, 'utf8'));
 
-  // Second check CI build_config.yml
+  // Second check CI config.yml
   if (!match) {
-    const buildConfYaml = path.resolve(root, 'src', 'electron', '.circleci', 'build_config.yml');
-    match = /xcode: "(.+?)"/.exec(fs.readFileSync(buildConfYaml, 'utf8'));
+    const configYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config.yml');
+    match = /xcode: "(.+?)"/.exec(fs.readFileSync(configYaml, 'utf8'));
   }
 
   if (!match) {
