@@ -62,7 +62,7 @@ function getXcodeVersion() {
 
 function expectedXcodeVersion() {
   const { root } = evmConfig.current();
-  const yaml = path.resolve(root, 'src', 'electron', '.circleci', 'config.yml');
+  const yaml = path.resolve(root, 'src', 'electron', '.circleci', 'build_config.yml');
   const match = /xcode: "(.+?)"/.exec(fs.readFileSync(yaml, 'utf8'));
   if (!match) {
     console.warn(
