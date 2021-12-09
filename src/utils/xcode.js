@@ -68,7 +68,8 @@ function expectedXcodeVersion() {
 
   // First check CI build_config.yml
   const buildConfYaml = path.resolve(root, 'src', 'electron', '.circleci', 'build_config.yml');
-  let match = fs.existsSync(buildConfYaml) && /xcode: "(.+?)"/.exec(fs.readFileSync(buildConfYaml, 'utf8'));
+  let match =
+    fs.existsSync(buildConfYaml) && /xcode: "(.+?)"/.exec(fs.readFileSync(buildConfYaml, 'utf8'));
 
   // Second check CI config.yml
   if (!match) {
