@@ -119,7 +119,7 @@ try {
     return;
   }
 
-  // Only ensure XCode version if we're building an Electron target.
+  // Only ensure Xcode version if we're building an Electron target.
   const isChromium = pretty_targets.default === targets.CHROMIUM;
   if (process.platform === 'darwin' && !isChromium) {
     const result = depot.spawnSync(
