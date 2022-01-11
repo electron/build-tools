@@ -6,7 +6,6 @@ const yml = require('js-yaml');
 const { color, fatal } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
 const goma = require('./utils/goma');
-const util = require('util');
 
 const preferredFormat = process.env.EVM_FORMAT || 'json'; // yaml yml json
 const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
@@ -18,6 +17,24 @@ const currentFiles = _.compact([
   process.env.EVM_CURRENT_FILE,
   path.resolve(configRoot, 'evm-current.txt'),
 ]);
+
+const getDefaultTarget = () => {
+  const name = getCurrentFileName();
+  const result = name ? sanitizeConfig(name).defaultTarget : null;
+
+  return result || 'electron';
+};
+
+const buildTargets = {
+  breakpad: 'third_party/breakpad:dump_sym',
+  chromedriver: 'electron:electron_chromedriver_zip',
+  electron: 'electron',
+  chromium: 'chrome',
+  'electron:dist': 'electron:electron_dist_zip',
+  mksnapshot: 'electron:electron_mksnapshot_zip',
+  'node:headers': 'third_party/electron_node:headers',
+  default: getDefaultTarget(),
+};
 
 function buildPath(name, suffix) {
   return path.resolve(configRoot, `evm.${name}.${suffix}`);
@@ -75,15 +92,19 @@ function names() {
     .sort();
 }
 
-function currentName() {
-  // return the contents of the first nonempty file in currentFiles
-  const name = currentFiles.reduce((name, filename) => {
+function getCurrentFileName() {
+  return currentFiles.reduce((name, filename) => {
     try {
       return name || fs.readFileSync(filename, { encoding: 'utf8' }).trim();
     } catch (e) {
       return;
     }
   }, null);
+}
+
+function currentName() {
+  // Return the contents of the first nonempty file in currentFiles.
+  const name = getCurrentFileName();
 
   if (name) return name;
   fatal('No current build configuration.');
@@ -214,6 +235,7 @@ function remove(name) {
 }
 
 module.exports = {
+  buildTargets,
   current: () => sanitizeConfig(currentName()),
   currentName,
   execOf,

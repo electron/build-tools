@@ -31,7 +31,8 @@ function setRemotes(cwd, repo) {
   }
 }
 
-function runGClientSync(config, syncArgs, syncOpts) {
+function runGClientSync(syncArgs, syncOpts) {
+  const config = evmConfig.current();
   const srcdir = path.resolve(config.root, 'src');
   ensureDir(srcdir);
 
@@ -53,11 +54,14 @@ function runGClientSync(config, syncArgs, syncOpts) {
   };
   depot.execFileSync(config, exec, args, opts);
 
-  const electronPath = path.resolve(srcdir, 'electron');
-  const nodejsPath = path.resolve(srcdir, 'third_party', 'electron_node');
+  // Only set remotes if we're building an Electron target.
+  if (config.defaultTarget !== evmConfig.buildTargets.chromium) {
+    const electronPath = path.resolve(srcdir, 'electron');
+    const nodejsPath = path.resolve(srcdir, 'third_party', 'electron_node');
 
-  setRemotes(electronPath, config.remotes.electron);
-  setRemotes(nodejsPath, config.remotes.node);
+    setRemotes(electronPath, config.remotes.electron);
+    setRemotes(nodejsPath, config.remotes.node);
+  }
 }
 
 const opts = program
@@ -73,9 +77,7 @@ const opts = program
 try {
   const { threeWay } = opts;
   const { unknown: syncArgs } = program.parseOptions(process.argv);
-  runGClientSync(evmConfig.current(), syncArgs, {
-    threeWay,
-  });
+  runGClientSync(syncArgs, { threeWay });
 } catch (e) {
   fatal(e);
 }

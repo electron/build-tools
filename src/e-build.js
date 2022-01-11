@@ -10,11 +10,6 @@ const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
 
-const targets = {
-  ELECTRON: 'electron',
-  CHROMIUM: 'chrome',
-};
-
 function runGNGen(config) {
   depot.ensure();
   const gnBasename = os.platform() === 'win32' ? 'gn.bat' : 'gn';
@@ -101,26 +96,19 @@ program
 
 try {
   const config = evmConfig.current();
-
-  const pretty_targets = {
-    breakpad: 'third_party/breakpad:dump_sym',
-    chromedriver: 'electron:electron_chromedriver_zip',
-    electron: targets.ELECTRON,
-    'electron:dist': 'electron:electron_dist_zip',
-    mksnapshot: 'electron:electron_mksnapshot_zip',
-    'node:headers': 'third_party/electron_node:headers',
-    default: config.defaultTarget || targets.ELECTRON,
-  };
+  const targets = evmConfig.buildTargets;
 
   if (program.listTargets) {
-    Object.keys(pretty_targets)
+    Object.keys(targets)
       .sort()
-      .forEach(target => console.log(`${target} --> ${color.config(pretty_targets[target])}`));
+      .forEach(target => console.log(`${target} --> ${color.config(targets[target])}`));
     return;
   }
 
   // Only ensure Xcode version if we're building an Electron target.
-  const isChromium = pretty_targets.default === targets.CHROMIUM;
+  const isChromium = program.target
+    ? program.target === targets.chromium
+    : targets.default === targets.chromium;
   if (process.platform === 'darwin' && !isChromium) {
     const result = depot.spawnSync(
       config,
@@ -139,14 +127,14 @@ try {
   }
 
   // collect all the unrecognized args that aren't a target
-  const pretty = Object.keys(pretty_targets).find(p => program.rawArgs.includes(p)) || 'default';
-  const args = program.parseOptions(process.argv).unknown;
+  const pretty = Object.keys(targets).find(p => program.rawArgs.includes(p)) || 'default';
+  const { unknown: args } = program.parseOptions(process.argv);
   const index = args.indexOf(pretty);
   if (index != -1) {
     args.splice(index, 1);
   }
 
-  runNinja(config, program.target || pretty_targets[pretty], program.goma, args);
+  runNinja(config, program.target || targets[pretty], program.goma, args);
 } catch (e) {
   fatal(e);
 }
