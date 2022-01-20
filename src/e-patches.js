@@ -8,6 +8,15 @@ const childProcess = require('child_process');
 const evmConfig = require('./evm-config.js');
 const { color, fatal } = require('./utils/logging');
 
+program
+  .arguments('[target]')
+  .description(
+    "Refresh all patches if 'all' is specified; otherwise, refresh patches in $root/src/electron/patches/$target",
+  )
+  .option('--list-targets', 'Show all supported patch targets', false)
+  .action(exportPatches)
+  .parse(process.argv);
+
 function exportPatches(target) {
   try {
     const { root } = evmConfig.current();
@@ -18,6 +27,17 @@ function exportPatches(target) {
     const patchesConfig = path.resolve(root, 'src', 'electron', 'patches', 'config.json');
     for (const [key, val] of Object.entries(JSON.parse(fs.readFileSync(patchesConfig)))) {
       targets[path.basename(key)] = val;
+    }
+
+    if (program.listTargets) {
+      console.log(
+        `Supported targets: ${[...Object.keys(targets), 'all']
+          .sort()
+          .map(a => color.cmd(a))
+          .join(', ')}`,
+      );
+      console.log(`See ${color.path(patchesConfig)}`);
+      return;
     }
 
     if (target === 'all') {
@@ -49,11 +69,3 @@ function exportPatches(target) {
     fatal(e);
   }
 }
-
-program
-  .arguments('<target>')
-  .description(
-    "Refresh all patches if 'all' is specified; otherwise, refresh patches in $root/src/electron/patches/$target",
-  )
-  .action(exportPatches)
-  .parse(process.argv);
