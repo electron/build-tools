@@ -29,7 +29,7 @@ You can run a new Electron build with this command:
 ```sh
 # The 'Hello, World!' of build-tools: get and build `main`
 # Choose the directory where Electron's source and build files will reside.
-# You can specify any path you like; this command defaults to ~/projects/electron.
+# You can specify any path you like; this command defaults to `$PWD/electron`.
 # If you're going to use multiple branches, you may want something like:
 # `--root=~/electron/branch` (e.g. `~/electron-gn/main`)
 e init --root=~/electron --bootstrap testing
