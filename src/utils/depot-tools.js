@@ -95,7 +95,9 @@ function depotOpts(config, opts = {}) {
       paths.push(path.resolve(DEPOT_TOOLS_DIR, fs.readFileSync(pythonRelDirFile, 'utf8').trim()));
     }
   }
-  opts.env[key] = [...paths, process.env[key]].join(path.delimiter);
+  // Remove any duplicates on path so that DEPOT_TOOLS_DIR isn't added if it is already there
+  const currentPath = process.env[key].split(path.delimiter);
+  opts.env[key] = Array.from(new Set([...paths, ...currentPath])).join(path.delimiter);
 
   return opts;
 }
