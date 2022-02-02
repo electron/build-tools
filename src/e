@@ -149,7 +149,7 @@ program
   .command('show <subcommand>', 'Show info about the current build config')
   .command('test [specRunnerArgs...]', `Run Electron's spec runner`)
   .command('pr [options]', 'Open a GitHub URL where you can PR your changes')
-  .command('patches <basename>', 'Refresh the patches in $root/src/electron/patches/$basename')
+  .command('patches <target>', 'Refresh the patches in $root/src/electron/patches/$target')
   .command('open <sha1|PR#>', 'Open a GitHub URL for the given commit hash / pull # / issue #')
   .command(
     'load-xcode',
