@@ -161,7 +161,8 @@ program
     'cherry-pick <patch-url> <target-branch> [additionBranches...]',
     'Opens a PR to electron/electron that backport the given CL into our patches folder',
   )
-  .alias('auto-cherry-pick');
+  .alias('auto-cherry-pick')
+  .command('gh-auth', 'Generates a device oauth token');
 
 program
   .command('update-goma')
