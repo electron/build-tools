@@ -39,27 +39,18 @@ program.description('Show information about the current build config');
 
 program
   .command('current')
-  .description('Show name of the current build config')
+  .description('Show the current build config')
+  .option('-n, --no-name', "Don't show config name", false)
   .option('-g, --git', 'Human-readable git status (tag, branch, commit)', false)
   .option('-f, --filepath', 'Config filepath', false)
   .action(options => {
     try {
       const name = evmConfig.currentName();
       const parts = [];
-      if (options.name) {
-        const name = color.config(name);
-        parts.push(`Config Name: ${name}`);
-      }
-      if (options.git) {
-        const status = color.git(gitStatus(evmConfig.current()));
-        parts.push(`Git Status: ${status}`);
-      }
-      if (options.filepath) {
-        const path = color.path(evmConfig.pathOf(name));
-        parts.push(`Filepath: ${path}`);
-      }
-
-      const txt = parts.join('\n');
+      if (options.name) parts.push(color.config(name));
+      if (options.git) parts.push(color.git(gitStatus(evmConfig.current())));
+      if (options.filepath) parts.push(color.path(evmConfig.pathOf(name)));
+      const txt = parts.join(', ');
       if (txt) console.log(txt);
     } catch (e) {
       fatal(e);
