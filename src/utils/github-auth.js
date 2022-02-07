@@ -7,9 +7,9 @@ async function getGitHubAuthToken(scopes = []) {
     clientType: 'oauth-app',
     clientId: ELECTRON_BUILD_TOOLS_GITHUB_CLIENT_ID,
     onVerification(verification) {
-      console.log('This @electron/build-tools script requires GitHub Authentication');
-      console.log('Open this page in your browser: %s', verification.verification_uri);
-      console.log('Enter code: %s', verification.user_code);
+      console.error('This @electron/build-tools script requires GitHub Authentication');
+      console.error('Open this page in your browser: %s', verification.verification_uri);
+      console.error('Enter code: %s', verification.user_code);
     },
   });
   const { token } = await auth({
