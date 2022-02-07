@@ -198,17 +198,9 @@ const gomaUrl = 'http://localhost:8088/';
 program
   .command('goma')
   .description(`Watch Goma at work at ${gomaUrl}`)
-  .option('--gn', 'Show path of the goma.gn file')
-  .option('--dir', 'Show path of the goma directory')
   .action(async () => {
     try {
-      if (options.gn) {
-        console.log(goma.dir);
-      } else if (options.dir) {
-        console.log(goma.gnFilePath);
-      } else {
-        await open(gomaUrl);
-      }
+      await open(gomaUrl);
     } catch (e) {
       fatal(e);
     }
