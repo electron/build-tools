@@ -48,38 +48,36 @@ function checkForUpdates() {
   try {
     console.log('Checking for build-tools updates');
 
-    const execOpts = {
-      cwd: path.resolve(__dirname, '..'),
-    };
+    const execOpts = { cwd: path.resolve(__dirname, '..') };
+    const git = args =>
+      cp
+        .execSync(`git ${args}`, execOpts)
+        .toString('utf8')
+        .trim();
 
-    const headBefore = cp
-      .execSync('git rev-parse --verify HEAD', execOpts)
-      .toString('utf8')
-      .trim();
+    const headCmd = 'rev-parse --verify HEAD';
+    const headBefore = git(headCmd);
 
-    const currentBranch = cp
-      .execSync('git rev-parse --abbrev-ref HEAD', execOpts)
-      .toString('utf8')
-      .trim();
+    const originUrl = git('remote get-url origin');
+    const mainExists = !!git(`ls-remote --heads ${originUrl} main`);
+    const desiredBranch = mainExists ? 'main' : 'master';
 
-    if (currentBranch !== 'master') {
+    const currentBranch = git('branch --show-current');
+    if (currentBranch !== desiredBranch) {
       fatal(
-        `build-tools is checked out on ${currentBranch} and not 'master' - please switch and try again.`,
+        `build-tools is checked out on ${currentBranch} and not '${desiredBranch}' - please switch and try again.`,
       );
     }
 
     console.log(color.childExec('git', ['pull', '--rebase', '--autostash'], execOpts));
-    cp.execSync('git pull --rebase --autostash', execOpts);
-    const headAfter = cp
-      .execSync('git rev-parse --verify HEAD', execOpts)
-      .toString('utf8')
-      .trim();
-    if (headBefore !== headAfter) {
+    git('pull --rebase --autostash');
+
+    if (headBefore === git(headCmd)) {
+      console.log('build-tools is up-to-date');
+    } else {
       console.log(color.childExec('npx', ['yarn'], execOpts));
       cp.execSync('npx yarn', execOpts);
-      console.log('Updated to Latest Build Tools');
-    } else {
-      console.log('Already Up To Date');
+      console.log('build-tools updated to latest version!');
     }
   } catch (e) {
     fatal(e);
