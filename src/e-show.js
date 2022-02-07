@@ -165,7 +165,7 @@ program
   .command('out')
   .description('Show outdir name, e.g. "Testing"')
   .option('--path', 'Output as JSON')
-  .action(() => {
+  .action(options => {
     try {
       if (options.path) {
         console.log(color.path(evmConfig.outDir(evmConfig.current())));
