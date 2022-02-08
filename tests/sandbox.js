@@ -151,7 +151,7 @@ function eShowRunner(execOptions) {
       return o;
     },
     filename: () => {
-      args.push('current', '--filename', '--no-name');
+      args.push('current', '--filepath', '--no-name');
       return o;
     },
     git: () => {
