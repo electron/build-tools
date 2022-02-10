@@ -137,103 +137,109 @@ function ensureXcode() {
   fixBadVersioned103();
 
   if (expected === 'system') {
-    const systemXcodeVersion = getSystemXcodeVersion();
+    return ensureSystemXcode();
+  }
 
-    if (systemXcodeVersion === 'unknown') {
-      fatal(`'system' xcode is specified by config, but no xcode found in /Applications`);
+  const shouldEnsureXcode = !fs.existsSync(XcodePath) || getXcodeVersion() !== expected;
+
+  if (shouldEnsureXcode) {
+    ensureDir(XcodeDir);
+    const expectedXcodeHash = XcodeVersions[expected].md5;
+    const eventualVersionedPath = path.resolve(XcodeDir, `Xcode-${expected}.app`);
+
+    if (!fs.existsSync(eventualVersionedPath)) {
+      let shouldDownload = true;
+      if (fs.existsSync(XcodeZip)) {
+        const existingHash = hashFile(XcodeZip);
+        if (existingHash === expectedXcodeHash) {
+          shouldDownload = false;
+        } else {
+          console.log(
+            `${color.warn} Got existing hash ${color.cmd(
+              existingHash,
+            )} which did not match ${color.cmd(expectedXcodeHash)} so redownloading Xcode`,
+          );
+          rimraf.sync(XcodeZip);
+        }
+      }
+
+      if (shouldDownload) {
+        const XcodeURL = `${XcodeBaseURL}${XcodeVersions[expected].fileName}`;
+        console.log(`Downloading ${color.cmd(XcodeURL)} into ${color.path(XcodeZip)}`);
+        childProcess.spawnSync(
+          process.execPath,
+          [path.resolve(__dirname, '..', 'download.js'), XcodeURL, XcodeZip],
+          {
+            stdio: 'inherit',
+          },
+        );
+
+        const newHash = hashFile(XcodeZip);
+        if (newHash !== expectedXcodeHash) {
+          rimraf.sync(XcodeZip);
+          fatal(
+            `Downloaded Xcode zip had hash "${newHash}" which does not match expected hash "${expectedXcodeHash}"`,
+          );
+        }
+      }
+
+      console.log(`Extracting ${color.cmd(XcodeZip)} into ${color.path(eventualVersionedPath)}`);
+      const unzipPath = path.resolve(XcodeDir, 'tmp_unzip');
+      rimraf.sync(unzipPath);
+      childProcess.spawnSync('unzip', ['-q', '-o', XcodeZip, '-d', unzipPath], {
+        stdio: 'inherit',
+      });
+
+      fs.renameSync(path.resolve(unzipPath, 'Xcode.app'), eventualVersionedPath);
+      rimraf.sync(XcodeZip);
+      rimraf.sync(unzipPath);
     }
 
-    if (fs.existsSync(SystemXcodePath) && fs.statSync(SystemXcodePath).isSymbolicLink()) {
-      fs.unlinkSync(SystemXcodePath);
-    }
-
-    // Remove the old file or symlink in XcodePath
+    // We keep the old Xcode around to avoid redownloading incase we ever want
+    // build-tools to support hot-switching of Xcode versions
     if (fs.existsSync(XcodePath)) {
       if (fs.statSync(XcodePath).isSymbolicLink()) {
         fs.unlinkSync(XcodePath);
       } else {
-        rimraf.sync(XcodePath);
-      }
-    }
-
-    console.log(`Updating active Xcode version to 'system' (${color.path(systemXcodeVersion)})`);
-    fs.symlinkSync(SystemXcodePath, XcodePath);
-  } else {
-    const shouldEnsureXcode = !fs.existsSync(XcodePath) || getXcodeVersion() !== expected;
-
-    if (shouldEnsureXcode) {
-      ensureDir(XcodeDir);
-      const expectedXcodeHash = XcodeVersions[expected].md5;
-      const eventualVersionedPath = path.resolve(XcodeDir, `Xcode-${expected}.app`);
-
-      if (!fs.existsSync(eventualVersionedPath)) {
-        let shouldDownload = true;
-        if (fs.existsSync(XcodeZip)) {
-          const existingHash = hashFile(XcodeZip);
-          if (existingHash === expectedXcodeHash) {
-            shouldDownload = false;
-          } else {
-            console.log(
-              `${color.warn} Got existing hash ${color.cmd(
-                existingHash,
-              )} which did not match ${color.cmd(expectedXcodeHash)} so redownloading Xcode`,
-            );
-            rimraf.sync(XcodeZip);
-          }
-        }
-
-        if (shouldDownload) {
-          const XcodeURL = `${XcodeBaseURL}${XcodeVersions[expected].fileName}`;
-          console.log(`Downloading ${color.cmd(XcodeURL)} into ${color.path(XcodeZip)}`);
-          childProcess.spawnSync(
-            process.execPath,
-            [path.resolve(__dirname, '..', 'download.js'), XcodeURL, XcodeZip],
-            {
-              stdio: 'inherit',
-            },
-          );
-
-          const newHash = hashFile(XcodeZip);
-          if (newHash !== expectedXcodeHash) {
-            rimraf.sync(XcodeZip);
-            fatal(
-              `Downloaded Xcode zip had hash "${newHash}" which does not match expected hash "${expectedXcodeHash}"`,
-            );
-          }
-        }
-
-        console.log(`Extracting ${color.cmd(XcodeZip)} into ${color.path(eventualVersionedPath)}`);
-        const unzipPath = path.resolve(XcodeDir, 'tmp_unzip');
-        rimraf.sync(unzipPath);
-        childProcess.spawnSync('unzip', ['-q', '-o', XcodeZip, '-d', unzipPath], {
-          stdio: 'inherit',
-        });
-
-        fs.renameSync(path.resolve(unzipPath, 'Xcode.app'), eventualVersionedPath);
-        rimraf.sync(XcodeZip);
-        rimraf.sync(unzipPath);
-      }
-
-      // We keep the old Xcode around to avoid redownloading incase we ever want
-      // build-tools to support hot-switching of Xcode versions
-      if (fs.existsSync(XcodePath)) {
-        if (fs.statSync(XcodePath).isSymbolicLink()) {
-          fs.unlinkSync(XcodePath);
+        const versionedXcode = path.resolve(XcodeDir, `Xcode-${getXcodeVersion()}.app`);
+        if (!fs.existsSync(versionedXcode)) {
+          fs.renameSync(XcodePath, versionedXcode);
         } else {
-          const versionedXcode = path.resolve(XcodeDir, `Xcode-${getXcodeVersion()}.app`);
-          if (!fs.existsSync(versionedXcode)) {
-            fs.renameSync(XcodePath, versionedXcode);
-          } else {
-            rimraf.sync(XcodePath);
-          }
+          rimraf.sync(XcodePath);
         }
       }
-
-      console.log(`Updating active Xcode version to ${color.path(expected)}`);
-      fs.symlinkSync(eventualVersionedPath, XcodePath);
     }
-    rimraf.sync(XcodeZip);
+
+    console.log(`Updating active Xcode version to ${color.path(expected)}`);
+    fs.symlinkSync(eventualVersionedPath, XcodePath);
   }
+  rimraf.sync(XcodeZip);
+
+  return true;
+}
+
+function ensureSystemXcode() {
+  const systemXcodeVersion = getSystemXcodeVersion();
+
+  if (systemXcodeVersion === 'unknown') {
+    fatal(`'system' xcode is specified by config, but no xcode found in /Applications`);
+  }
+
+  if (fs.existsSync(SystemXcodePath) && fs.statSync(SystemXcodePath).isSymbolicLink()) {
+    fs.unlinkSync(SystemXcodePath);
+  }
+
+  // Remove the old file or symlink in XcodePath
+  if (fs.existsSync(XcodePath)) {
+    if (fs.statSync(XcodePath).isSymbolicLink()) {
+      fs.unlinkSync(XcodePath);
+    } else {
+      rimraf.sync(XcodePath);
+    }
+  }
+
+  console.log(`Updating active Xcode version to 'system' (${color.path(systemXcodeVersion)})`);
+  fs.symlinkSync(SystemXcodePath, XcodePath);
 
   return true;
 }

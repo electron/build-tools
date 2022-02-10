@@ -184,12 +184,10 @@ function sanitizeConfig(name, overwrite = false) {
     changes.push(`replaced superceded 'origin' property with 'remotes' property`);
   }
 
-  if (config.xcode) {
-    if (!['default', 'system'].includes(config.xcode)) {
-      fatal(`Invalid 'xcode' specified in config, options are 'default' or 'system'`);
-    }
-  } else {
-    config.xcode = 'default';
+  config.xcode = config.xcode || 'default';
+
+  if (!['default', 'system'].includes(config.xcode)) {
+    fatal(`Invalid 'xcode' specified in config, options are 'default' or 'system'`);
   }
 
   if (
