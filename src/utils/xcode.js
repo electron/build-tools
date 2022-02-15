@@ -2,6 +2,7 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
+const semver = require('semver');
 const { ensureDir } = require('./paths');
 const evmConfig = require('../evm-config');
 
@@ -48,7 +49,13 @@ const XcodeVersions = {
   },
 };
 
-const fallbackXcode = '11.1.0';
+const fallbackXcode = () => {
+  return Object.keys(XcodeVersions)
+    .map(v => {
+      return semver.valid(semver.coerce(v));
+    })
+    .sort(semver.rcompare)[0];
+};
 
 function getXcodeVersion() {
   const result = childProcess.spawnSync('defaults', [
@@ -85,9 +92,9 @@ function expectedXcodeVersion() {
     console.warn(
       color.warn,
       'failed to automatically identify the required version of Xcode, falling back to default of',
-      fallbackXcode,
+      fallbackXcode(),
     );
-    return fallbackXcode;
+    return fallbackXcode();
   }
   const version = match[1].trim();
   if (!XcodeVersions[version]) {
@@ -96,9 +103,9 @@ function expectedXcodeVersion() {
       `automatically detected an unknown version of Xcode ${color.path(
         version,
       )}, falling back to default of`,
-      fallbackXcode,
+      fallbackXcode(),
     );
-    return fallbackXcode;
+    return fallbackXcode();
   }
   return version;
 }
