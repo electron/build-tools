@@ -115,8 +115,13 @@ function fixBadVersioned103() {
   }
 }
 
-function ensureXcode() {
-  const expected = expectedXcodeVersion();
+function ensureXcode(version) {
+  if (version && !Object.keys(XcodeVersions).includes(version)) {
+    console.error(`Invalid XCode version ${version}`);
+    process.exit(1);
+  }
+
+  const expected = version || expectedXcodeVersion();
   fixBadVersioned103();
 
   const shouldEnsureXcode = !fs.existsSync(XcodePath) || getXcodeVersion() !== expected;

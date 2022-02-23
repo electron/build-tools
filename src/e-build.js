@@ -92,6 +92,7 @@ program
   .option('--gen', 'Force a re-run of `gn gen` before building', false)
   .option('-t|--target [target]', 'Forces a specific ninja target')
   .option('--no-goma', 'Build without goma', false)
+  .option('--no-load-xcode', 'Do not load Xcode prior to building', false)
   .parse(process.argv);
 
 try {
@@ -109,7 +110,8 @@ try {
   const isChromium = program.target
     ? program.target === targets.chromium
     : targets.default === targets.chromium;
-  if (process.platform === 'darwin' && !isChromium) {
+
+  if (process.platform === 'darwin' && !isChromium && program.loadXcode) {
     const result = depot.spawnSync(
       config,
       process.execPath,
