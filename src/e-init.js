@@ -70,9 +70,8 @@ function createConfig(options) {
 function runGClientConfig(config) {
   const { root } = config;
   depot.ensure();
-  const exec = 'python';
+  const exec = 'gclient';
   const args = [
-    'gclient.py',
     'config',
     '--name',
     'src/electron',
@@ -81,8 +80,9 @@ function runGClientConfig(config) {
   ];
   const opts = {
     cwd: root,
+    shell: true,
   };
-  depot.execFileSync(config, exec, args, opts);
+  depot.spawnSync(config, exec, args, opts);
 }
 
 function ensureRoot(config, force) {
