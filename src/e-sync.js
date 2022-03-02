@@ -42,17 +42,18 @@ function runGClientSync(syncArgs, syncOpts) {
 
   depot.ensure();
 
-  const exec = 'python';
-  const args = ['gclient.py', 'sync', '--with_branch_heads', '--with_tags', '-vv', ...syncArgs];
+  const exec = 'gclient';
+  const args = ['sync', '--with_branch_heads', '--with_tags', '-vv', ...syncArgs];
   const opts = {
     cwd: srcdir,
+    shell: true,
     env: syncOpts.threeWay
       ? {
           ELECTRON_USE_THREE_WAY_MERGE_FOR_PATCHES: 'true',
         }
       : {},
   };
-  depot.execFileSync(config, exec, args, opts);
+  depot.spawnSync(config, exec, args, opts);
 
   // Only set remotes if we're building an Electron target.
   if (config.defaultTarget !== evmConfig.buildTargets.chromium) {
