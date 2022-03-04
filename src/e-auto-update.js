@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 
+const chalk = require('chalk');
 const cp = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const program = require('commander');
+const semver = require('semver');
 
 const { color, fatal } = require('./utils/logging');
+
+const BUILD_TOOLS_INSTALLER_MIN_VERSION = '1.1.0';
 
 const markerFilePath = path.join(__dirname, '..', '.disable-auto-updates');
 
@@ -47,6 +51,55 @@ program
 function checkForUpdates() {
   try {
     console.log('Checking for build-tools updates');
+
+    // Check if @electron/build-tools needs to be updated
+    const globalNodeModulesPaths = [];
+
+    try {
+      globalNodeModulesPaths.push(
+        cp
+          .execSync('npm root -g')
+          .toString('utf8')
+          .trim(),
+      );
+    } catch {}
+
+    try {
+      globalNodeModulesPaths.push(
+        path.join(
+          cp
+            .execSync('yarn global dir')
+            .toString('utf8')
+            .trim(),
+          'node_modules',
+        ),
+      );
+    } catch {}
+
+    for (const globalNodeModules of globalNodeModulesPaths) {
+      let packageJson;
+      const buildToolsInstallerPackage = path.resolve(
+        globalNodeModules,
+        '@electron',
+        'build-tools',
+        'package.json',
+      );
+
+      try {
+        packageJson = JSON.parse(fs.readFileSync(buildToolsInstallerPackage));
+      } catch {
+        continue;
+      }
+
+      if (semver.lt(packageJson.version, BUILD_TOOLS_INSTALLER_MIN_VERSION)) {
+        console.log(
+          `\n${chalk.bgWhite.black('NOTE')} Please update ${chalk.greenBright(
+            '@electron/build-tools',
+          )}\n`,
+        );
+      }
+      break;
+    }
 
     const execOpts = { cwd: path.resolve(__dirname, '..') };
     const git = args =>
