@@ -127,6 +127,7 @@ program
     try {
       evmConfig.setCurrent(name);
       console.log(`Now using config ${color.config(name)}`);
+      process.exit(0);
     } catch (e) {
       fatal(e);
     }
@@ -140,6 +141,7 @@ program
     try {
       evmConfig.remove(name);
       console.log(`Removed config ${color.config(name)}`);
+      process.exit(0);
     } catch (e) {
       fatal(e);
     }
@@ -184,6 +186,7 @@ program
       const configName = name || evmConfig.currentName();
       evmConfig.sanitizeConfig(configName, true);
       console.log(`${color.success} Sanitized contents of ${color.config(configName)}`);
+      process.exit(0);
     } catch (e) {
       fatal(e);
     }
