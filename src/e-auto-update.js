@@ -10,8 +10,10 @@ const { color, fatal } = require('./utils/logging');
 const markerFilePath = path.join(__dirname, '..', '.disable-auto-updates');
 
 program
-  .allowUnknownOption()
-  .description('Check for build-tools updates or enable/disable automatic updates');
+  .description('Check for build-tools updates or enable/disable automatic updates')
+  .action(() => {
+    checkForUpdates();
+  });
 
 program
   .command('enable')
@@ -85,7 +87,3 @@ function checkForUpdates() {
 }
 
 program.parse(process.argv);
-
-if (process.argv.length < 3) {
-  checkForUpdates();
-}
