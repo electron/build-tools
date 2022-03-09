@@ -91,7 +91,7 @@ program
   .option('--list-targets', 'Show all supported build targets', false)
   .option('--gen', 'Force a re-run of `gn gen` before building', false)
   .option('-t|--target [target]', 'Forces a specific ninja target')
-  .option('--no-goma', 'Build without goma', false)
+  .option('--no-goma', 'Build without goma')
   .parse(process.argv);
 
 try {

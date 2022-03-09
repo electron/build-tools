@@ -40,7 +40,7 @@ program.description('Show information about the current build config');
 program
   .command('current')
   .description('Show the current build config')
-  .option('-n, --no-name', "Don't show config name", false)
+  .option('-n, --no-name', "Don't show config name")
   .option('-g, --git', 'Human-readable git status (tag, branch, commit)', false)
   .option('-f, --filepath', 'Config filepath', false)
   .action(options => {
