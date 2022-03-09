@@ -9,7 +9,7 @@ const got = require('got');
 const open = require('open');
 const program = require('commander');
 
-const evmConfig = require('./evm-config');
+const { current } = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 
 // Adapted from https://github.com/electron/clerk
@@ -78,7 +78,11 @@ function guessPRSource(config) {
   const cwd = path.resolve(config.root, 'src', 'electron');
   const options = { cwd, encoding: 'utf8' };
 
-  return childProcess.execSync(command, options).trim();
+  try {
+    return childProcess.execSync(command, options).trim();
+  } catch {
+    return 'main';
+  }
 }
 
 function pullRequestSource(source) {
@@ -87,9 +91,7 @@ function pullRequestSource(source) {
     /git@github.com:(\S*)\/electron.git/,
   ];
 
-  const config = evmConfig.current();
-
-  if (config.remotes.electron.fork) {
+  if (current().remotes.electron.fork) {
     const command = 'git remote get-url fork';
     const cwd = path.resolve(config.root, 'src', 'electron');
     const options = { cwd, encoding: 'utf8' };
@@ -105,44 +107,41 @@ function pullRequestSource(source) {
   return source;
 }
 
-async function createPR(source, target, backport = undefined) {
-  if (!source) {
-    fatal(`'source' is required to create a PR`);
-  } else if (!target) {
-    fatal(`'target' is required to create a PR`);
-  }
-
-  const repoBaseUrl = 'https://github.com/electron/electron';
-  const comparePath = `${target}...${pullRequestSource(source)}`;
-  const queryParams = { expand: 1 };
-
-  if (backport) {
-    if (!/^\d+$/.test(backport)) {
-      fatal(`${backport} is not a valid GitHub backport number - try again`);
-    }
-
-    const notes = (await getPullRequestNotes(backport)) || '';
-    queryParams.body = `Backport of #${backport}.\n\nSee that PR for details.\n\nNotes: ${notes}`;
-  }
-
-  return open(`${repoBaseUrl}/compare/${comparePath}?${querystring.stringify(queryParams)}`);
-}
-
-let defaultTarget;
-let defaultSource;
-try {
-  const config = evmConfig.current();
-  defaultSource = guessPRSource(config);
-  defaultTarget = guessPRTarget(config);
-} catch {
-  // we're just guessing defaults; it's OK to fail silently
-}
-
 program
   .description('Open a GitHub URL where you can PR your changes')
-  .option('-s, --source <source_branch>', 'Where the changes are coming from', defaultSource)
-  .option('-t, --target <target_branch>', 'Where the changes are going to', defaultTarget)
+  .option(
+    '-s, --source <source_branch>',
+    'Where the changes are coming from',
+    guessPRSource(current()),
+  )
+  .option(
+    '-t, --target <target_branch>',
+    'Where the changes are going to',
+    guessPRTarget(current()),
+  )
   .option('-b, --backport <pull_request>', 'Pull request being backported')
-  .parse(process.argv);
+  .action(async options => {
+    if (!options.source) {
+      fatal(`'source' is required to create a PR`);
+    } else if (!options.target) {
+      fatal(`'target' is required to create a PR`);
+    }
 
-createPR(program.source, program.target, program.backport);
+    const repoBaseUrl = 'https://github.com/electron/electron';
+    const comparePath = `${options.target}...${pullRequestSource(options.source)}`;
+    const queryParams = { expand: 1 };
+
+    if (options.backport) {
+      if (!/^\d+$/.test(options.backport)) {
+        fatal(`${options.backport} is not a valid GitHub backport number - try again`);
+      }
+
+      const notes = await getPullRequestNotes(options.backport);
+      queryParams.body = `Backport of #${
+        options.backport
+      }.\n\nSee that PR for details.\n\nNotes: ${notes || ''}`;
+    }
+
+    return open(`${repoBaseUrl}/compare/${comparePath}?${querystring.stringify(queryParams)}`);
+  })
+  .parse(process.argv);
