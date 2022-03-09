@@ -85,19 +85,17 @@ function runNinja(config, target, useGoma, ninjaArgs) {
 }
 
 program
-  .allowUnknownOption(false)
   .arguments('[target] [ninjaArgs...]')
   .description('Build Electron and other targets.')
   .option('--list-targets', 'Show all supported build targets', false)
   .option('--gen', 'Force a re-run of `gn gen` before building', false)
   .option('-t|--target [target]', 'Forces a specific ninja target')
   .option('--no-goma', 'Build without goma')
-  .action((target, passed, options) => {
+  .allowUnknownOption()
+  .action((target, ninjaArgs, options) => {
     try {
       const config = evmConfig.current();
       const targets = evmConfig.buildTargets;
-
-      console.log(target, passed, options);
 
       if (options.listTargets) {
         Object.keys(targets)
@@ -129,13 +127,12 @@ program
 
       // collect all the unrecognized args that aren't a target
       const pretty = Object.keys(targets).find(p => program.rawArgs.includes(p)) || 'default';
-      const { unknown: args } = program.parseOptions(process.argv);
-      const index = args.indexOf(pretty);
+      const index = ninjaArgs.indexOf(pretty);
       if (index != -1) {
-        args.splice(index, 1);
+        ninjaArgs.splice(index, 1);
       }
 
-      runNinja(config, target || targets[pretty], options.goma, args);
+      runNinja(config, target || targets[pretty], options.goma, ninjaArgs);
     } catch (e) {
       fatal(e);
     }
