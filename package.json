@@ -20,7 +20,7 @@
     "@octokit/rest": "^18.5.2",
     "chalk": "^2.4.1",
     "command-exists": "^1.2.8",
-    "commander": "^9.0.0",
+    "commander": "^3.0.2",
     "cross-zip": "^3.0.0",
     "debug": "^4.3.1",
     "got": "^10.2.2",
