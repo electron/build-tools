@@ -3,10 +3,10 @@ name: Lint
 on:
   push:
     branches:
-      - main
+      - ${{ github.event.repository.default_branch }}
   pull_request:
     branches:
-      - main
+      - ${{ github.event.repository.default_branch }}
 
 jobs:
   lint:
