@@ -149,7 +149,7 @@ program
   .command('show <subcommand>', 'Show info about the current build config')
   .command('test [specRunnerArgs...]', `Run Electron's spec runner`)
   .command('pr [options]', 'Open a GitHub URL where you can PR your changes')
-  .command('patches <basename>', 'Refresh the patches in $root/src/electron/patches/$basename')
+  .command('patches <target>', 'Refresh the patches in $root/src/electron/patches/$target')
   .command('open <sha1|PR#>', 'Open a GitHub URL for the given commit hash / pull # / issue #')
   .command(
     'load-xcode',
@@ -161,7 +161,8 @@ program
     'cherry-pick <patch-url> <target-branch> [additionBranches...]',
     'Opens a PR to electron/electron that backport the given CL into our patches folder',
   )
-  .alias('auto-cherry-pick');
+  .alias('auto-cherry-pick')
+  .command('gh-auth', 'Generates a device oauth token');
 
 program
   .command('update-goma')

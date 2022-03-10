@@ -39,17 +39,17 @@ program.description('Show information about the current build config');
 
 program
   .command('current')
-  .description('Name of the current build config')
+  .description('Show the current build config')
   .option('-n, --no-name', "Don't show config name", false)
   .option('-g, --git', 'Human-readable git status (tag, branch, commit)', false)
-  .option('-f, --filename', 'Config filename', false)
+  .option('-f, --filepath', 'Config filepath', false)
   .action(options => {
     try {
       const name = evmConfig.currentName();
       const parts = [];
       if (options.name) parts.push(color.config(name));
       if (options.git) parts.push(color.git(gitStatus(evmConfig.current())));
-      if (options.filename) parts.push(color.path(evmConfig.pathOf(name)));
+      if (options.filepath) parts.push(color.path(evmConfig.pathOf(name)));
       const txt = parts.join(', ');
       if (txt) console.log(txt);
     } catch (e) {
@@ -60,7 +60,7 @@ program
 program
   .command('configs')
   .alias('ls')
-  .description('Installed build config')
+  .description('Show installed build config')
   .action(() => {
     let current;
     try {
@@ -85,12 +85,12 @@ program
 
 program
   .command('depotdir')
-  .description('Path of the depot-tools directory')
+  .description('Show path of the depot-tools directory')
   .action(() => console.log(depot.path));
 
 program
   .command('env')
-  .description('Environment variables set when building Electron')
+  .description('Show environment variables set when building Electron')
   .option('--json', 'Output as JSON')
   .action(options => {
     try {
@@ -119,7 +119,7 @@ program
 program
   .command('exe')
   .alias('exec')
-  .description(`Electron executable's path`)
+  .description(`Show the Electron executable's path`)
   .action(() => {
     try {
       console.log(color.path(evmConfig.execOf(evmConfig.current())));
@@ -130,7 +130,7 @@ program
 
 program
   .command('root')
-  .description('Path of the top directory. Home of the .gclient file')
+  .description('Show path of the top directory - home of the .gclient file')
   .action(() => {
     try {
       console.log(color.path(evmConfig.current().root));
@@ -141,7 +141,7 @@ program
 
 program
   .command('src [name]')
-  .description('Path of the named (default:electron) src directory e.g. "/$root/src/electron"')
+  .description('Show path of the named (default:electron) src directory e.g. "/$root/src/electron"')
   .action(name => {
     try {
       const { root } = evmConfig.current();
@@ -154,21 +154,15 @@ program
 
 program
   .command('out')
-  .description('outdir name, e.g. "Testing"')
-  .action(() => {
+  .description('Show outdir name, e.g. "Testing"')
+  .option('--path', 'Output as JSON')
+  .action(options => {
     try {
-      console.log(evmConfig.current().gen.out);
-    } catch (e) {
-      fatal(e);
-    }
-  });
-
-program
-  .command('outdir')
-  .description('outdir path, e.g. "/$root/src/out/Testing"`')
-  .action(() => {
-    try {
-      console.log(color.path(evmConfig.outDir(evmConfig.current())));
+      if (options.path) {
+        console.log(color.path(evmConfig.outDir(evmConfig.current())));
+      } else {
+        console.log(evmConfig.current().gen.out);
+      }
     } catch (e) {
       fatal(e);
     }
@@ -176,7 +170,7 @@ program
 
 program
   .command('stats')
-  .description('build statistics')
+  .description('Show build statistics')
   .action(() => {
     try {
       const config = evmConfig.current();
@@ -202,16 +196,6 @@ program
       fatal(e);
     }
   });
-
-program
-  .command('gomadir')
-  .description('Path of the goma directory')
-  .action(() => console.log(goma.dir));
-
-program
-  .command('gomagn')
-  .description('Path of the goma.gn file')
-  .action(() => console.log(goma.gnFilePath));
 
 program.parse(process.argv);
 
