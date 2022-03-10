@@ -103,16 +103,9 @@ function ensureRoot(config, force) {
   }
 }
 
-let name;
-let options;
-
 program
-  .arguments('<name>')
+  .argument('<name>')
   .description('Create a new build configuration')
-  .action((name_in, options_in) => {
-    name = name_in;
-    options = options_in;
-  })
   .option(
     '-r, --root <path>',
     'Source and build files will be stored in this new directory',
@@ -144,74 +137,75 @@ program
     '--fork <username/electron>',
     `Add a remote fork of Electron with the name 'fork'. This should take the format 'username/electron'`,
   )
-  .parse(process.argv);
-
-if (!name) {
-  program.outputHelp();
-  process.exit(1);
-}
-
-if (options.import && !options.out) {
-  // e.g. the default out dir for a testing build is 'Testing'
-  options.out = options.import.charAt(0).toUpperCase() + options.import.substring(1);
-}
-
-try {
-  // Check global git settings that need to be enabled on Windows.
-  if (os.platform() === 'win32') {
-    checkGlobalGitConfig();
-  }
-
-  checkPlatformDependencies();
-
-  const config = createConfig(options);
-
-  // make sure the config name is new
-  const filename = evmConfig.pathOf(name);
-  if (!options.force && fs.existsSync(filename)) {
-    const existing = evmConfig.fetchByName(name);
-    if (existing.root !== config.root) {
-      fatal(
-        `Build config ${color.config(
-          name,
-        )} already exists and points at a different root folder! (${color.path(filename)})`,
-      );
+  .action((name, options) => {
+    if (!name) {
+      program.outputHelp();
+      process.exit(1);
     }
-  }
 
-  // Make sure the goma options are valid
-  if (!['none', 'cache-only', 'cluster'].includes(options.goma)) {
-    fatal(
-      `Config property ${color.config('goma')} must be one of ${color.config(
-        'cache-only',
-      )} or ${color.config('cluster')} but you provided ${color.config(options.goma)}`,
-    );
-  }
+    if (options.import && !options.out) {
+      // e.g. the default out dir for a testing build is 'Testing'
+      options.out = options.import.charAt(0).toUpperCase() + options.import.substring(1);
+    }
 
-  // save the new config
-  ensureRoot(config, !!options.force);
-  evmConfig.save(name, config);
-  console.log(`New build config ${color.config(name)} created in ${color.path(filename)}`);
+    try {
+      // Check global git settings that need to be enabled on Windows.
+      if (os.platform() === 'win32') {
+        checkGlobalGitConfig();
+      }
 
-  // `e use` the new config
-  const e = path.resolve(__dirname, 'e');
-  const opts = { stdio: 'inherit' };
-  childProcess.execFileSync(process.execPath, [e, 'use', name], opts);
+      checkPlatformDependencies();
 
-  // (maybe) run sync to ensure external binaries are downloaded
-  if (program.bootstrap) {
-    childProcess.execFileSync(process.execPath, [e, 'sync', '-v'], opts);
-  }
+      const config = createConfig(options);
 
-  // maybe authenticate with Goma
-  if (config.goma === 'cluster') {
-    goma.auth(config);
-  }
+      // make sure the config name is new
+      const filename = evmConfig.pathOf(name);
+      if (!options.force && fs.existsSync(filename)) {
+        const existing = evmConfig.fetchByName(name);
+        if (existing.root !== config.root) {
+          fatal(
+            `Build config ${color.config(
+              name,
+            )} already exists and points at a different root folder! (${color.path(filename)})`,
+          );
+        }
+      }
 
-  // (maybe) build Electron
-  if (program.bootstrap) {
-    childProcess.execFileSync(process.execPath, [e, 'build'], opts);
-  }
-} catch (e) {
-  fatal(e);
-}
+      // Make sure the goma options are valid
+      if (!['none', 'cache-only', 'cluster'].includes(options.goma)) {
+        fatal(
+          `Config property ${color.config('goma')} must be one of ${color.config(
+            'cache-only',
+          )} or ${color.config('cluster')} but you provided ${color.config(options.goma)}`,
+        );
+      }
+
+      // save the new config
+      ensureRoot(config, !!options.force);
+      evmConfig.save(name, config);
+      console.log(`New build config ${color.config(name)} created in ${color.path(filename)}`);
+
+      // `e use` the new config
+      const e = path.resolve(__dirname, 'e');
+      const opts = { stdio: 'inherit' };
+      childProcess.execFileSync(process.execPath, [e, 'use', name], opts);
+
+      // (maybe) run sync to ensure external binaries are downloaded
+      if (options.bootstrap) {
+        childProcess.execFileSync(process.execPath, [e, 'sync', '-v'], opts);
+      }
+
+      // maybe authenticate with Goma
+      if (config.goma === 'cluster') {
+        goma.auth(config);
+      }
+
+      // (maybe) build Electron
+      if (options.bootstrap) {
+        childProcess.execFileSync(process.execPath, [e, 'build'], opts);
+      }
+    } catch (e) {
+      fatal(e);
+    }
+  })
+  .parse(process.argv);
