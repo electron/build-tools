@@ -51,8 +51,8 @@ Many choices go into an Electron build:
 * Which [Electron branch](https://github.com/electron/electron/branches)
   is used (e.g. `main`, `13-x-y`)
 * Which [.gn config file][gn-configs] is imported (e.g.
-  [testing](https://github.com/electron/electron/blob/master/build/args/testing.gn) or
-  [release](https://github.com/electron/electron/blob/master/build/args/release.gn))
+  [testing](https://github.com/electron/electron/blob/main/build/args/testing.gn) or
+  [release](https://github.com/electron/electron/blob/main/build/args/release.gn))
 * Any compile-time options (e.g. Clang's [asan or tsan][sanitizers])
 
 `e` holds all these variables together in a build configuration. You can
@@ -366,7 +366,7 @@ Valid patch directories can include:
 
 [depot-tools]: https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
 [gdb]: https://web.eecs.umich.edu/~sugih/pointers/summary.html
-[gn-configs]: https://github.com/electron/electron/tree/master/build/args
+[gn-configs]: https://github.com/electron/electron/tree/main/build/args
 [gn]: https://chromium.googlesource.com/chromium/src/tools/gn/+/48062805e19b4697c5fbd926dc649c78b6aaa138/README.md
 [lldb]: https://lldb.llvm.org/use/tutorial.html
 [ninja]: https://ninja-build.org
