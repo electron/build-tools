@@ -262,7 +262,7 @@ program
 
 program.on('--help', () => {
   console.log(`
-See https://github.com/electron/build-tools/blob/master/README.md for usage.`);
+See https://github.com/electron/build-tools/blob/main/README.md for usage.`);
 });
 
 program.parse(process.argv);
