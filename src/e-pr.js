@@ -81,30 +81,6 @@ function guessPRSource(config) {
   return childProcess.execSync(command, options).trim();
 }
 
-function pullRequestSource(source) {
-  const regexes = [
-    /https:\/\/github.com\/(\S*)\/electron.git/,
-    /git@github.com:(\S*)\/electron.git/,
-  ];
-
-  const config = evmConfig.current();
-
-  if (config.remotes.electron.fork) {
-    const command = 'git remote get-url fork';
-    const cwd = path.resolve(config.root, 'src', 'electron');
-    const options = { cwd, encoding: 'utf8' };
-    const remoteUrl = childProcess.execSync(command, options).trim();
-
-    for (const regex of regexes) {
-      if (regex.test(remoteUrl)) {
-        return `${regex.exec(remoteUrl)[1]}:${source}`;
-      }
-    }
-  }
-
-  return source;
-}
-
 async function createPR(source, target, backport = undefined) {
   if (!source) {
     fatal(`'source' is required to create a PR`);
@@ -113,7 +89,8 @@ async function createPR(source, target, backport = undefined) {
   }
 
   const repoBaseUrl = 'https://github.com/electron/electron';
-  const comparePath = `${target}...${pullRequestSource(source)}`;
+  const forkUsername = evmConfig.getForkUsername(evmConfig.current());
+  const comparePath = `${target}...${forkUsername ? `${forkUsername}:${source}` : source}`;
   const queryParams = { expand: 1 };
 
   if (backport) {

@@ -5,6 +5,7 @@ const program = require('commander');
 const https = require('https');
 const { Octokit } = require('@octokit/rest');
 
+const evmConfig = require('./evm-config');
 const { getGitHubAuthToken } = require('./utils/github-auth');
 const { fatal } = require('./utils/logging');
 
@@ -32,6 +33,9 @@ program
   .description('Opens a PR to electron/electron that backport the given CL into our patches folder')
   .allowUnknownOption(false)
   .action(async (patchUrlStr, targetBranch, additionalBranches, { security }) => {
+    const forkUsername = evmConfig.getForkUsername(evmConfig.current());
+    const owner = forkUsername ? forkUsername : 'electron';
+
     if (targetBranch.startsWith('https://')) {
       let tmp = patchUrlStr;
       patchUrlStr = targetBranch;
@@ -44,7 +48,7 @@ program
       const {
         data: { permissions },
       } = await octokit.repos.get({
-        owner: 'electron',
+        owner,
         repo: 'electron',
       });
       if (!permissions || !permissions.push) {
@@ -98,7 +102,7 @@ program
             },
           },
         } = await octokit.repos.getBranch({
-          owner: 'electron',
+          owner,
           repo: 'electron',
           branch: target,
         });
@@ -106,7 +110,7 @@ program
         d(`fetching base patch list`);
         const { data: patchListData } = await octokit.repos
           .getContent({
-            owner: 'electron',
+            owner,
             repo: 'electron',
             path: `${patchPath}/.patches`,
             ref: targetSha,
@@ -126,7 +130,7 @@ program
 
         d(`creating tree base_tree=${targetBaseTreeSha}`);
         const { data: tree } = await octokit.git.createTree({
-          owner: 'electron',
+          owner,
           repo: 'electron',
           base_tree: targetBaseTreeSha,
           tree: [
@@ -147,7 +151,7 @@ program
 
         d(`creating commit tree=${tree.sha} parent=${targetSha}`);
         const { data: commit } = await octokit.git.createCommit({
-          owner: 'electron',
+          owner,
           repo: 'electron',
           tree: tree.sha,
           parents: [targetSha],
@@ -156,7 +160,7 @@ program
 
         d(`creating ref`);
         await octokit.git.createRef({
-          owner: 'electron',
+          owner,
           repo: 'electron',
           ref: `refs/heads/${branchName}`,
           sha: commit.sha,
@@ -171,7 +175,7 @@ program
         const { data: pr } = await octokit.pulls.create({
           owner: 'electron',
           repo: 'electron',
-          head: `electron:${branchName}`,
+          head: `${owner}:${branchName}`,
           base: target,
           title: `chore: cherry-pick ${shortCommit} from ${patchDirName}`,
           body: `${commitMessage}\n\nNotes: ${
@@ -184,18 +188,20 @@ program
           maintainer_can_modify: true,
         });
 
-        d(`labelling pr`);
-        await octokit.issues.update({
-          owner: 'electron',
-          repo: 'electron',
-          issue_number: pr.number,
-          labels: [
-            target,
-            'backport-check-skip',
-            'semver/patch',
-            ...(security ? ['security 🔒'] : []),
-          ],
-        });
+        if (!forkUsername) {
+          d(`labelling pr`);
+          await octokit.issues.update({
+            owner,
+            repo: 'electron',
+            issue_number: pr.number,
+            labels: [
+              target,
+              'backport-check-skip',
+              'semver/patch',
+              ...(security ? ['security 🔒'] : []),
+            ],
+          });
+        }
 
         console.log(`Created cherry-pick PR to ${target}: ${pr.html_url}`);
       }

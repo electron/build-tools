@@ -234,12 +234,31 @@ function remove(name) {
   }
 }
 
+function getForkUsername(config) {
+  const regexes = [
+    /https:\/\/github.com\/(\S*)\/electron.git/,
+    /git@github.com:(\S*)\/electron.git/,
+  ];
+
+  if (config.remotes.electron.fork) {
+    for (const regex of regexes) {
+      const regexMatch = regex.exec(config.remotes.electron.fork);
+      if (regexMatch) {
+        return regexMatch[1];
+      }
+    }
+
+    fatal('Malformed fork set in config');
+  }
+}
+
 module.exports = {
   buildTargets,
   current: () => sanitizeConfig(currentName()),
   currentName,
   execOf,
   fetchByName: name => sanitizeConfig(name),
+  getForkUsername,
   names,
   outDir,
   pathOf,
