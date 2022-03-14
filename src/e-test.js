@@ -34,7 +34,7 @@ function runSpecRunner(config, script, runnerArgs) {
 }
 
 program
-  .arguments('[specRunnerArgs...]')
+  .argument('[specRunnerArgs...]')
   .allowUnknownOption()
   .option('--node', 'Run node spec runner', false)
   .option('--nan', 'Run nan spec runner', false)
@@ -42,25 +42,25 @@ program
     '--runners=<main|remote|native>',
     "A subset of tests to run - either 'main', 'remote', or 'native', not used with either the node or nan specs",
   )
+  .action((specRunnerArgs, options) => {
+    try {
+      const config = evmConfig.current();
+      if (options.node && options.nan) {
+        fatal(
+          'Can not run both node and nan specs at the same time, --node and --nan are mutually exclusive',
+        );
+      }
+      let script = './script/spec-runner.js';
+      if (options.node) {
+        script = './script/node-spec-runner.js';
+      }
+      if (options.nan) {
+        script = './script/nan-spec-runner.js';
+      }
+      ensureNodeHeaders(config);
+      runSpecRunner(config, script, specRunnerArgs);
+    } catch (e) {
+      fatal(e);
+    }
+  })
   .parse(process.argv);
-
-try {
-  const runnerArgs = program.parseOptions(process.argv).unknown;
-  const config = evmConfig.current();
-  if (program.node && program.nan) {
-    fatal(
-      'Can not run both node and nan specs at the same time, --node and --nan are mutually exclusive',
-    );
-  }
-  let script = './script/spec-runner.js';
-  if (program.node) {
-    script = './script/node-spec-runner.js';
-  }
-  if (program.nan) {
-    script = './script/nan-spec-runner.js';
-  }
-  ensureNodeHeaders(config);
-  runSpecRunner(config, script, runnerArgs);
-} catch (e) {
-  fatal(e);
-}
