@@ -36,7 +36,7 @@ function runNinja(config, target, useGoma, ninjaArgs) {
     goma.downloadAndPrepare(config);
 
     if (config.goma === 'cluster') {
-      const authenticated = goma.isAuthenticated(config.root);
+      const authenticated = goma.isAuthenticated();
       if (!authenticated) {
         console.log('Not Authenticated - Triggering Goma Login');
         const { status, error } = depot.spawnSync(
