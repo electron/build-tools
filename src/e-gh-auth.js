@@ -9,7 +9,7 @@ const { fatal } = require('./utils/logging');
 program
   .description('Generates a device auth token for the electron org that build-tools can use')
   .option('--shell', 'Print an export command such that "eval $(e gh-auth --shell)" works')
-  .allowUnknownOption(false)
+  .allowExcessArguments(false)
   .action(async ({ shell }) => {
     try {
       const token = await getGitHubAuthToken(['repo']);
