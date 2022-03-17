@@ -138,11 +138,6 @@ program
     `Add a remote fork of Electron with the name 'fork'. This should take the format 'username/electron'`,
   )
   .action((name, options) => {
-    if (!name) {
-      program.outputHelp();
-      process.exit(1);
-    }
-
     if (options.import && !options.out) {
       // e.g. the default out dir for a testing build is 'Testing'
       options.out = options.import.charAt(0).toUpperCase() + options.import.substring(1);
