@@ -114,9 +114,9 @@ describe('e-init', () => {
     // run `e init` without a build config name
     const result = sandbox.eInitRunner().run();
 
-    // confirm that it errored out and gave a Help message
+    // confirm that it errored out.
     expect(result.exitCode).not.toStrictEqual(0);
-    expect(result.stdout).toEqual(expect.stringContaining('Usage'));
+    expect(result.stderr).toEqual(`error: missing required argument 'name'`);
   });
 
   it('does not overwrite existing configs unless --force', () => {

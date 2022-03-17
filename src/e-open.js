@@ -102,17 +102,11 @@ async function doOpen(opts) {
   }
 }
 
-let name;
-let options;
-
 program
-  .arguments('<sha1|PR#>')
+  .argument('<sha1|PR#>')
   .description('Open a GitHub URL for the given commit hash / pull # / issue #')
   .option('--print', 'Print the URL instead of opening it', false)
-  .action((name_in, options_in) => {
-    name = name_in;
-    options = options_in;
+  .action((name, options) => {
+    doOpen({ object: name, print: options.print });
   })
   .parse(process.argv);
-
-doOpen({ object: name, print: options.print });

@@ -65,7 +65,7 @@ function runGClientSync(syncArgs, syncOpts) {
   }
 }
 
-const opts = program
+program
   .option(
     '--3|--three-way',
     'Apply Electron patches using a three-way merge, useful when upgrading Chromium',
@@ -73,12 +73,12 @@ const opts = program
   .arguments('[gclientArgs...]')
   .allowUnknownOption()
   .description('Fetch source / synchronize repository checkouts')
+  .action((gclientArgs, options) => {
+    try {
+      const { threeWay } = options;
+      runGClientSync(gclientArgs, { threeWay });
+    } catch (e) {
+      fatal(e);
+    }
+  })
   .parse(process.argv);
-
-try {
-  const { threeWay } = opts;
-  const { unknown: syncArgs } = program.parseOptions(process.argv);
-  runGClientSync(syncArgs, { threeWay });
-} catch (e) {
-  fatal(e);
-}

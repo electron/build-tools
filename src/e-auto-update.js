@@ -11,9 +11,7 @@ const markerFilePath = path.join(__dirname, '..', '.disable-auto-updates');
 
 program
   .description('Check for build-tools updates or enable/disable automatic updates')
-  .action(() => {
-    checkForUpdates();
-  });
+  .action(checkForUpdates);
 
 program
   .command('enable')

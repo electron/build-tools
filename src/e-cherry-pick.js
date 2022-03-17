@@ -30,7 +30,7 @@ program
   .arguments('<patch-url> <target-branch> [additionalBranches...]')
   .option('--security', 'Whether this backport is for security reasons')
   .description('Opens a PR to electron/electron that backport the given CL into our patches folder')
-  .allowUnknownOption(false)
+  .allowExcessArguments(false)
   .action(async (patchUrlStr, targetBranch, additionalBranches, { security }) => {
     if (targetBranch.startsWith('https://')) {
       let tmp = patchUrlStr;
