@@ -125,14 +125,24 @@ program
         runGNGen(config);
       }
 
-      // collect all the unrecognized args that aren't a target
-      const pretty = Object.keys(targets).find(p => program.rawArgs.includes(p)) || 'default';
-      const index = ninjaArgs.indexOf(pretty);
-      if (index != -1) {
-        ninjaArgs.splice(index, 1);
+      if (options.target) {
+        // User forced a target, so any arguments are ninjaArgs
+        if (target) {
+          ninjaArgs.unshift(target);
+        }
+        target = options.target;
+      } else if (Object.keys(targets).includes(target)) {
+        target = targets[target];
+      } else {
+        // No forced target and no target matched, so use the
+        // default target and assume any arguments are ninjaArgs
+        if (target) {
+          ninjaArgs.unshift(target);
+        }
+        target = targets['default'];
       }
 
-      runNinja(config, target || targets[pretty], options.goma, ninjaArgs);
+      runNinja(config, target, options.goma, ninjaArgs);
     } catch (e) {
       fatal(e);
     }
