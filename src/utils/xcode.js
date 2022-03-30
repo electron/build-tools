@@ -47,6 +47,10 @@ const XcodeVersions = {
     fileName: 'Xcode-13.2.1.zip',
     md5: 'cb1193a5a23eeeb4e9c5fd87557be8ce',
   },
+  '13.3.0': {
+    fileName: 'Xcode-13.3.0.zip',
+    md5: 'b216a27212fdd0be922d83687aad22bf',
+  },
 };
 
 const fallbackXcode = () => {
