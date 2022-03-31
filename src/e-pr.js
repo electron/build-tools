@@ -91,7 +91,9 @@ function pullRequestSource(source) {
     /git@github.com:(\S*)\/electron.git/,
   ];
 
-  if (current().remotes.electron.fork) {
+  const config = current();
+
+  if (config.remotes.electron.fork) {
     const command = 'git remote get-url fork';
     const cwd = path.resolve(config.root, 'src', 'electron');
     const options = { cwd, encoding: 'utf8' };
