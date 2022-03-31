@@ -72,7 +72,7 @@ program
   .alias('run')
   .description('Run the Electron executable')
   .allowUnknownOption()
-  .action((args) => {
+  .action(args => {
     try {
       const exec = evmConfig.execOf(evmConfig.current());
       const opts = { stdio: 'inherit' };
@@ -95,7 +95,7 @@ program
   .command('node [args...]')
   .description('Run the Electron build as if it were a Node.js executable')
   .allowUnknownOption()
-  .action((args) => {
+  .action(args => {
     try {
       const exec = evmConfig.execOf(evmConfig.current());
       const opts = {
