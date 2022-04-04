@@ -68,14 +68,13 @@ program
   .alias('make');
 
 program
-  .command('start')
+  .command('start [args...]')
   .alias('run')
   .description('Run the Electron executable')
   .allowUnknownOption()
-  .action(() => {
+  .action(args => {
     try {
       const exec = evmConfig.execOf(evmConfig.current());
-      const args = program.rawArgs.slice(3);
       const opts = { stdio: 'inherit' };
       console.log(color.childExec(exec, args, opts));
       childProcess.execFileSync(exec, args, opts);
@@ -93,13 +92,12 @@ program
   });
 
 program
-  .command('node')
+  .command('node [args...]')
   .description('Run the Electron build as if it were a Node.js executable')
   .allowUnknownOption()
-  .action(() => {
+  .action(args => {
     try {
       const exec = evmConfig.execOf(evmConfig.current());
-      const args = program.rawArgs.slice(3);
       const opts = {
         env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
         stdio: 'inherit',
