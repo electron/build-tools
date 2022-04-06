@@ -30,16 +30,6 @@ const deps = {
       },
       deps: ['choco'],
     },
-    {
-      cmd: 'pywin32',
-      check: () => {
-        return cp.spawnSync('python', ['-c', 'import win32process']).status === 0;
-      },
-      fix: () => {
-        spawnSyncWithLog('choco', ['install', 'pywin32', '--yes']);
-      },
-      deps: ['choco'],
-    },
   ],
 };
 
