@@ -83,7 +83,7 @@ program
           'chromium-review.googlesource.com:chromium/src': 'chromium',
           'skia-review.googlesource.com:skia': 'skia',
           'webrtc-review.googlesource.com:src': 'webrtc',
-        }[gerritUrl.host + ':' + repo] || repo.split('/')[1];
+        }[gerritUrl.host + ':' + repo] || repo.split('/').reverse()[0];
 
       const shortCommit = commitId.substr(0, 12);
       const patchName = `cherry-pick-${shortCommit}.patch`;
