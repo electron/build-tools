@@ -58,7 +58,9 @@ program
       const gerritUrl = new URL(patchUrlStr);
       if (
         gerritUrl.host !== 'chromium-review.googlesource.com' &&
-        gerritUrl.host !== 'skia-review.googlesource.com'
+        gerritUrl.host !== 'skia-review.googlesource.com' &&
+        gerritUrl.host !== 'webrtc-review.googlesource.com' &&
+        gerritUrl.host !== 'pdfium-review.googlesource.com'
       ) {
         fatal(
           'Expected a gerrit URL (e.g. https://chromium-review.googlesource.com/c/v8/v8/+/2465830)',
@@ -78,9 +80,10 @@ program
 
       const patchDirName =
         {
-          'chromium/src': 'chromium',
-          skia: 'skia',
-        }[repo] || repo.split('/')[1];
+          'chromium-review.googlesource.com:chromium/src': 'chromium',
+          'skia-review.googlesource.com:skia': 'skia',
+          'webrtc-review.googlesource.com:src': 'webrtc',
+        }[gerritUrl.host + ':' + repo] || repo.split('/').reverse()[0];
 
       const shortCommit = commitId.substr(0, 12);
       const patchName = `cherry-pick-${shortCommit}.patch`;
