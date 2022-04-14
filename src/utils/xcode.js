@@ -10,6 +10,8 @@ const { color, fatal } = require('./logging');
 
 const XcodeDir = path.resolve(__dirname, '..', '..', 'third_party', 'Xcode');
 const XcodePath = path.resolve(XcodeDir, 'Xcode.app');
+const SystemXcodeDir = path.resolve('/Applications');
+const SystemXcodePath = path.resolve(SystemXcodeDir, 'Xcode.app');
 const XcodeZip = path.resolve(XcodeDir, 'Xcode.zip');
 const XcodeBaseURL = `${process.env.ELECTRON_BUILD_TOOLS_MIRROR ||
   'https://electron-build-tools.s3-us-west-2.amazonaws.com'}/macos/`;
@@ -75,8 +77,27 @@ function getXcodeVersion() {
   return 'unknown';
 }
 
+function getSystemXcodeVersion() {
+  const result = childProcess.spawnSync('defaults', [
+    'read',
+    path.resolve(SystemXcodePath, 'Contents', 'Info.plist'),
+    'CFBundleShortVersionString',
+  ]);
+  if (result.status === 0) {
+    const v = result.stdout.toString().trim();
+    if (v.split('.').length === 2) return `${v}.0`;
+    return v;
+  }
+  return 'unknown';
+}
+
 function expectedXcodeVersion() {
-  const { root } = evmConfig.current();
+  const { root, xcode } = evmConfig.current();
+
+  if (xcode === 'system') {
+    console.warn(color.warn, `using system xcode`);
+    return 'system';
+  }
 
   // NOTE: the location of CI's xcode definition changed in PR #31741 (or commit
   // 43f36b5 on the main branch)
@@ -129,6 +150,10 @@ function fixBadVersioned103() {
 function ensureXcode() {
   const expected = expectedXcodeVersion();
   fixBadVersioned103();
+
+  if (expected === 'system') {
+    return ensureSystemXcode();
+  }
 
   const shouldEnsureXcode = !fs.existsSync(XcodePath) || getXcodeVersion() !== expected;
 
@@ -204,6 +229,32 @@ function ensureXcode() {
     fs.symlinkSync(eventualVersionedPath, XcodePath);
   }
   rimraf.sync(XcodeZip);
+
+  return true;
+}
+
+function ensureSystemXcode() {
+  const systemXcodeVersion = getSystemXcodeVersion();
+
+  if (systemXcodeVersion === 'unknown') {
+    fatal(`'system' xcode is specified by config, but no xcode found in /Applications`);
+  }
+
+  if (fs.existsSync(SystemXcodePath) && fs.statSync(SystemXcodePath).isSymbolicLink()) {
+    fs.unlinkSync(SystemXcodePath);
+  }
+
+  // Remove the old file or symlink in XcodePath
+  if (fs.existsSync(XcodePath)) {
+    if (fs.statSync(XcodePath).isSymbolicLink()) {
+      fs.unlinkSync(XcodePath);
+    } else {
+      rimraf.sync(XcodePath);
+    }
+  }
+
+  console.log(`Updating active Xcode version to 'system' (${color.path(systemXcodeVersion)})`);
+  fs.symlinkSync(SystemXcodePath, XcodePath);
 
   return true;
 }
