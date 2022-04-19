@@ -34,6 +34,37 @@ if (out.status !== 0 && out.stderr.toString().includes('xcodebuild')) {
   childProcess.execFileSync('sudo', ['xcodebuild', '-license', 'accept']);
 }
 
+// Ensure XcodeSystemResources is installed
+const result = childProcess.execSync('pkgutil --pkgs');
+const isSystemResourcesInstalled = result
+  .toString()
+  .split('\n')
+  .some(pkg => pkg.trim() === 'com.apple.pkg.XcodeSystemResources');
+if (!isSystemResourcesInstalled) {
+  console.log(
+    `Looks like XcodeSystemResources have not been installed on this machine yet, in order to initialize Xcode we will attempt to install them now, this may prompt for your password`,
+  );
+  childProcess.execFileSync(
+    'sudo',
+    [
+      'installer',
+      '-pkg',
+      path.resolve(
+        Xcode.XcodePath,
+        'Contents',
+        'Resources',
+        'Packages',
+        'XcodeSystemResources.pkg',
+      ),
+      '-target',
+      '/',
+    ],
+    {
+      stdio: 'inherit',
+    },
+  );
+}
+
 const SDK_TO_UNLINK = ['10.12', '10.13', '10.14', '10.15'];
 
 const xCodeSDKDir = path.resolve(
