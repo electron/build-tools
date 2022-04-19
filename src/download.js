@@ -1,12 +1,31 @@
 const fs = require('fs');
 const got = require('got');
-const progressStream = require('stream-progressbar');
 const stream = require('stream');
 const { promisify } = require('util');
+const ProgressBar = require('progress');
 
 const pipeline = promisify(stream.pipeline);
 
-const progress = progressStream('[:bar] :rate/bps :percent :etas');
+const MB_BYTES = 1025 * 1024;
+
+const progressStream = function(tokens) {
+  var pt = new stream.PassThrough();
+
+  pt.on('pipe', function(stream) {
+    stream.on('response', function(res) {
+      const total = parseInt(res.headers['content-length'], 10);
+      const bar = new ProgressBar(tokens, { total: total / MB_BYTES });
+
+      pt.on('data', function(chunk) {
+        bar.tick(chunk.length / MB_BYTES);
+      });
+    });
+  });
+
+  return pt;
+};
+
+const progress = progressStream('[:bar] :rateMB/s :percent :etas');
 const write = fs.createWriteStream(process.argv[3]);
 
 pipeline(

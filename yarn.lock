@@ -4087,13 +4087,6 @@ stack-utils@^2.0.3:
   dependencies:
     escape-string-regexp "^2.0.0"
 
-stream-progressbar@^1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/stream-progressbar/-/stream-progressbar-1.3.0.tgz#f152592652e9116986b90b40e9ec2b2bc5752478"
-  integrity sha512-u6TvFthqX58s7q9wC4HCKGMuR71XxRMLVjubS3ad47p7yEPYTTTM8LufMSNeDcO+CyxFLaYQDMgsqR+Cc2NCAg==
-  dependencies:
-    progress "^2.0.3"
-
 string-argv@0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/string-argv/-/string-argv-0.3.1.tgz#95e2fbec0427ae19184935f816d74aaa4c5c19da"
