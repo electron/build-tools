@@ -9,7 +9,7 @@ const evmConfig = require('./evm-config.js');
 const { color, fatal } = require('./utils/logging');
 
 program
-  .argument('[target]')
+  .arguments('[target]')
   .description(
     "Refresh all patches if 'all' is specified; otherwise, refresh patches in $root/src/electron/patches/$target",
   )
@@ -65,5 +65,6 @@ program
     } catch (e) {
       fatal(e);
     }
-  })
-  .parse(process.argv);
+  });
+
+program.parse(process.argv);
