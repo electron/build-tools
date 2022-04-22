@@ -14,7 +14,7 @@ const progressStream = function(tokens) {
   pt.on('pipe', function(stream) {
     stream.on('response', function(res) {
       const total = parseInt(res.headers['content-length'], 10);
-      const bar = new ProgressBar(tokens, { total: total / MB_BYTES });
+      const bar = new ProgressBar(tokens, { total: Math.round(total / MB_BYTES) });
 
       pt.on('data', function(chunk) {
         bar.tick(chunk.length / MB_BYTES);
