@@ -92,6 +92,12 @@ function expectedXcodeVersion() {
     match = fs.existsSync(configYaml) && /xcode: "(.+?)"/.exec(fs.readFileSync(configYaml, 'utf8'));
   }
 
+  // Third check base.yml
+  if (!match) {
+    const baseYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config', 'base.yml');
+    match = fs.existsSync(baseYaml) && /xcode: "(.+?)"/.exec(fs.readFileSync(baseYaml, 'utf8'));
+  }
+
   if (!match) {
     console.warn(
       color.warn,
