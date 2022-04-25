@@ -11,8 +11,7 @@ const { color, fatal } = require('./logging');
 const XcodeDir = path.resolve(__dirname, '..', '..', 'third_party', 'Xcode');
 const XcodePath = path.resolve(XcodeDir, 'Xcode.app');
 const XcodeZip = path.resolve(XcodeDir, 'Xcode.zip');
-const XcodeBaseURL = `${process.env.ELECTRON_BUILD_TOOLS_MIRROR ||
-  'https://electron-build-tools.s3-us-west-2.amazonaws.com'}/macos/`;
+const XcodeBaseURL = 'https://dev-cdn.electronjs.org/xcode/';
 
 const XcodeVersions = {
   '9.4.1': {
