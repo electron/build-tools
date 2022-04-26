@@ -12,7 +12,7 @@ const { getIsArm } = require('./arm');
 const gomaDir = path.resolve(__dirname, '..', '..', 'third_party', 'goma');
 const gomaGnFile = path.resolve(__dirname, '..', '..', 'third_party', 'goma.gn');
 const gomaShaFile = path.resolve(__dirname, '..', '..', 'third_party', 'goma', '.sha');
-const gomaBaseURL = 'https://electron-build-tools.s3-us-west-2.amazonaws.com/build-dependencies';
+const gomaBaseURL = 'https://dev-cdn.electronjs.org/goma-clients';
 const gomaLoginFile = path.resolve(gomaDir, 'last-known-login');
 
 let gomaPlatform = process.platform;
