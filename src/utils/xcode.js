@@ -74,6 +74,14 @@ function getXcodeVersion() {
   return 'unknown';
 }
 
+function extractXcodeVersion(config) {
+  const legacyMatch = /xcode: "(.+?)"/.exec(config);
+  if (legacyMatch) return legacyMatch;
+  const modernMatch = /description: "xcode version"\n +default: ([^\n]+)\n/gm.exec(config);
+  if (modernMatch) return modernMatch;
+  return null;
+}
+
 function expectedXcodeVersion() {
   const { root } = evmConfig.current();
 
@@ -83,18 +91,18 @@ function expectedXcodeVersion() {
   // First check CI build_config.yml
   const buildConfYaml = path.resolve(root, 'src', 'electron', '.circleci', 'build_config.yml');
   let match =
-    fs.existsSync(buildConfYaml) && /xcode: "(.+?)"/.exec(fs.readFileSync(buildConfYaml, 'utf8'));
+    fs.existsSync(buildConfYaml) && extractXcodeVersion(fs.readFileSync(buildConfYaml, 'utf8'));
 
   // Second check CI config.yml
   if (!match) {
     const configYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config.yml');
-    match = fs.existsSync(configYaml) && /xcode: "(.+?)"/.exec(fs.readFileSync(configYaml, 'utf8'));
+    match = fs.existsSync(configYaml) && extractXcodeVersion(fs.readFileSync(configYaml, 'utf8'));
   }
 
   // Third check base.yml
   if (!match) {
     const baseYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config', 'base.yml');
-    match = fs.existsSync(baseYaml) && /xcode: "(.+?)"/.exec(fs.readFileSync(baseYaml, 'utf8'));
+    match = fs.existsSync(baseYaml) && extractXcodeVersion(fs.readFileSync(baseYaml, 'utf8'));
   }
 
   if (!match) {
