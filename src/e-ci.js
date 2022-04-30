@@ -25,6 +25,12 @@ program
       })
       .toString()
       .trim();
+    const currentRef = cp
+      .execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+        cwd: electronDir,
+      })
+      .toString()
+      .trim();
 
     const octokit = new Octokit({
       auth: process.env.ELECTRON_BUILD_TOOLS_GH_AUTH || (await getGitHubAuthToken(['repo'])),
@@ -91,7 +97,8 @@ program
     };
 
     console.log(`${chalk.bold('Electron CI Status')}
-${chalk.bold('Ref')}: ${chalk.cyan(currentSha)}
+${chalk.bold('SHA')}: ${chalk.cyan(currentSha)}
+${chalk.bold('Ref')}: ${chalk.cyan(currentRef)}
 
 ${chalk.bold(chalk.bgYellow(chalk.black('Circle CI')))}
 ${checkLine(macOS, 'macOS')}
