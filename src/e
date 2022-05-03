@@ -146,6 +146,8 @@ program
   });
 
 program
+  .command('backport [pr]', 'Assists with manual backport processes')
+  .command('ci <subcommand>', 'Show information about CI jobs')
   .command('show <subcommand>', 'Show info about the current build config')
   .command('test [specRunnerArgs...]', `Run Electron's spec runner`)
   .command('pr [options]', 'Open a GitHub URL where you can PR your changes')

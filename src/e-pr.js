@@ -32,8 +32,9 @@ function findNoteInPRBody(body) {
   return notes ? notes.trim() : notes;
 }
 
-async function getPullRequestNotes(pullNumber) {
+async function getPullRequestInfo(pullNumber) {
   let notes = null;
+  let title = null;
 
   const opts = {
     url: `https://api.github.com/repos/electron/electron/pulls/${pullNumber}`,
@@ -46,11 +47,15 @@ async function getPullRequestNotes(pullNumber) {
       fatal(`Could not find PR: ${opts.url} got ${response.headers.status}`);
     }
     notes = findNoteInPRBody(response.body.body);
+    title = response.body.title;
   } catch (error) {
     console.log(color.err, error);
   }
 
-  return notes;
+  return {
+    notes,
+    title,
+  };
 }
 
 function guessPRTarget(config) {
@@ -133,12 +138,31 @@ program
     const comparePath = `${options.target}...${pullRequestSource(options.source)}`;
     const queryParams = { expand: 1 };
 
+    if (!options.backport) {
+      const currentBranchResult = childProcess.spawnSync(
+        'git',
+        ['rev-parse', '--abbrev-ref', 'HEAD'],
+        {
+          cwd: path.resolve(current().root, 'src', 'electron'),
+        },
+      );
+      const currentBranch = currentBranchResult.stdout.toString().trim();
+      const manualBranchPattern = /^manual-bp\/[^\/]+\/pr\/([0-9]+)\/branch\/[^\/]+$/;
+      const manualBranchTarget = manualBranchPattern.exec(currentBranch);
+      if (manualBranchTarget) {
+        options.backport = manualBranchTarget[1];
+      }
+    }
+
     if (options.backport) {
       if (!/^\d+$/.test(options.backport)) {
         fatal(`${options.backport} is not a valid GitHub backport number - try again`);
       }
 
-      const notes = await getPullRequestNotes(options.backport);
+      const { notes, title } = await getPullRequestInfo(options.backport);
+      if (title) {
+        queryParams.title = title;
+      }
       queryParams.body = `Backport of #${
         options.backport
       }.\n\nSee that PR for details.\n\nNotes: ${notes || ''}`;
