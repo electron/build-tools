@@ -8,15 +8,40 @@ const path = require('path');
 
 const evmConfig = require('./evm-config');
 const { getGitHubAuthToken } = require('./utils/github-auth');
+const { fatal } = require('./utils/logging');
 
 const CIRCLECI_APP_ID = 18001;
 const APPVEYOR_BOT_ID = 40616121;
 
-program.description('Show information about CI jobs');
+const checkLine = (check, name) => {
+  if (!check) return `⦿ ${name} - ${chalk.blue('Missing')}`;
+  const status =
+    check.status === 'completed'
+      ? check.conclusion === 'success'
+        ? chalk.green('Success')
+        : chalk.red('Failed')
+      : chalk.yellow('Running');
+  const url = new URL(check.details_url);
+  url.search = '';
+  return `⦿ ${name} - ${status} - ${url}`;
+};
+
+const statusLine = (_status, name) => {
+  if (!_status) return `⦿ ${name} - ${chalk.blue('Missing')}`;
+  const status =
+    _status.state === 'pending'
+      ? chalk.yellow('Running')
+      : _status.state === 'success'
+      ? chalk.green('Success')
+      : chalk.red('Failed');
+  const url = new URL(_status.target_url);
+  url.search = '';
+  return `⦿ ${name} - ${status} - ${url}`;
+};
 
 program
-  .command('status')
-  .description('Show the current CI job status for the current checkout')
+  .description('Show information about CI job statuses')
+  .argument('<status>', 'Show CI status')
   .action(async () => {
     const electronDir = path.resolve(evmConfig.current().root, 'src', 'electron');
     const currentSha = cp
@@ -36,79 +61,58 @@ program
       auth: process.env.ELECTRON_BUILD_TOOLS_GH_AUTH || (await getGitHubAuthToken(['repo'])),
     });
 
-    const {
-      data: { check_runs: checks },
-    } = await octokit.checks.listForRef({
-      repo: 'electron',
-      owner: 'electron',
-      ref: currentSha,
-    });
-    const macOS = checks.find(
-      check => check.app.id === CIRCLECI_APP_ID && check.name === 'build-mac',
-    );
-    const linux = checks.find(
-      check => check.app.id === CIRCLECI_APP_ID && check.name === 'build-linux',
-    );
-    const lint = checks.find(check => check.app.id === CIRCLECI_APP_ID && check.name === 'lint');
+    try {
+      const {
+        data: { check_runs: checks },
+      } = await octokit.checks.listForRef({
+        repo: 'electron',
+        owner: 'electron',
+        ref: currentSha,
+      });
 
-    const { data: statuses } = await octokit.repos.listCommitStatusesForRef({
-      repo: 'electron',
-      owner: 'electron',
-      ref: currentSha,
-    });
+      const macOS = checks.find(
+        ({ app, name }) => app.id === CIRCLECI_APP_ID && name === 'build-mac',
+      );
+      const linux = checks.find(
+        ({ app, name }) => app.id === CIRCLECI_APP_ID && name === 'build-linux',
+      );
+      const lint = checks.find(({ app, name }) => app.id === CIRCLECI_APP_ID && name === 'lint');
 
-    const win64 = statuses.find(
-      status =>
-        status.creator.id === APPVEYOR_BOT_ID && status.context === 'appveyor: win-x64-testing',
-    );
-    const win32 = statuses.find(
-      status =>
-        status.creator.id === APPVEYOR_BOT_ID && status.context === 'appveyor: win-ia32-testing',
-    );
-    const woa = statuses.find(
-      status =>
-        status.creator.id === APPVEYOR_BOT_ID && status.context === 'appveyor: win-woa-testing',
-    );
+      const { data: statuses } = await octokit.repos.listCommitStatusesForRef({
+        repo: 'electron',
+        owner: 'electron',
+        ref: currentSha,
+      });
 
-    const checkLine = (check, name) => {
-      if (!check) return `⦿ ${name} - ${chalk.blue('Missing')}`;
-      const status =
-        check.status === 'completed'
-          ? check.conclusion === 'success'
-            ? chalk.green('Success')
-            : chalk.red('Failed')
-          : chalk.yellow('Running');
-      const url = new URL(check.details_url);
-      url.search = '';
-      return `⦿ ${name} - ${status} - ${url}`;
-    };
+      const win64 = statuses.find(
+        ({ creator, context }) =>
+          creator.id === APPVEYOR_BOT_ID && context === 'appveyor: win-x64-testing',
+      );
+      const win32 = statuses.find(
+        ({ creator, context }) =>
+          creator.id === APPVEYOR_BOT_ID && context === 'appveyor: win-ia32-testing',
+      );
+      const woa = statuses.find(
+        ({ creator, context }) =>
+          creator.id === APPVEYOR_BOT_ID && context === 'appveyor: win-woa-testing',
+      );
 
-    const statusLine = (_status, name) => {
-      if (!_status) return `⦿ ${name} - ${chalk.blue('Missing')}`;
-      const status =
-        _status.state === 'pending'
-          ? chalk.yellow('Running')
-          : _status.state === 'success'
-          ? chalk.green('Success')
-          : chalk.red('Failed');
-      const url = new URL(_status.target_url);
-      url.search = '';
-      return `⦿ ${name} - ${status} - ${url}`;
-    };
+      console.log(`${chalk.bold('Electron CI Status')}
+  ${chalk.bold('SHA')}: ${chalk.cyan(currentSha)}
+  ${chalk.bold('Ref')}: ${chalk.cyan(currentRef)}
 
-    console.log(`${chalk.bold('Electron CI Status')}
-${chalk.bold('SHA')}: ${chalk.cyan(currentSha)}
-${chalk.bold('Ref')}: ${chalk.cyan(currentRef)}
+  ${chalk.bold(chalk.bgYellow(chalk.black('Circle CI')))}
+  ${checkLine(macOS, 'macOS')}
+  ${checkLine(linux, 'Linux')}
+  ${checkLine(lint, 'Lint')}
 
-${chalk.bold(chalk.bgYellow(chalk.black('Circle CI')))}
-${checkLine(macOS, 'macOS')}
-${checkLine(linux, 'Linux')}
-${checkLine(lint, 'Lint')}
-
-${chalk.bold(chalk.bgBlue(chalk.white('Appveyor')))}
-${statusLine(win32, 'Windows ia32')}
-${statusLine(win64, 'Windows x64')}
-${statusLine(woa, 'Windows Arm')}`);
+  ${chalk.bold(chalk.bgBlue(chalk.white('Appveyor')))}
+  ${statusLine(win32, 'Windows ia32')}
+  ${statusLine(win64, 'Windows x64')}
+  ${statusLine(woa, 'Windows Arm')}`);
+    } catch (e) {
+      fatal(e.message);
+    }
   });
 
 program.parse(process.argv);
