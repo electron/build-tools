@@ -29,10 +29,10 @@ const GOMA_PLATFORM_SHAS = {
 };
 
 const MSFT_GOMA_PLATFORM_SHAS = {
-  darwin: '35243755d119837c0897dbaf1d05110874c9e0466dedf4a2a5fae6dcec4b9b8a',
-  'darwin-arm64': '084930bee548ca10fc9b2b9d04066d75a7f4330040592d68fc55abd2f6a3be69',
-  linux: '8f27a41d431b1c51cb45f5f151dfd62ac2fb1e6a543e16eaf1e5a0935898da3d',
-  win32: '1d26d7e0b16f693f8cc3bb36496deb5aacbc52907e6dfad89f44ebc3772d99b6',
+  darwin: 'b6229977e38a3f690bca03a327be407e63aa9703dd669480e2de8def324c5988',
+  'darwin-arm64': '69cf77de7a87a8da498e80edec5a0782ab6cab38ce7d5c9d30cfd54df01e9522',
+  linux: 'd35173465ec3e573ea9ed1d65ee6ce937e3904b27ef107504042dfb152f52428',
+  win32: '12a3bea17120a3a53ac7feb9a4d4156a2d5a4c251276904a7f1f0b426fd2c069',
 };
 
 const isSupportedPlatform = !!GOMA_PLATFORM_SHAS[gomaPlatform];
