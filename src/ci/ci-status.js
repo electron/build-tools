@@ -40,7 +40,7 @@ const statusLine = (_status, name) => {
 };
 
 const parseRef = ref => {
-  const pullPattern = /^#?\d{1,10}$/;
+  const pullPattern = /^#?\d{1,7}$/;
   if (pullPattern.test(ref)) {
     const pullNum = ref.startsWith('#') ? ref.substring(1) : ref;
     return `refs/pull/${pullNum}/head`;
