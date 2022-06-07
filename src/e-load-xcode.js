@@ -90,11 +90,11 @@ for (const sdk of SDK_TO_UNLINK) {
 
   // Check that target is a valid symbolic link.
   const stats = fs.lstatSync(targetDirectory);
-  if (!stats.isSymbolicLink()) return;
+  if (!stats.isSymbolicLink()) continue;
 
   // Check if the link is to the default SDK that we should have
   if (fs.realpathSync(targetDirectory) === fs.realpathSync(path.resolve(xCodeSDKDir, 'MacOSX.sdk')))
-    return;
+    continue;
 
   console.warn(`${color.info} Removing symbolic link ${color.path(targetDirectory)}`);
 
