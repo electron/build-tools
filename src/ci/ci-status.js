@@ -2,13 +2,13 @@
 
 const { Octokit } = require('@octokit/rest');
 const chalk = require('chalk').default;
-const cp = require('child_process');
+const { execFileSync } = require('child_process');
 const program = require('commander');
 const path = require('path');
 
-const evmConfig = require('./evm-config');
-const { getGitHubAuthToken } = require('./utils/github-auth');
-const { fatal } = require('./utils/logging');
+const { current } = require('../evm-config');
+const { getGitHubAuthToken } = require('../utils/github-auth');
+const { fatal } = require('../utils/logging');
 
 const CIRCLECI_APP_ID = 18001;
 const APPVEYOR_BOT_ID = 40616121;
@@ -39,21 +39,22 @@ const statusLine = (_status, name) => {
   return `⦿ ${name} - ${status} - ${url}`;
 };
 
+const parseRef = ref => {
+  const pullPattern = /^#?\d{1,7}$/;
+  if (pullPattern.test(ref)) {
+    const pullNum = ref.startsWith('#') ? ref.substring(1) : ref;
+    return `refs/pull/${pullNum}/head`;
+  }
+
+  return ref;
+};
+
 program
   .description('Show information about CI job statuses')
-  .argument('<status>', 'Show CI status')
-  .action(async () => {
-    const electronDir = path.resolve(evmConfig.current().root, 'src', 'electron');
-    const currentSha = cp
-      .execFileSync('git', ['rev-parse', 'HEAD'], {
-        cwd: electronDir,
-      })
-      .toString()
-      .trim();
-    const currentRef = cp
-      .execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
-        cwd: electronDir,
-      })
+  .option('-r|--ref <ref>', 'The ref to check CI job status for')
+  .action(async options => {
+    const electronDir = path.resolve(current().root, 'src', 'electron');
+    const currentRef = execFileSync('git', ['branch', '--show-current'], { cwd: electronDir })
       .toString()
       .trim();
 
@@ -61,13 +62,14 @@ program
       auth: process.env.ELECTRON_BUILD_TOOLS_GH_AUTH || (await getGitHubAuthToken(['repo'])),
     });
 
+    const ref = options.ref ? parseRef(options.ref) : currentRef;
     try {
       const {
         data: { check_runs: checks },
       } = await octokit.checks.listForRef({
         repo: 'electron',
         owner: 'electron',
-        ref: currentSha,
+        ref,
       });
 
       const macOS = checks.find(
@@ -81,7 +83,7 @@ program
       const { data: statuses } = await octokit.repos.listCommitStatusesForRef({
         repo: 'electron',
         owner: 'electron',
-        ref: currentSha,
+        ref,
       });
 
       const win64 = statuses.find(
@@ -98,10 +100,9 @@ program
       );
 
       console.log(`${chalk.bold('Electron CI Status')}
-  ${chalk.bold('SHA')}: ${chalk.cyan(currentSha)}
-  ${chalk.bold('Ref')}: ${chalk.cyan(currentRef)}
+  ${chalk.bold('Ref')}: ${chalk.cyan(ref)}
 
-  ${chalk.bold(chalk.bgYellow(chalk.black('Circle CI')))}
+  ${chalk.bold(chalk.bgMagenta(chalk.white('Circle CI')))}
   ${checkLine(macOS, 'macOS')}
   ${checkLine(linux, 'Linux')}
   ${checkLine(lint, 'Lint')}

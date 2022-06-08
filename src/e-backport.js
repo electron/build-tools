@@ -11,11 +11,9 @@ const { spawnSync } = require('./utils/depot-tools');
 const { getGitHubAuthToken } = require('./utils/github-auth');
 const { fatal } = require('./utils/logging');
 
-program.description('Assists with manual backport processes');
-
 program
   .arguments('[pr]')
-  // .description('Show the current CI job status for the current checkout')
+  .description('Assists with manual backport processes')
   .action(async prNumberStr => {
     const prNumber = parseInt(prNumberStr, 10);
     if (isNaN(prNumber) || `${prNumber}` !== prNumberStr) {
@@ -62,7 +60,7 @@ program
     const result = spawnSync(config, 'git', ['status', '--porcelain'], gitOpts);
     if (result.status !== 0 || result.stdout.toString().trim().length !== 0) {
       fatal(
-        "Your current git working directory is not clean, we won't erase your local changes.  Clean it up and try again",
+        "Your current git working directory is not clean, we won't erase your local changes. Clean it up and try again",
       );
       return;
     }
