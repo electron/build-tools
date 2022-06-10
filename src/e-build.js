@@ -35,33 +35,9 @@ function runNinja(config, target, useGoma, ninjaArgs) {
   if (useGoma && config.goma !== 'none') {
     goma.downloadAndPrepare(config);
 
+    // maybe authenticate with Goma
     if (config.goma === 'cluster') {
-      const authenticated = goma.isAuthenticated();
-      if (!authenticated) {
-        console.log('Not Authenticated - Triggering Goma Login');
-        const { status, error } = depot.spawnSync(
-          evmConfig.current(),
-          'python',
-          ['goma_auth.py', 'login'],
-          {
-            cwd: goma.dir,
-            stdio: 'inherit',
-            env: {
-              ...process.env,
-              AGREE_NOTGOMA_TOS: '1',
-            },
-          },
-        );
-
-        if (status !== 0) {
-          console.error(
-            `${color.err} Failed to run command, exit code was "${status}", error was '${error}'`,
-          );
-          process.exit(status);
-        }
-
-        goma.recordGomaLoginTime();
-      }
+      goma.auth(config);
     }
 
     goma.ensure(config);
