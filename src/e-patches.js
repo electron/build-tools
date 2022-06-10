@@ -59,8 +59,7 @@ program
             .map(a => color.cmd(a))
             .join(', ')}`,
         );
-        console.log(`${color.err} See ${color.path(patchesConfig)}`);
-        process.exit(1);
+        fatal(`See ${color.path(patchesConfig)}`);
       }
     } catch (e) {
       fatal(e);

@@ -6,6 +6,8 @@ const ProgressBar = require('progress');
 
 const pipeline = promisify(stream.pipeline);
 
+const { fatal } = require('./utils/logging');
+
 const MB_BYTES = 1025 * 1024;
 
 const progressStream = function(tokens) {
@@ -31,7 +33,4 @@ const write = fs.createWriteStream(process.argv[3]);
 pipeline(
   got.default.stream(process.argv[2]),
   ...(process.env.CI ? [write] : [progress, write]),
-).catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+).catch(fatal);
