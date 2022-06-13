@@ -9,7 +9,7 @@ const { fatal } = require('../utils/logging');
 program
   .description('Rerun CI workflows')
   .argument('[workflow]', 'The ID of the workflow to rerun')
-  .option('-f, --from-failed', 'Rerun workflow from failed', false)
+  .option('-f, --from-failed', 'Rerun workflow from failed', true)
   .option('-e, --enable-ssh', 'Rerun workflow from failed', false)
   .action(async (workflow, options) => {
     try {
