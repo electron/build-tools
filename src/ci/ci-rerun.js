@@ -10,7 +10,6 @@ program
   .description('Rerun CI workflows')
   .argument('[workflow]', 'The ID of the workflow to rerun')
   .option('-f, --from-failed', 'Rerun workflow from failed', true)
-  .option('-e, --enable-ssh', 'Rerun workflow from failed', false)
   .action(async (workflow, options) => {
     try {
       const { pipeline_number } = await got(`https://circleci.com/api/v2/workflow/${workflow}`, {
@@ -27,7 +26,8 @@ program
           username: process.env.CIRCLE_TOKEN,
           password: '',
           json: {
-            enable_ssh: options.enableSsh,
+            //TODO(codebytere): allow specifying jobs and rerunning with SSH.
+            enable_ssh: false,
             from_failed: options.fromFailed,
             jobs: [],
             sparse_tree: false,
