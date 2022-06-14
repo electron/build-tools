@@ -90,9 +90,17 @@ program
         ({ creator, context }) =>
           creator.id === APPVEYOR_BOT_ID && context === 'appveyor: win-x64-testing',
       );
+      const win64PR = statuses.find(
+        ({ creator, context }) =>
+          creator.id === APPVEYOR_BOT_ID && context === 'appveyor: win-x64-testing-pr',
+      );
       const win32 = statuses.find(
         ({ creator, context }) =>
           creator.id === APPVEYOR_BOT_ID && context === 'appveyor: win-ia32-testing',
+      );
+      const win32PR = statuses.find(
+        ({ creator, context }) =>
+          creator.id === APPVEYOR_BOT_ID && context === 'appveyor: win-ia32-testing-pr',
       );
       const woa = statuses.find(
         ({ creator, context }) =>
@@ -109,7 +117,9 @@ program
 
   ${chalk.bold(chalk.bgBlue(chalk.white('Appveyor')))}
   ${statusLine(win32, 'Windows ia32')}
+  ${statusLine(win32PR, 'Windows i32 (PR)')}
   ${statusLine(win64, 'Windows x64')}
+  ${statusLine(win64PR, 'Windows x64 (PR)')}
   ${statusLine(woa, 'Windows Arm')}`);
     } catch (e) {
       fatal(e.message);
