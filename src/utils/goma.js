@@ -154,7 +154,7 @@ function authenticateGoma(config) {
       },
     });
 
-    if (status !== 0) { 
+    if (status !== 0) {
       let errorMsg = `${color.err} Failed to run command:`;
       if (status !== null) errorMsg += `\n Exit Code: "${status}"`;
       if (error) errorMsg += `\n ${error}`;
