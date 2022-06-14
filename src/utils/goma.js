@@ -145,7 +145,7 @@ function authenticateGoma(config) {
 
   if (!gomaIsAuthenticated()) {
     console.log(color.childExec('goma_auth.py', ['login'], { cwd: gomaDir }));
-    childProcess.execFileSync('python', ['goma_auth.py', 'login'], {
+    const { status, error } = depot.spawnSync('python', ['goma_auth.py', 'login'], {
       cwd: gomaDir,
       stdio: 'inherit',
       env: {
@@ -153,6 +153,15 @@ function authenticateGoma(config) {
         AGREE_NOTGOMA_TOS: '1',
       },
     });
+
+    if (status !== 0) {
+      let errorMsg = `${color.err} Failed to run command:`;
+      if (status !== null) errorMsg += `\n Exit Code: "${status}"`;
+      if (error) errorMsg += `\n ${error}`;
+      console.error(errorMsg);
+      process.exit(status);
+    }
+
     recordGomaLoginTime();
   }
 }
