@@ -54,8 +54,8 @@ const printChecks = checks => {
     result += `  ⦿ ${name} - ${status} - ${url}\n`;
     if (check.jobs) {
       for (const job of check.jobs) {
-        const { id, status } = job;
-        result += `   ⦿ ${colorForStatus(status)} - ${id}\n`;
+        const { id, name, status } = job;
+        result += `     ⦿ ${name} - ${colorForStatus(status)} - ${id}\n`;
       }
     }
   }
