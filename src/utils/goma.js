@@ -154,10 +154,11 @@ function authenticateGoma(config) {
       },
     });
 
-    if (status !== 0) {
-      console.error(
-        `${color.err} Failed to run command, exit code was "${status}", error was '${error}'`,
-      );
+    if (status !== 0) { 
+      let errorMsg = `${color.err} Failed to run command:`;
+      if (status !== null) errorMsg += `\n Exit Code: "${status}"`;
+      if (error) errorMsg += `\n ${error}`;
+      console.error(errorMsg);
       process.exit(status);
     }
 
