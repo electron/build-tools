@@ -159,6 +159,7 @@ program
 
       if (options.showJobs) {
         for (const [name, check] of Object.entries(checks)) {
+          if (!check) continue;
           const workflowID = new URL(check.details_url).pathname.replace('/workflow-run/', '');
           const { items: jobs } = await got(
             `https://circleci.com/api/v2/workflow/${workflowID}/job`,
