@@ -144,8 +144,7 @@ function authenticateGoma(config) {
   downloadAndPrepareGoma(config);
 
   if (!gomaIsAuthenticated()) {
-    console.log(color.childExec('goma_auth.py', ['login'], { cwd: gomaDir }));
-    const { status, error } = depot.spawnSync('python', ['goma_auth.py', 'login'], {
+    const { status, error } = depot.spawnSync(config, 'python', ['goma_auth.py', 'login'], {
       cwd: gomaDir,
       stdio: 'inherit',
       env: {
