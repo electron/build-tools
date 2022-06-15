@@ -46,18 +46,33 @@ const printChecks = checks => {
     const status =
       check.status === 'completed'
         ? check.conclusion === 'success'
-          ? chalk.green('Success')
-          : chalk.redBright('Failed')
-        : chalk.yellow('Running');
+          ? chalk.green('success')
+          : chalk.redBright('failed')
+        : chalk.yellow('running');
     const url = new URL(check.details_url);
     url.search = '';
-    result += `  ⦿ ${name} - ${status} - ${url}\n`;
+    result += `  ⦿ ${chalk.bold(name)} - ${status} - ${url}\n`;
     if (check.jobs) {
-      for (const job of check.jobs) {
+      const failed = [];
+      const succeeded = check.jobs.filter(j => {
+        const passed = j.status === 'success';
+        if (!passed) failed.push(j);
+        return passed;
+      });
+
+      if (succeeded.length) {
+        const names = succeeded.map(s => s.name);
+        result +=
+          succeeded.length === check.jobs.length
+            ? '     ⦿ all jobs succeeded\n'
+            : `     ⦿ ${colorForStatus('success')} ${names.join(', ')}\n`;
+      }
+      for (const job of failed) {
         const { id, name, status } = job;
-        result += `     ⦿ ${name} - ${colorForStatus(status)} - ${id}\n`;
+        result += `     ⦿ ${colorForStatus(status)} - ${name} - ${id}\n`;
       }
     }
+    result += '\n';
   }
 
   return result;
@@ -67,7 +82,7 @@ const printStatuses = statuses => {
   let result = '';
   for (const [name, check_status] of Object.entries(statuses)) {
     if (!check_status) {
-      result += `  ⦿ ${name} - ${chalk.blue('Missing')}\n`;
+      result += `  ⦿ ${chalk.bold(name)} - ${chalk.blue('Missing')}\n\n`;
       continue;
     }
     const state =
@@ -78,7 +93,7 @@ const printStatuses = statuses => {
         : chalk.redBright('Failed');
     const url = new URL(check_status.target_url);
     url.search = '';
-    result += `  ⦿ ${name} - ${state} - ${url}\n`;
+    result += `  ⦿ ${chalk.bold(name)} - ${state} - ${url}\n\n`;
   }
 
   return result;
@@ -177,7 +192,6 @@ program
 
   ${chalk.bold(chalk.bgMagenta(chalk.white('Circle CI')))}
 ${printChecks(checks)}
-
   ${chalk.bold(chalk.bgBlue(chalk.white('Appveyor')))}
 ${printStatuses(statuses)}`);
     } catch (e) {
