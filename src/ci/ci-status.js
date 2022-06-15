@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const { Octokit } = require('@octokit/rest');
-const chalk = require('chalk').default;
+const { default: chalk } = require('chalk');
 const { execFileSync } = require('child_process');
 const program = require('commander');
 const got = require('got');
@@ -35,6 +35,7 @@ const { fatal } = require('../utils/logging');
 
 const CIRCLECI_APP_ID = 18001;
 const APPVEYOR_BOT_ID = 40616121;
+const { CIRCLE_TOKEN } = process.env;
 
 const printChecks = checks => {
   let result = '';
@@ -112,7 +113,11 @@ const parseRef = ref => {
 program
   .description('Show information about CI job statuses')
   .option('-r|--ref <ref>', 'The ref to check CI job status for')
-  .option('-s|--show-jobs', 'Whether to also list the jobs for each workflow')
+  .option('-s|--show-jobs', 'Whether to also list the jobs for each workflow', () => {
+    if (!CIRCLE_TOKEN) {
+      fatal('process.env.CIRCLE_TOKEN is required to run this command');
+    }
+  })
   .action(async options => {
     const electronDir = path.resolve(current().root, 'src', 'electron');
     const currentRef = execFileSync('git', ['branch', '--show-current'], { cwd: electronDir })
@@ -179,7 +184,7 @@ program
           const { items: jobs } = await got(
             `https://circleci.com/api/v2/workflow/${workflowID}/job`,
             {
-              username: process.env.CIRCLE_TOKEN,
+              username: CIRCLE_TOKEN,
               password: '',
             },
           ).json();
