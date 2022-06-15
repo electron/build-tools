@@ -154,11 +154,10 @@ function authenticateGoma(config) {
     });
 
     if (status !== 0) {
-      let errorMsg = `${color.err} Failed to run command:`;
+      let errorMsg = `Failed to run command:`;
       if (status !== null) errorMsg += `\n Exit Code: "${status}"`;
       if (error) errorMsg += `\n ${error}`;
-      console.error(errorMsg);
-      process.exit(status);
+      fatal(errorMsg, status);
     }
 
     recordGomaLoginTime();

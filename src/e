@@ -205,8 +205,7 @@ program
   .action(() => {
     const args = process.argv.slice(3);
     if (args.length === 0) {
-      console.error(`${color.err} Must provide a command to 'e npm'`);
-      process.exit(1);
+      fatal(`Must provide a command to 'e npm'`);
     }
 
     const { status, error } = depot.spawnSync(evmConfig.current(), args[0], args.slice(1), {
@@ -217,13 +216,13 @@ program
     });
 
     if (status !== 0) {
-      let errorMsg = `${color.err} Failed to run command:`;
+      let errorMsg = `Failed to run command:`;
       if (status !== null) errorMsg += `\n Exit Code: "${status}"`;
       if (error) errorMsg += `\n ${error}`;
-      console.error(errorMsg);
+      fatal(errorMsg, status);
     }
 
-    process.exit(status);
+    process.exit(0);
   });
 
 program
@@ -235,8 +234,7 @@ program
   .action(() => {
     const args = process.argv.slice(3);
     if (args.length === 0) {
-      console.error(`${color.err} Must provide a command to 'e depot-tools'`);
-      process.exit(1);
+      fatal(`Must provide a command to 'e depot-tools'`);
     }
     let cwd;
     if (args[0] === 'goma_ctl' || args[0] === 'goma_auth') {
@@ -260,17 +258,17 @@ program
     });
 
     if (status !== 0) {
-      let errorMsg = `${color.err} Failed to run command:`;
+      let errorMsg = `Failed to run command:`;
       if (status !== null) errorMsg += `\n Exit Code: "${status}"`;
       if (error) errorMsg += `\n ${error}`;
-      console.error(errorMsg);
+      fatal(errorMsg, status);
     }
 
-    if (args.slice(0, 3).join(' ') === 'python goma_auth.py logout' && status === 0) {
+    if (args.slice(0, 3).join(' ') === 'python goma_auth.py logout') {
       goma.clearGomaLoginTime();
     }
 
-    process.exit(status);
+    process.exit(0);
   });
 
 program.on('--help', () => {

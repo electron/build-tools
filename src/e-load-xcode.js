@@ -4,12 +4,11 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const { color } = require('./utils/logging');
+const { color, fatal } = require('./utils/logging');
 const Xcode = require('./utils/xcode');
 
 if (process.platform !== 'darwin') {
-  console.error('Should only configure Xcode on darwin platform');
-  process.exit(1);
+  fatal('Should only configure Xcode on darwin platform');
 }
 
 if (Xcode.ensureXcode() === false) {
@@ -78,8 +77,7 @@ const xCodeSDKDir = path.resolve(
 );
 
 if (!fs.existsSync(xCodeSDKDir)) {
-  console.error('Could not find Xcode SDK directory. Please ensure you have installed Xcode');
-  process.exit(1);
+  fatal('Could not find Xcode SDK directory. Please ensure you have installed Xcode');
 }
 
 // Unlink unnecessary macOS SDKs that we have linked in the past
