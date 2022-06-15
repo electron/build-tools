@@ -22,10 +22,10 @@ if (gomaPlatform === 'darwin' && getIsArm()) {
 }
 
 const GOMA_PLATFORM_SHAS = {
-  darwin: '40b0a35b31784157216403a88b5d3b612ae45904756d0e8e00d783244a09bce6',
-  'darwin-arm64': '3a9485206c4b7ea8ede3abc8c8e87724fee77d1545cfd03063b3a8a36ae6538d',
-  linux: '9de3f9d577c74c628ca1525632a5f9132115223b617097cd3944c07293a50174',
-  win32: '1443058faae05ad1553914ba46a4c1bffed34b7cec890d3346f34767d8df02bb',
+  darwin: 'bc4bdbe0f687cb6bf1848500704cfa24bc5bee167e768bc6c5c689417c0c44c0',
+  'darwin-arm64': '29e3e20903c780c717a1fbeb6be78ce40d70e136d1949eec6307ad11aade9447',
+  linux: 'c105c1a4d06761a4bfcae70789e757f409e4fdf4423b50328c5864bf3d639561',
+  win32: 'd7578905bb8c0d01249fc1ec6cfb7bfa6a68580ac7f5f5b95b653bce07ba8bf1',
 };
 
 const MSFT_GOMA_PLATFORM_SHAS = {
