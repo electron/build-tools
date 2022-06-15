@@ -5,6 +5,9 @@ const { program, Option } = require('commander');
 const got = require('got');
 
 const { fatal } = require('../utils/logging');
+const { CIRCLE_TOKEN, APPVEYOR_CLOUD_TOKEN } = process.env;
+
+const APPVEYOR_ACCOUNT_NAME = 'electron-bot';
 
 const BuildTypes = {
   CIRCLECI: 'CIRCLECI',
@@ -17,11 +20,24 @@ const ArchTypes = {
   woa: 'electron-woa-testing',
 };
 
-const APPVEYOR_ACCOUNT_NAME = 'electron-bot';
-
 const rerunCircleCIWorkflow = async (id, options) => {
+  const jobs = options.jobs ? options.jobs.split(',') : [];
+
+  // See https://circleci.com/docs/api/v2/#operation/rerunWorkflow.
+  if (options.enableSsh) {
+    if (options.fromFailed) {
+      throw new commander.InvalidArgumentError(
+        '--enable-ssh and --from-failed are mutually exclusive',
+      );
+    } else if (jobs.length === 0) {
+      throw new commander.InvalidArgumentError('--enable-ssh requires --jobs');
+    }
+  } else if (options.fromFailed && jobs.length) {
+    throw new commander.InvalidArgumentError('--enable-ssh and --jobs are mutually exclusive');
+  }
+
   const { pipeline_number } = await got(`https://circleci.com/api/v2/workflow/${id}`, {
-    username: process.env.CIRCLE_TOKEN,
+    username: CIRCLE_TOKEN,
     password: '',
   }).json();
 
@@ -31,13 +47,12 @@ const rerunCircleCIWorkflow = async (id, options) => {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
-      username: process.env.CIRCLE_TOKEN,
+      username: CIRCLE_TOKEN,
       password: '',
       json: {
-        //TODO(codebytere): allow specifying jobs and rerunning with SSH.
-        enable_ssh: false,
+        enable_ssh: options.enableSsh,
         from_failed: options.fromFailed,
-        jobs: [],
+        jobs,
         sparse_tree: false,
       },
     })
@@ -56,7 +71,7 @@ const rerunAppveyorBuild = async (id, arch) => {
     .put(`https://ci.appveyor.com/api/builds`, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.APPVEYOR_CLOUD_TOKEN}`,
+        Authorization: `Bearer ${APPVEYOR_CLOUD_TOKEN}`,
       },
       json: {
         buildId: id,
@@ -87,7 +102,9 @@ const archOption = new Option(
 program
   .description('Rerun CI workflows')
   .argument('<id>', 'The ID of the workflow or build to rerun')
+  .option('-j|--jobs', 'Comma-separated list of job IDs to rerun (CircleCI only)')
   .option('-f, --from-failed', 'Rerun workflow from failed (CircleCI only)', true)
+  .option('-s, --enable-ssh', 'Rerun the workflow with ssh enabled (CircleCI only)', false)
   .addOption(archOption)
   .action(async (id, options) => {
     try {
@@ -98,7 +115,7 @@ program
       } else if (type === BuildTypes.APPVEYOR) {
         if (!options.arch) {
           throw new commander.InvalidArgumentError('arch is required for Appveyor reruns');
-        } else if (!process.env.APPVEYOR_CLOUD_TOKEN) {
+        } else if (!APPVEYOR_CLOUD_TOKEN) {
           fatal('process.env.APPVEYOR_CLOUD_TOKEN required for AppVeyor reruns');
         }
 
