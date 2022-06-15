@@ -171,6 +171,11 @@ function getLastKnownLoginTime() {
   return new Date(parseInt(contents, 10));
 }
 
+function clearGomaLoginTime() {
+  if (!fs.existsSync(gomaLoginFile)) return;
+  fs.unlinkSync(gomaLoginFile);
+}
+
 function recordGomaLoginTime() {
   fs.writeFileSync(gomaLoginFile, `${Date.now()}`);
 }
@@ -244,5 +249,6 @@ module.exports = {
   downloadAndPrepare: downloadAndPrepareGoma,
   gnFilePath: gomaGnFile,
   env: gomaEnv,
+  clearGomaLoginTime,
   recordGomaLoginTime,
 };

@@ -266,6 +266,10 @@ program
       console.error(errorMsg);
     }
 
+    if (args.slice(0, 3).join(' ') === 'python goma_auth.py logout' && status === 0) {
+      goma.clearGomaLoginTime();
+    }
+
     process.exit(status);
   });
 
