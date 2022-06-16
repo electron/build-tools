@@ -10,10 +10,11 @@ const { current } = require('../evm-config');
 const { getGitHubAuthToken } = require('../utils/github-auth');
 const { fatal } = require('../utils/logging');
 
+const { CIRCLE_TOKEN } = process.env;
+
 const CIRCLECI_APP_ID = 18001;
 const APPVEYOR_BOT_ID = 40616121;
 const VSTS_ID = 9426;
-const { CIRCLE_TOKEN } = process.env;
 
 const colorForStatus = status => {
   switch (status) {
@@ -45,7 +46,15 @@ const getStatusString = check => {
     : chalk.yellow('running');
 };
 
-const printChecks = checks => {
+const formatLink = (name, url) => `\x1B]8;;${url}\x1B\\${name}\x1B]8;;\x1B\\`;
+
+const getWorkflowID = url => url.pathname.replace('/workflow-run/', '');
+const getBuildID = ({ pathname }) => {
+  const index = pathname.lastIndexOf('/builds/') + 8;
+  return pathname.substring(index, pathname.length);
+};
+
+const printChecks = (checks, link) => {
   let result = '';
   for (const [name, check] of Object.entries(checks)) {
     if (!check) {
@@ -54,8 +63,13 @@ const printChecks = checks => {
     }
     const status = getStatusString(check);
     const url = new URL(check.details_url);
-    url.search = '';
-    result += `  ⦿ ${chalk.bold(name)} - ${status} - ${url}\n`;
+
+    if (link) {
+      result += `  ⦿ ${chalk.bold(name)} - ${formatLink(status, url)} - ${getWorkflowID(url)}\n`;
+    } else {
+      result += ` ⦿ ${chalk.bold(name)} - ${status} - ${url}\n`;
+    }
+
     if (check.jobs) {
       const failed = [];
       const succeeded = check.jobs.filter(j => {
@@ -82,7 +96,7 @@ const printChecks = checks => {
   return result;
 };
 
-const printVSTSChecks = checks => {
+const printVSTSChecks = (checks, link) => {
   let result = '';
   for (const [name, check] of Object.entries(checks)) {
     if (!check) {
@@ -91,24 +105,33 @@ const printVSTSChecks = checks => {
     }
     const status = getStatusString(check);
     const url = new URL(check.details_url);
-    url.search = '';
-    result += `  ⦿ ${chalk.bold(name)} - ${status} - ${url}\n\n`;
+
+    if (link) {
+      const buildID = url.searchParams.get('buildId');
+      result += `  ⦿ ${chalk.bold(name)} - ${formatLink(status, url)} - ${buildID}\n`;
+    } else {
+      result += `  ⦿ ${chalk.bold(name)} - ${status} - ${url}\n\n`;
+    }
   }
 
   return result;
 };
 
-const printStatuses = statuses => {
+const printStatuses = (statuses, link) => {
   let result = '';
-  for (const [name, check_status] of Object.entries(statuses)) {
-    if (!check_status) {
+  for (const [name, check] of Object.entries(statuses)) {
+    if (!check) {
       result += `  ⦿ ${chalk.bold(name)} - ${chalk.blue('Missing')}\n\n`;
       continue;
     }
     const status = getStatusString(check);
-    const url = new URL(check_status.target_url);
-    url.search = '';
-    result += `  ⦿ ${chalk.bold(name)} - ${status} - ${url}\n\n`;
+    const url = new URL(check.target_url);
+
+    if (link) {
+      result += `  ⦿ ${chalk.bold(name)} - ${formatLink(status, url)} - ${getBuildID(url)}\n\n`;
+    } else {
+      result += ` ⦿ ${chalk.bold(name)} - ${status} - ${url}\n\n`;
+    }
   }
 
   return result;
@@ -127,6 +150,7 @@ const parseRef = ref => {
 program
   .description('Show information about CI job statuses')
   .option('-r|--ref <ref>', 'The ref to check CI job status for')
+  .option('-n|--no-link', 'Do not show smart linking for CI status information')
   .option('-s|--show-jobs', 'Whether to also list the jobs for each workflow', () => {
     if (!CIRCLE_TOKEN) {
       fatal('process.env.CIRCLE_TOKEN is required to run this command');
@@ -199,7 +223,8 @@ program
       if (options.showJobs) {
         for (const [name, check] of Object.entries(checks)) {
           if (!check) continue;
-          const workflowID = new URL(check.details_url).pathname.replace('/workflow-run/', '');
+          const url = new URL(check.details_url);
+          const workflowID = getWorkflowID(url);
           const { items: jobs } = await got(
             `https://circleci.com/api/v2/workflow/${workflowID}/job`,
             {
@@ -215,11 +240,11 @@ program
   ${chalk.bold('Ref')}: ${chalk.cyan(ref)}
 
   ${chalk.bold(chalk.bgMagenta(chalk.white('Circle CI')))}
-${printChecks(checks)}
+${printChecks(checks, !!options.link)}
   ${chalk.bold(chalk.bgBlue(chalk.white('Appveyor')))}
-${printStatuses(statuses)}
+${printStatuses(statuses, !!options.link)}
   ${chalk.bold(chalk.bgCyan(chalk.white('VSTS')))}
-${printVSTSChecks(vsts_pipelines)}`);
+${printVSTSChecks(vsts_pipelines, !!options.link)}`);
     } catch (e) {
       fatal(e.message);
     }
