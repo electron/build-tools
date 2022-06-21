@@ -241,7 +241,7 @@ program
       goma.downloadAndPrepare(evmConfig.current());
       cwd = goma.dir;
       args[0] = `${args[0]}.py`;
-      args.unshift('python');
+      args.unshift('python3');
     }
 
     if (args[0] === '--') {
@@ -264,7 +264,10 @@ program
       fatal(errorMsg, status);
     }
 
-    if (args.slice(0, 3).join(' ') === 'python goma_auth.py logout') {
+    if (
+      ['python', 'python3'].includes(args[0]) &&
+      args.slice(1, 3).join(' ') === 'goma_auth.py logout'
+    ) {
       goma.clearGomaLoginTime();
     }
 

@@ -12,7 +12,6 @@ const { resolvePath, ensureDir } = require('./utils/paths');
 const goma = require('./utils/goma');
 const depot = require('./utils/depot-tools');
 const { checkGlobalGitConfig } = require('./utils/git');
-const { checkPlatformDependencies } = require('./utils/deps-check');
 
 function createConfig(options) {
   const root = resolvePath(options.root);
@@ -148,8 +147,6 @@ program
       if (os.platform() === 'win32') {
         checkGlobalGitConfig();
       }
-
-      checkPlatformDependencies();
 
       const config = createConfig(options);
 
