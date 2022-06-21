@@ -68,7 +68,7 @@ function downloadAndPrepareGoma(config) {
   }[gomaPlatform];
 
   if (fs.existsSync(path.resolve(gomaDir, 'goma_ctl.py'))) {
-    depot.spawnSync(config, 'python', ['goma_ctl.py', 'stop'], {
+    depot.execFileSync(config, 'python', ['goma_ctl.py', 'stop'], {
       cwd: gomaDir,
       stdio: ['ignore'],
     });
@@ -118,7 +118,7 @@ function downloadAndPrepareGoma(config) {
   return sha;
 }
 
-function gomaIsAuthenticated() {
+function gomaIsAuthenticated(config) {
   if (!isSupportedPlatform) return false;
   const lastKnownLogin = getLastKnownLoginTime();
   // Assume if we authed in the last 12 hours it is still valid
@@ -126,7 +126,7 @@ function gomaIsAuthenticated() {
 
   let loggedInInfo;
   try {
-    loggedInInfo = childProcess.execFileSync('python', ['goma_auth.py', 'info'], {
+    loggedInInfo = depot.execFileSync(config, 'python', ['goma_auth.py', 'info'], {
       cwd: gomaDir,
       stdio: ['ignore'],
     });
@@ -143,12 +143,11 @@ function authenticateGoma(config) {
 
   downloadAndPrepareGoma(config);
 
-  if (!gomaIsAuthenticated()) {
+  if (!gomaIsAuthenticated(config)) {
     const { status, error } = depot.spawnSync(config, 'python', ['goma_auth.py', 'login'], {
       cwd: gomaDir,
       stdio: 'inherit',
       env: {
-        ...process.env,
         AGREE_NOTGOMA_TOS: '1',
       },
     });
@@ -195,11 +194,9 @@ function ensureGomaStart(config) {
     };
   }
 
-  console.log(color.childExec('goma_ctl.py', ['ensure_start'], { cwd: gomaDir }));
-  childProcess.execFileSync('python', ['goma_ctl.py', 'ensure_start'], {
+  depot.execFileSync(config, 'python', ['goma_ctl.py', 'ensure_start'], {
     cwd: gomaDir,
     env: {
-      ...process.env,
       ...gomaEnv(config),
       ...subprocs,
     },
