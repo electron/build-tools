@@ -4,6 +4,7 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const program = require('commander');
 const path = require('path');
+const os = require('os');
 
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
@@ -255,6 +256,7 @@ program
         ...process.env,
         AGREE_NOTGOMA_TOS: '1',
       },
+      shell: os.platform() === 'win32',
     });
 
     if (status !== 0) {
