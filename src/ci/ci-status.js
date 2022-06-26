@@ -6,6 +6,14 @@ const { execFileSync } = require('child_process');
 const program = require('commander');
 const got = require('got');
 const path = require('path');
+const { current } = require('../evm-config');
+const { getGitHubAuthToken } = require('../utils/github-auth');
+const { fatal } = require('../utils/logging');
+
+const CIRCLECI_APP_ID = 18001;
+const APPVEYOR_BOT_ID = 40616121;
+const VSTS_ID = 9426;
+const { CIRCLE_TOKEN } = process.env;
 
 const colorForStatus = status => {
   switch (status) {
@@ -29,13 +37,13 @@ const colorForStatus = status => {
   }
 };
 
-const { current } = require('../evm-config');
-const { getGitHubAuthToken } = require('../utils/github-auth');
-const { fatal } = require('../utils/logging');
-
-const CIRCLECI_APP_ID = 18001;
-const APPVEYOR_BOT_ID = 40616121;
-const { CIRCLE_TOKEN } = process.env;
+const getStatusString = check => {
+  return check.status === 'completed'
+    ? check.conclusion === 'success'
+      ? chalk.green('success')
+      : chalk.redBright('failed')
+    : chalk.yellow('running');
+};
 
 const printChecks = checks => {
   let result = '';
@@ -44,12 +52,7 @@ const printChecks = checks => {
       result += `  ⦿ ${name} - ${chalk.blue('Missing')}\n`;
       continue;
     }
-    const status =
-      check.status === 'completed'
-        ? check.conclusion === 'success'
-          ? chalk.green('success')
-          : chalk.redBright('failed')
-        : chalk.yellow('running');
+    const status = getStatusString(check);
     const url = new URL(check.details_url);
     url.search = '';
     result += `  ⦿ ${chalk.bold(name)} - ${status} - ${url}\n`;
@@ -79,6 +82,22 @@ const printChecks = checks => {
   return result;
 };
 
+const printVSTSChecks = checks => {
+  let result = '';
+  for (const [name, check] of Object.entries(checks)) {
+    if (!check) {
+      result += `  ⦿ ${name} - ${chalk.blue('Missing')}\n`;
+      continue;
+    }
+    const status = getStatusString(check);
+    const url = new URL(check.details_url);
+    url.search = '';
+    result += `  ⦿ ${chalk.bold(name)} - ${status} - ${url}\n\n`;
+  }
+
+  return result;
+};
+
 const printStatuses = statuses => {
   let result = '';
   for (const [name, check_status] of Object.entries(statuses)) {
@@ -86,15 +105,10 @@ const printStatuses = statuses => {
       result += `  ⦿ ${chalk.bold(name)} - ${chalk.blue('Missing')}\n\n`;
       continue;
     }
-    const state =
-      check_status.state === 'pending'
-        ? chalk.yellow('Running')
-        : check_status.state === 'success'
-        ? chalk.green('Success')
-        : chalk.redBright('Failed');
+    const status = getStatusString(check);
     const url = new URL(check_status.target_url);
     url.search = '';
-    result += `  ⦿ ${chalk.bold(name)} - ${state} - ${url}\n\n`;
+    result += `  ⦿ ${chalk.bold(name)} - ${status} - ${url}\n\n`;
   }
 
   return result;
@@ -149,6 +163,11 @@ program
         ({ app, name }) => app.id === CIRCLECI_APP_ID && name === 'lint',
       );
 
+      const vsts_pipelines = {};
+      vsts_pipelines['WOA'] = check_runs.find(
+        ({ app, name }) => app.id === VSTS_ID && name === 'electron-woa-testing',
+      );
+
       const { data } = await octokit.repos.listCommitStatusesForRef({
         repo: 'electron',
         owner: 'electron',
@@ -198,7 +217,9 @@ program
   ${chalk.bold(chalk.bgMagenta(chalk.white('Circle CI')))}
 ${printChecks(checks)}
   ${chalk.bold(chalk.bgBlue(chalk.white('Appveyor')))}
-${printStatuses(statuses)}`);
+${printStatuses(statuses)}
+  ${chalk.bold(chalk.bgCyan(chalk.white('VSTS')))}
+${printVSTSChecks(vsts_pipelines)}`);
     } catch (e) {
       fatal(e.message);
     }
