@@ -26,7 +26,7 @@ const getDefaultTarget = () => {
 };
 
 const buildTargets = {
-  breakpad: 'third_party/breakpad:dump_sym',
+  breakpad: 'third_party/breakpad:dump_syms',
   chromedriver: 'electron:electron_chromedriver_zip',
   electron: 'electron',
   chromium: 'chrome',
