@@ -68,7 +68,7 @@ function downloadAndPrepareGoma(config) {
   }[gomaPlatform];
 
   if (fs.existsSync(path.resolve(gomaDir, 'goma_ctl.py'))) {
-    depot.execFileSync(config, 'python', ['goma_ctl.py', 'stop'], {
+    depot.execFileSync(config, 'python3', ['goma_ctl.py', 'stop'], {
       cwd: gomaDir,
       stdio: ['ignore'],
     });
@@ -126,7 +126,7 @@ function gomaIsAuthenticated(config) {
 
   let loggedInInfo;
   try {
-    loggedInInfo = depot.execFileSync(config, 'python', ['goma_auth.py', 'info'], {
+    loggedInInfo = depot.execFileSync(config, 'python3', ['goma_auth.py', 'info'], {
       cwd: gomaDir,
       stdio: ['ignore'],
     });
@@ -144,7 +144,7 @@ function authenticateGoma(config) {
   downloadAndPrepareGoma(config);
 
   if (!gomaIsAuthenticated(config)) {
-    const { status, error } = depot.spawnSync(config, 'python', ['goma_auth.py', 'login'], {
+    const { status, error } = depot.spawnSync(config, 'python3', ['goma_auth.py', 'login'], {
       cwd: gomaDir,
       stdio: 'inherit',
       env: {
@@ -194,7 +194,7 @@ function ensureGomaStart(config) {
     };
   }
 
-  depot.execFileSync(config, 'python', ['goma_ctl.py', 'ensure_start'], {
+  depot.execFileSync(config, 'python3', ['goma_ctl.py', 'ensure_start'], {
     cwd: gomaDir,
     env: {
       ...gomaEnv(config),

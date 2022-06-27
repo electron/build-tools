@@ -115,8 +115,11 @@ function depotSpawnSync(config, cmd, args, opts_in) {
 
 function depotExecFileSync(config, exec, args, opts_in) {
   const opts = depotOpts(config, opts_in);
-  if (exec === 'python' && !opts.cwd && !path.isAbsolute(args[0])) {
+  if (['python', 'python3'].includes(exec) && !opts.cwd && !path.isAbsolute(args[0])) {
     args[0] = path.resolve(DEPOT_TOOLS_DIR, args[0]);
+  }
+  if (os.platform() === 'win32' && ['python', 'python3'].includes(exec)) {
+    exec = `${exec}.bat`;
   }
   console.log(color.childExec(exec, args, opts));
   return childProcess.execFileSync(exec, args, opts);

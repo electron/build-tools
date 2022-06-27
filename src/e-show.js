@@ -179,7 +179,7 @@ program
         stdio: 'inherit',
         cwd: goma.dir,
       };
-      childProcess.execFileSync('python', ['goma_ctl.py', 'stat'], options);
+      depot.execFileSync(config, 'python3', ['goma_ctl.py', 'stat'], options);
     } catch (e) {
       fatal(e);
     }
