@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: true
+      matrix:
+        settings:
+          - host: macos-latest
+            name: "darwin-x64"
+          - host: windows-latest
+            name: "win32-ia32"
+
+    name: stable - ${{ matrix.settings.name }} - node@16
+    runs-on: ${{ matrix.settings.host }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: build-tools
+
+      - uses: actions/checkout@v3
+        with:
+          repository: xltan/electron
+          path: electron/src/electron
+          ref: v16.2.3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          architecture: ${{ matrix.settings.arch }}
+
+      - name: Install dependencies
+        run: xcodebuild -version
+
+      - name: Build
+        run: |
+          alias e build-tools/run.js
+          e init release -i release --root=electron --fork xltan/electron
+
