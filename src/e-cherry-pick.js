@@ -5,6 +5,7 @@ const program = require('commander');
 const https = require('https');
 const { Octokit } = require('@octokit/rest');
 
+const { getCveForBugNr } = require('./utils/crbug');
 const { getGitHubAuthToken } = require('./utils/github-auth');
 const { fatal } = require('./utils/logging');
 
@@ -77,6 +78,12 @@ program
       const patch = await fetchBase64(patchUrl.toString());
 
       const [, commitId] = /^From ([0-9a-f]+)/.exec(patch);
+
+      const bugNumber =
+        (/^Bug: (.+)$/m.exec(patch) || [])[1] || (/^Bug= ?chromium:(.+)$/m.exec(patch) || [])[1];
+      const cve = security ? await getCveForBugNr(bugNumber.replace('chromium:', '')) : '';
+
+      const commitMessage = /Subject: \[PATCH\] (.+?)^---$/ms.exec(patch)[1];
 
       const patchDirName =
         {
@@ -165,11 +172,6 @@ program
           sha: commit.sha,
         });
 
-        const bugNumber =
-          (/^Bug: (.+)$/m.exec(patch) || [])[1] || (/^Bug= ?chromium:(.+)$/m.exec(patch) || [])[1];
-
-        const commitMessage = /Subject: \[PATCH\] (.+?)^---$/ms.exec(patch)[1];
-
         d(`creating pr`);
         const { data: pr } = await octokit.pulls.create({
           owner: 'electron',
@@ -180,7 +182,7 @@ program
           body: `${commitMessage}\n\nNotes: ${
             bugNumber
               ? security
-                ? `Security: backported fix for ${bugNumber}.`
+                ? `Security: backported fix for ${cve || bugNumber}.`
                 : `Backported fix for ${bugNumber}.`
               : `<!-- couldn't find bug number -->`
           }`,
