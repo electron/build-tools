@@ -168,7 +168,8 @@ program
 
 const ci = program.command('ci').executableDir(path.join(__dirname, 'ci'));
 ci.command('status', 'Show information about CI job statuses');
-ci.command('rerun', 'Rerun CI workflows');
+ci.command('rerun', 'Rerun CI workflows and builds');
+ci.command('cancel', 'Cancel CI workflows and builds');
 
 program
   .command('update-goma')
