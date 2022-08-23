@@ -14,7 +14,6 @@ const { CIRCLE_TOKEN } = process.env;
 
 const CIRCLECI_APP_ID = 18001;
 const APPVEYOR_BOT_ID = 40616121;
-const VSTS_ID = 9426;
 
 const colorForStatus = status => {
   switch (status) {
@@ -96,27 +95,6 @@ const printChecks = (checks, link) => {
   return result;
 };
 
-const printVSTSChecks = (checks, link) => {
-  let result = '';
-  for (const [name, check] of Object.entries(checks)) {
-    if (!check) {
-      result += `  ⦿ ${name} - ${chalk.blue('Missing')}\n`;
-      continue;
-    }
-    const status = getStatusString(check);
-    const url = new URL(check.details_url);
-
-    if (link) {
-      const buildID = url.searchParams.get('buildId');
-      result += `  ⦿ ${chalk.bold(name)} - ${formatLink(status, url)} - ${buildID}\n`;
-    } else {
-      result += `  ⦿ ${chalk.bold(name)} - ${status} - ${url}\n\n`;
-    }
-  }
-
-  return result;
-};
-
 const printStatuses = (statuses, link) => {
   let result = '';
   for (const [name, check] of Object.entries(statuses)) {
@@ -187,11 +165,6 @@ program
         ({ app, name }) => app.id === CIRCLECI_APP_ID && name === 'lint',
       );
 
-      const vsts_pipelines = {};
-      vsts_pipelines['WOA'] = check_runs.find(
-        ({ app, name }) => app.id === VSTS_ID && name === 'electron-woa-testing',
-      );
-
       const { data } = await octokit.repos.listCommitStatusesForRef({
         repo: 'electron',
         owner: 'electron',
@@ -242,9 +215,7 @@ program
   ${chalk.bold(chalk.bgMagenta(chalk.white('Circle CI')))}
 ${printChecks(checks, !!options.link)}
   ${chalk.bold(chalk.bgBlue(chalk.white('Appveyor')))}
-${printStatuses(statuses, !!options.link)}
-  ${chalk.bold(chalk.bgCyan(chalk.white('VSTS')))}
-${printVSTSChecks(vsts_pipelines, !!options.link)}`);
+${printStatuses(statuses, !!options.link)}`);
     } catch (e) {
       fatal(e.message);
     }
