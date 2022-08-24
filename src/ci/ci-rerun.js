@@ -66,7 +66,7 @@ const rerunCircleCIWorkflow = async (id, options) => {
   `);
 };
 
-const rerunAppveyorBuild = async (id, arch) => {
+const rerunAppveyorBuild = async (id, options) => {
   const data = await got
     .put(`https://ci.appveyor.com/api/builds`, {
       headers: {
@@ -75,14 +75,16 @@ const rerunAppveyorBuild = async (id, arch) => {
       },
       json: {
         buildId: id,
-        reRunIncomplete: false,
+        reRunIncomplete: options.fromFailed,
       },
     })
     .json();
   console.log(`${chalk.bgMagenta(chalk.white('Build Rerun'))}
 
 ⦿ ${chalk.white(
-    `https://ci.appveyor.com/project/${APPVEYOR_ACCOUNT_NAME}/${ArchTypes[arch]}/builds/${data.buildId}`,
+    `https://ci.appveyor.com/project/${APPVEYOR_ACCOUNT_NAME}/${ArchTypes[options.arch]}/builds/${
+      data.buildId
+    }`,
   )}
   `);
 };
@@ -103,7 +105,7 @@ program
   .description('Rerun CI workflows')
   .argument('<id>', 'The ID of the workflow or build to rerun')
   .option('-j|--jobs', 'Comma-separated list of job IDs to rerun (CircleCI only)')
-  .option('-f, --from-failed', 'Rerun workflow from failed (CircleCI only)', true)
+  .option('-f, --from-failed', 'Rerun workflow from failed/incomplete', true)
   .option('-s, --enable-ssh', 'Rerun the workflow with ssh enabled (CircleCI only)', false)
   .addOption(archOption)
   .action(async (id, options) => {
@@ -119,7 +121,7 @@ program
           fatal('process.env.APPVEYOR_CLOUD_TOKEN required for AppVeyor reruns');
         }
 
-        await rerunAppveyorBuild(id, options.arch);
+        await rerunAppveyorBuild(id, options);
       }
     } catch (e) {
       fatal(e.message);
