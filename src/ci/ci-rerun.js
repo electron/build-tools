@@ -1,24 +1,14 @@
 #!/usr/bin/env node
 
 const { default: chalk } = require('chalk');
-const { program, Option } = require('commander');
+const { program } = require('commander');
 const got = require('got');
 
+const { archOption, ArchTypes, BuildTypes, getCIType } = require('./common');
 const { fatal } = require('../utils/logging');
 const { CIRCLE_TOKEN, APPVEYOR_CLOUD_TOKEN } = process.env;
 
 const APPVEYOR_ACCOUNT_NAME = 'electron-bot';
-
-const BuildTypes = {
-  CIRCLECI: 'CIRCLECI',
-  APPVEYOR: 'APPVEYOR',
-};
-
-const ArchTypes = {
-  ia32: 'electron-ia32-testing',
-  x64: 'electron-x64-testing',
-  woa: 'electron-woa-testing',
-};
 
 const rerunCircleCIWorkflow = async (id, options) => {
   const jobs = options.jobs ? options.jobs.split(',') : [];
@@ -89,18 +79,6 @@ const rerunAppveyorBuild = async (id, options) => {
   `);
 };
 
-// CircleCI workflow IDs have letters and numbers and contain dashes,
-// while Appveyor Build IDs are all numbers.
-const getCIType = id => {
-  const isCircleID = id.includes('-') && /^[0-9]+$/.test(id);
-  return isCircleID ? BuildTypes.CIRCLECI : BuildTypes.APPVEYOR;
-};
-
-const archOption = new Option(
-  '-a, --arch <arch>',
-  'The arch of the build to rerun (required for AppVeyor)',
-).choices(['ia32', 'x64', 'woa']);
-
 program
   .description('Rerun CI workflows')
   .argument('<id>', 'The ID of the workflow or build to rerun')
@@ -113,6 +91,10 @@ program
       const type = getCIType(id);
 
       if (type === BuildTypes.CIRCLECI) {
+        if (!CIRCLE_TOKEN) {
+          fatal('process.env.CIRCLE_TOKEN required for AppVeyor cancellations');
+        }
+
         await rerunCircleCIWorkflow(id, options);
       } else if (type === BuildTypes.APPVEYOR) {
         if (!options.arch) {
