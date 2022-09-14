@@ -1,5 +1,6 @@
 const fetch = require('node-fetch');
 const chrome = require('chrome-cookies-secure');
+const { color } = require('./logging');
 
 const BASE_URL = 'https://bugs.chromium.org';
 const GET_ISSUE = '/prpc/monorail.Issues/GetIssue';
