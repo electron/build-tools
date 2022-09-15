@@ -80,7 +80,8 @@ program
       const [, commitId] = /^From ([0-9a-f]+)/.exec(patch);
 
       const bugNumber =
-        (/^Bug: (.+)$/m.exec(patch) || [])[1] || (/^Bug= ?chromium:(.+)$/m.exec(patch) || [])[1];
+        (/^Bug[:=] ?(.+)$/im.exec(patch) || [])[1] ||
+        (/^Bug= ?chromium:(.+)$/m.exec(patch) || [])[1];
       const cve = security ? await getCveForBugNr(bugNumber.replace('chromium:', '')) : '';
 
       const commitMessage = /Subject: \[PATCH\] (.+?)^---$/ms.exec(patch)[1];
