@@ -435,6 +435,6 @@ Regardless of whether automatic updates are enabled, you can manually call the f
 e auto-update check
 ```
 
-# Common Pitfalls
+## Common Pitfalls
 
 - Many of the tools that `build-tools` depends on will fail if you have spaces in your home directory. The easiest workaround is to use a different home directory. See [#134](https://github.com/electron/build-tools/issues/134) for more information.
