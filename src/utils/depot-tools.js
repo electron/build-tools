@@ -75,6 +75,8 @@ function depotOpts(config, opts = {}) {
     // set these defaults that can be overridden via process.env
     PYTHONDONTWRITEBYTECODE: '1', // depot needs it
     DEPOT_TOOLS_METRICS: '0', // disable depot metrics
+    // Circular reference so we have to delay load
+    DEVELOPER_DIR: require('./xcode').XcodePath, // use build-tools version of Xcode
     ...process.env,
     ...platformOpts(),
     ...config.env,

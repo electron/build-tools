@@ -9,7 +9,6 @@ const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
-const { XcodePath } = require('./utils/xcode');
 
 function runGNGen(config) {
   depot.ensure();
@@ -86,9 +85,6 @@ program
         ? target === targets.chromium
         : targets.default === targets.chromium;
       if (process.platform === 'darwin' && !isChromium) {
-        // Setting DEVELOPER_DIR lets us override the Xcode path without requiring sudo
-        process.env.DEVELOPER_DIR = XcodePath;
-
         const result = depot.spawnSync(
           config,
           process.execPath,
