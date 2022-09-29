@@ -155,7 +155,7 @@ program
 program
   .command('out')
   .description('Show outdir name, e.g. "Testing"')
-  .option('--path', 'Output as JSON')
+  .option('--path', 'Output absolute path to outdir')
   .action(options => {
     try {
       if (options.path) {
