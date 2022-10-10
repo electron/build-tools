@@ -15,6 +15,11 @@
         "node:headers"
       ]
     },
+    "extends": {
+      "description": "Name of base config to extend",
+      "type": "string",
+      "minLength": 1
+    },
     "goma": {
       "description": "Goma mode to use",
       "type": "string",
@@ -103,11 +108,20 @@
       ]
     }
   },
-  "required": [
-    "goma",
-    "root",
-    "remotes",
-    "gen",
-    "env"
+  "oneOf": [
+    {
+      "required": [
+        "extends"
+      ]
+    },
+    {
+      "required": [
+        "goma",
+        "root",
+        "remotes",
+        "gen",
+        "env"
+      ]
+    }
   ]
 }
