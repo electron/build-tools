@@ -36,6 +36,7 @@
     "which": "^2.0.2"
   },
   "devDependencies": {
+    "ajv": "^8.11.0",
     "husky": "^4.2.0",
     "jest": "^27.5.1",
     "lint-staged": "^10.0.2",
