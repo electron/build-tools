@@ -7,7 +7,7 @@ const { validateConfig } = require('../src/evm-config');
 
 describe('example configs', () => {
   it('should validate', () => {
-    const exampleConfigsPath = '../example-configs/';
+    const exampleConfigsPath = path.resolve(__dirname, '..', 'example-configs');
 
     const files = fs.readdirSync(exampleConfigsPath, { encoding: 'utf8' });
     expect(files.length).not.toBe(0);
