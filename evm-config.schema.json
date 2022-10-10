@@ -132,6 +132,7 @@
       ]
     }
   },
+  "additionalProperties": false,
   "oneOf": [
     {
       "required": [
