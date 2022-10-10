@@ -224,8 +224,8 @@ function sanitizeConfig(name, overwrite = false) {
   const validationErrors = validateConfig(config);
 
   if (validationErrors) {
-    console.warn(`${color.warn} Configuration file had the following validation errors:`);
-    console.warn(JSON.stringify(validationErrors));
+    console.warn(`${color.warn} Config file '${name}' had the following validation errors:`);
+    console.warn(JSON.stringify(validationErrors, undefined, 2));
   }
 
   return config;
