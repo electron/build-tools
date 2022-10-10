@@ -54,23 +54,10 @@
           "required": [
             "origin"
           ]
-        },
-        "node": {
-          "description": "Remotes for the Node repo",
-          "type": "object",
-          "properties": {
-            "origin": {
-              "description": "Origin remote",
-              "type": "string",
-              "format": "uri",
-              "minLength": 1
-            }
-          }
         }
       },
       "required": [
-        "electron",
-        "node"
+        "electron"
       ]
     },
     "gen": {
