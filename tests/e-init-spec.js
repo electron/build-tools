@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const ajv = require('ajv');
+const Ajv = require('ajv');
 
 const createSandbox = require('./sandbox');
 const schema = require('../evm-config.schema.json');
@@ -71,6 +71,7 @@ describe('e-init', () => {
 
       expect(config.gen.out).toStrictEqual('Testing');
 
+      const ajv = new Ajv();
       const validate = ajv.compile(schema);
       expect(validate(config)).toStrictEqual(true);
     });
