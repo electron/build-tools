@@ -175,13 +175,13 @@ function sanitizeConfig(name, overwrite = false) {
       electron: {
         origin: config.origin.electron,
       },
-      node: {
-        origin: config.origin.node,
-      },
     };
 
     delete config.origin;
     changes.push(`replaced superceded 'origin' property with 'remotes' property`);
+  } else if (config.remotes?.node) {
+    delete config.remotes.node;
+    changes.push(`removed deprecated ${color.config('remotes.node')} property`);
   }
 
   if (

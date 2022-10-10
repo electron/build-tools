@@ -57,7 +57,7 @@ describe('e-init', () => {
       expect(config.goma).toStrictEqual('cache-only');
 
       expect(config.remotes).toHaveProperty('electron');
-      expect(config.remotes).toHaveProperty('node');
+      expect(config.remotes).not.toHaveProperty('node');
 
       const remotes = config.remotes.electron;
       expect(remotes.origin).toStrictEqual('https://github.com/electron/electron.git');

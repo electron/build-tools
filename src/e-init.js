@@ -40,18 +40,11 @@ function createConfig(options) {
     }),
   };
 
-  const node = {
-    origin: options.useHttps
-      ? 'https://github.com/electron/node.git'
-      : 'git@github.com:electron/node.git',
-  };
-
   return {
     goma: options.goma,
     root,
     remotes: {
       electron,
-      node,
     },
     gen: {
       args: gn_args,
