@@ -226,7 +226,7 @@ function sanitizeConfig(name, overwrite = false) {
     console.error(validationErrors);
     fatal('Invalid config.');
   }
-  
+
   return config;
 }
 
