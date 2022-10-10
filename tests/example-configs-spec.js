@@ -1,15 +1,12 @@
 const fs = require('fs/promises');
 const path = require('path');
 
-const Ajv = require('ajv');
 const yml = require('js-yaml');
 
-const schema = require('../evm-config.schema.json');
+const { validateConfig } = require('../src/evm-config');
 
 describe('example configs', () => {
   it('should validate', async () => {
-    const ajv = new Ajv();
-    const validate = ajv.compile(schema);
     const exampleConfigsPath = '../example-configs/';
 
     const files = await fs.readdir(exampleConfigsPath);
@@ -17,7 +14,7 @@ describe('example configs', () => {
 
     for (const file of files) {
       const configContents = fs.readFileSync(path.resolve(exampleConfigsPath, file), 'utf8');
-      expect(validate(yml.safeLoad(configContents))).toStrictEqual(true);
+      expect(validateConfig(yml.safeLoad(configContents))).toStrictEqual(true);
     }
   });
 });

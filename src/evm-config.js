@@ -2,6 +2,7 @@ const _ = require('lodash');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const Ajv = require('ajv');
 const yml = require('js-yaml');
 const { color, fatal } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
@@ -9,6 +10,9 @@ const goma = require('./utils/goma');
 
 const preferredFormat = process.env.EVM_FORMAT || 'json'; // yaml yml json
 const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
+const schema = require('../evm-config.schema.json');
+
+const validateConfig = require("ajv-formats")(new Ajv()).compile(schema);
 
 // If you want your shell sessions to each have different active configs,
 // try this in your ~/.profile or ~/.zshrc or ~/.bashrc:
@@ -210,6 +214,8 @@ function sanitizeConfig(name, overwrite = false) {
     }
   }
 
+  validateConfig(config);
+
   return config;
 }
 
@@ -247,4 +253,5 @@ module.exports = {
   sanitizeConfig,
   save,
   setCurrent,
+  validateConfig,
 };
