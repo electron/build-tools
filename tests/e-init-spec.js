@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const ajv = require('ajv');
+
 const createSandbox = require('./sandbox');
 const schema = require('../evm-config.schema.json');
 
