@@ -1,4 +1,4 @@
-const fs = require('fs/promises');
+const fs = require('fs');
 const path = require('path');
 
 const yml = require('js-yaml');
@@ -6,10 +6,10 @@ const yml = require('js-yaml');
 const { validateConfig } = require('../src/evm-config');
 
 describe('example configs', () => {
-  it('should validate', async () => {
+  it('should validate', () => {
     const exampleConfigsPath = '../example-configs/';
 
-    const files = await fs.readdir(exampleConfigsPath);
+    const files = fs.readdirSync(exampleConfigsPath, { encoding: 'utf8' });
     expect(files.length).not.toBe(0);
 
     for (const file of files) {
