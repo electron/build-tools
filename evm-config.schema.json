@@ -30,6 +30,13 @@
       ],
       "default": "cache-only"
     },
+    "gomaSource": {
+      "description": "Goma client is from a non-default source",
+      "type": "string",
+      "enum": [
+        "msft"
+      ]
+    },
     "root": {
       "description": "Path of the top directory. Home of the .gclient file",
       "type": "string",
@@ -46,19 +53,37 @@
             "fork": {
               "description": "Fork remote",
               "type": "string",
+              "anyOf": [
+                {
+                  "format": "uri"
+                },
+                {
+                  "pattern": "^git@.+$"
+                }
+              ],
               "minLength": 1
             },
             "origin": {
               "description": "Origin remote",
               "type": "string",
+              "anyOf": [
+                {
+                  "format": "uri"
+                },
+                {
+                  "pattern": "^git@.+$"
+                }
+              ],
               "minLength": 1
             }
           },
+          "additionalProperties": false,
           "required": [
             "origin"
           ]
         }
       },
+      "additionalProperties": false,
       "required": [
         "electron"
       ]
@@ -81,6 +106,7 @@
           "minLength": 1
         }
       },
+      "additionalProperties": false,
       "required": [
         "args",
         "out"
@@ -114,7 +140,6 @@
     },
     {
       "required": [
-        "goma",
         "root",
         "remotes",
         "gen",
