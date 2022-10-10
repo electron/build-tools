@@ -46,13 +46,11 @@
             "fork": {
               "description": "Fork remote",
               "type": "string",
-              "format": "uri",
               "minLength": 1
             },
             "origin": {
               "description": "Origin remote",
               "type": "string",
-              "format": "uri",
               "minLength": 1
             }
           },
