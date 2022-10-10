@@ -25,7 +25,7 @@ const getDefaultTarget = () => {
   return result || 'electron';
 };
 
-const buildTargets = {
+const buildTargets = () => ({
   breakpad: 'third_party/breakpad:dump_syms',
   chromedriver: 'electron:electron_chromedriver_zip',
   electron: 'electron',
@@ -34,7 +34,7 @@ const buildTargets = {
   mksnapshot: 'electron:electron_mksnapshot_zip',
   'node:headers': 'third_party/electron_node:headers',
   default: getDefaultTarget(),
-};
+});
 
 function buildPath(name, suffix) {
   return path.resolve(configRoot, `evm.${name}.${suffix}`);

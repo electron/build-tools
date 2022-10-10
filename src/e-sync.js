@@ -56,7 +56,7 @@ function runGClientSync(syncArgs, syncOpts) {
   depot.spawnSync(config, exec, args, opts);
 
   // Only set remotes if we're building an Electron target.
-  if (config.defaultTarget !== evmConfig.buildTargets.chromium) {
+  if (config.defaultTarget !== evmConfig.buildTargets().chromium) {
     const electronPath = path.resolve(srcdir, 'electron');
     const nodejsPath = path.resolve(srcdir, 'third_party', 'electron_node');
 
