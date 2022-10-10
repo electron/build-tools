@@ -14,7 +14,8 @@ describe('example configs', () => {
 
     for (const file of files) {
       const configContents = fs.readFileSync(path.resolve(exampleConfigsPath, file), 'utf8');
-      expect(validateConfig(yml.safeLoad(configContents))).toStrictEqual(true);
+      const validationErrors = validateConfig(yml.safeLoad(configContents));
+      expect(validationErrors).toBeFalsy();
     }
   });
 });

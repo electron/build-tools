@@ -70,7 +70,8 @@ describe('e-init', () => {
 
       expect(config.gen.out).toStrictEqual('Testing');
 
-      expect(validateConfig(config)).toStrictEqual(true);
+      const validationErrors = validateConfig(config);
+      expect(validationErrors).toBeFalsy();
     });
 
     it('logs an info message when the new build config root already has a .gclient file', () => {

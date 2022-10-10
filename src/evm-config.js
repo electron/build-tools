@@ -12,8 +12,6 @@ const preferredFormat = process.env.EVM_FORMAT || 'json'; // yaml yml json
 const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
 const schema = require('../evm-config.schema.json');
 
-const validateConfig = require('ajv-formats')(new Ajv()).compile(schema);
-
 // If you want your shell sessions to each have different active configs,
 // try this in your ~/.profile or ~/.zshrc or ~/.bashrc:
 // export EVM_CURRENT_FILE="$(mktemp --tmpdir evm-current.XXXXXXXX.txt)"
@@ -156,6 +154,14 @@ function loadConfigFileRaw(name) {
   return maybeExtendConfig(yml.safeLoad(configContents));
 }
 
+function validateConfig(config) {
+  const validate = require('ajv-formats')(new Ajv()).compile(schema);
+
+  if (!validate(config)) {
+    return validate.errors;
+  }
+}
+
 function sanitizeConfig(name, overwrite = false) {
   const config = loadConfigFileRaw(name);
   const changes = [];
@@ -214,8 +220,13 @@ function sanitizeConfig(name, overwrite = false) {
     }
   }
 
-  validateConfig(config);
+  const validationErrors = validateConfig(config);
 
+  if (validationErrors) {
+    console.error(validationErrors);
+    fatal('Invalid config.');
+  }
+  
   return config;
 }
 
