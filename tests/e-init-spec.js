@@ -4,7 +4,6 @@ const path = require('path');
 const { validateConfig } = require('../src/evm-config');
 
 const createSandbox = require('./sandbox');
-const schema = require('../evm-config.schema.json');
 
 describe('e-init', () => {
   let sandbox;

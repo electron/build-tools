@@ -12,7 +12,7 @@ const preferredFormat = process.env.EVM_FORMAT || 'json'; // yaml yml json
 const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
 const schema = require('../evm-config.schema.json');
 
-const validateConfig = require("ajv-formats")(new Ajv()).compile(schema);
+const validateConfig = require('ajv-formats')(new Ajv()).compile(schema);
 
 // If you want your shell sessions to each have different active configs,
 // try this in your ~/.profile or ~/.zshrc or ~/.bashrc:
