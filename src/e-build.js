@@ -71,7 +71,7 @@ program
   .action((target, ninjaArgs, options) => {
     try {
       const config = evmConfig.current();
-      const targets = evmConfig.buildTargets;
+      const targets = evmConfig.buildTargets();
 
       if (options.listTargets) {
         Object.keys(targets)
