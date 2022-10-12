@@ -179,7 +179,7 @@ function sanitizeConfig(name, overwrite = false) {
 
     delete config.origin;
     changes.push(`replaced superceded 'origin' property with 'remotes' property`);
-  } else if (config.remotes?.node) {
+  } else if (config.remotes && config.remotes.node) {
     delete config.remotes.node;
     changes.push(`removed deprecated ${color.config('remotes.node')} property`);
   }
