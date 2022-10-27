@@ -59,10 +59,10 @@ async function getPullRequestInfo(pullNumber) {
 }
 
 function guessPRTarget(config) {
-  const filename = path.resolve(config.root, 'src', 'electron', 'package.json');
-  const version = JSON.parse(fs.readFileSync(filename)).version;
+  const script = path.resolve(config.root, 'src', 'electron', 'script', 'lib', 'get-version.js');
+  const version = childProcess.execSync(`node -p 'require("${script}").getElectronVersion()'`);
 
-  // Nightlies are only released off of main, so we can safely make this assumption
+  // Nightlies are only released off of main, so we can safely make this assumption.
   if (version.includes('nightly')) return 'main';
 
   const versionPattern = /^(?<major>\d+)\.(?<minor>\d+)\.\d+.*$/;
