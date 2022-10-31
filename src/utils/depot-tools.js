@@ -48,8 +48,7 @@ function platformOpts() {
     case 'win32':
       opts = {
         DEPOT_TOOLS_WIN_TOOLCHAIN: '1',
-        DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL:
-          'https://electron-build-tools.s3-us-west-2.amazonaws.com/win32/toolchains/_',
+        DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL: 'https://dev-cdn.electronjs.org/windows-toolchains/_',
         GYP_MSVS_HASH_9ff60e43ba91947baca460d0ca3b1b980c3a2c23:
           '6d205e765a23d3cbe0fcc8d1191ae406d8bf9c04',
         GYP_MSVS_HASH_a687d8e2e4114d9015eb550e1b156af21381faac:
@@ -57,6 +56,7 @@ function platformOpts() {
         GYP_MSVS_HASH_20d5f2553f: 'e146e01913',
         GYP_MSVS_HASH_3bda71a11e: 'e146e01913',
         GYP_MSVS_HASH_e41785f09f: 'e146e01913',
+        GYP_MSVS_HASH_1023ce2e82: '3a908a0f94',
       };
   }
 
@@ -75,6 +75,8 @@ function depotOpts(config, opts = {}) {
     // set these defaults that can be overridden via process.env
     PYTHONDONTWRITEBYTECODE: '1', // depot needs it
     DEPOT_TOOLS_METRICS: '0', // disable depot metrics
+    // Circular reference so we have to delay load
+    DEVELOPER_DIR: require('./xcode').XcodePath, // use build-tools version of Xcode
     ...process.env,
     ...platformOpts(),
     ...config.env,
@@ -114,12 +116,15 @@ function depotSpawnSync(config, cmd, args, opts_in) {
 }
 
 function depotExecFileSync(config, exec, args, opts_in) {
-  if (exec === 'python' && !path.isAbsolute(args[0])) {
+  const opts = depotOpts(config, opts_in);
+  if (['python', 'python3'].includes(exec) && !opts.cwd && !path.isAbsolute(args[0])) {
     args[0] = path.resolve(DEPOT_TOOLS_DIR, args[0]);
   }
-  const opts = depotOpts(config, opts_in);
+  if (os.platform() === 'win32' && ['python', 'python3'].includes(exec)) {
+    exec = `${exec}.bat`;
+  }
   console.log(color.childExec(exec, args, opts));
-  childProcess.execFileSync(exec, args, opts);
+  return childProcess.execFileSync(exec, args, opts);
 }
 
 module.exports = {

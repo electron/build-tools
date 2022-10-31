@@ -1,8 +1,28 @@
+const { spawn } = require('child_process');
 const { createOAuthDeviceAuth } = require('@octokit/auth-oauth-device');
 
 const ELECTRON_BUILD_TOOLS_GITHUB_CLIENT_ID = '03581ca0d21228704ab3';
 
 async function getGitHubAuthToken(scopes = []) {
+  try {
+    const gh = spawn('gh', ['auth', 'status', '--show-token']);
+    const done = new Promise((resolve, reject) => {
+      gh.on('close', resolve);
+      gh.on('error', reject);
+    });
+    const stderrChunks = [];
+    gh.stderr.on('data', chunk => stderrChunks.push(chunk));
+    const exitCode = await done;
+    if (exitCode === 0) {
+      const stderr = Buffer.concat(stderrChunks).toString('utf8');
+      const m = /Token: (.+)$/m.exec(stderr);
+      if (m) {
+        return m[1];
+      }
+    }
+  } catch (e) {
+    // fall through to fetching the token through oauth
+  }
   const auth = createOAuthDeviceAuth({
     clientType: 'oauth-app',
     clientId: ELECTRON_BUILD_TOOLS_GITHUB_CLIENT_ID,

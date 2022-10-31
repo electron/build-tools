@@ -155,7 +155,7 @@ program
 program
   .command('out')
   .description('Show outdir name, e.g. "Testing"')
-  .option('--path', 'Output as JSON')
+  .option('--path', 'Output absolute path to outdir')
   .action(options => {
     try {
       if (options.path) {
@@ -179,7 +179,7 @@ program
         stdio: 'inherit',
         cwd: goma.dir,
       };
-      childProcess.execFileSync('python', ['goma_ctl.py', 'stat'], options);
+      depot.execFileSync(config, 'python3', ['goma_ctl.py', 'stat'], options);
     } catch (e) {
       fatal(e);
     }
@@ -198,7 +198,3 @@ program
   });
 
 program.parse(process.argv);
-
-if (process.argv.length < 3) {
-  program.outputHelp();
-}

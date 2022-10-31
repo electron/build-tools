@@ -12,7 +12,7 @@ const { getIsArm } = require('./arm');
 const gomaDir = path.resolve(__dirname, '..', '..', 'third_party', 'goma');
 const gomaGnFile = path.resolve(__dirname, '..', '..', 'third_party', 'goma.gn');
 const gomaShaFile = path.resolve(__dirname, '..', '..', 'third_party', 'goma', '.sha');
-const gomaBaseURL = 'https://electron-build-tools.s3-us-west-2.amazonaws.com/build-dependencies';
+const gomaBaseURL = 'https://dev-cdn.electronjs.org/goma-clients';
 const gomaLoginFile = path.resolve(gomaDir, 'last-known-login');
 
 let gomaPlatform = process.platform;
@@ -22,17 +22,17 @@ if (gomaPlatform === 'darwin' && getIsArm()) {
 }
 
 const GOMA_PLATFORM_SHAS = {
-  darwin: 'e12708bc985766a841a789c1b707764093b2029415a9db99f2e5b33ed7dfc031',
-  'darwin-arm64': 'fb3ab4c6f7b7d07f724d120e4d6c13fe8a059d2b87d144173b48f04ceae442a2',
-  linux: '55d7f8c84e25692de5b6dc0a34764888d0d27d190486774219fe7446031413c7',
-  win32: '808a4e29b25e6d6da9b13e35e055ffb198dd35c3e2fe43c08faa4a3a0b58547f',
+  darwin: '47a4d70f5744401fbc18831e98b14570ee9a9cd92349ef263062b53e8cfa1a03',
+  'darwin-arm64': '8c31dae08497e8ad25fdd5c6830e485b4f22b8fac73b6c82655f9da9a87fe381',
+  linux: '6d13979579b22c3656cc71d88bb2a0bd830b9a2ddcc13856b506a1ea9273099e',
+  win32: '303a58492f5f89c3995b1c9afbade2b6e01de30439f571f87c94d55d44abbc26',
 };
 
 const MSFT_GOMA_PLATFORM_SHAS = {
-  darwin: 'a1a719647f8fa038c84795871a5a38c84d2b67a7f9c816369c34e7010027a441',
-  'darwin-arm64': '45e4d2d4fcb902aba37e52e1a218523288de3df1e9a89a80086e3994347f851f',
-  linux: '7417cbb25a5f67a690a9a103ba1e0d7c9995fcf771549c70930eeecfed456ab9',
-  win32: 'e601c044e3fbc4c9830cdaf6cbe124499ed177760e6b2a233e55472a247aad12',
+  darwin: '4738c5447b8a7bafbb6adb9df01b2f571b492ada862bd3e296892faf5b617df1',
+  'darwin-arm64': '4d2a6d98ecd5214731c089622991334e083f42100bca194a087dde7136a07fc8',
+  linux: 'dd6285146677b0134fb9b4a0b4f8341c7e57a9b4ef82db158de95f7fed5b72e2',
+  win32: '06b6c1d5c924a7415395545ee7a99b926829fc104336830ce6385b7ba67576cd',
 };
 
 const isSupportedPlatform = !!GOMA_PLATFORM_SHAS[gomaPlatform];
@@ -68,7 +68,7 @@ function downloadAndPrepareGoma(config) {
   }[gomaPlatform];
 
   if (fs.existsSync(path.resolve(gomaDir, 'goma_ctl.py'))) {
-    depot.spawnSync(config, 'python', ['goma_ctl.py', 'stop'], {
+    depot.execFileSync(config, 'python3', ['goma_ctl.py', 'stop'], {
       cwd: gomaDir,
       stdio: ['ignore'],
     });
@@ -118,7 +118,7 @@ function downloadAndPrepareGoma(config) {
   return sha;
 }
 
-function gomaIsAuthenticated() {
+function gomaIsAuthenticated(config) {
   if (!isSupportedPlatform) return false;
   const lastKnownLogin = getLastKnownLoginTime();
   // Assume if we authed in the last 12 hours it is still valid
@@ -126,7 +126,7 @@ function gomaIsAuthenticated() {
 
   let loggedInInfo;
   try {
-    loggedInInfo = childProcess.execFileSync('python', ['goma_auth.py', 'info'], {
+    loggedInInfo = depot.execFileSync(config, 'python3', ['goma_auth.py', 'info'], {
       cwd: gomaDir,
       stdio: ['ignore'],
     });
@@ -143,16 +143,22 @@ function authenticateGoma(config) {
 
   downloadAndPrepareGoma(config);
 
-  if (!gomaIsAuthenticated()) {
-    console.log(color.childExec('goma_auth.py', ['login'], { cwd: gomaDir }));
-    childProcess.execFileSync('python', ['goma_auth.py', 'login'], {
+  if (!gomaIsAuthenticated(config)) {
+    const { status, error } = depot.spawnSync(config, 'python3', ['goma_auth.py', 'login'], {
       cwd: gomaDir,
       stdio: 'inherit',
       env: {
-        ...process.env,
         AGREE_NOTGOMA_TOS: '1',
       },
     });
+
+    if (status !== 0) {
+      let errorMsg = `Failed to run command:`;
+      if (status !== null) errorMsg += `\n Exit Code: "${status}"`;
+      if (error) errorMsg += `\n ${error}`;
+      fatal(errorMsg, status);
+    }
+
     recordGomaLoginTime();
   }
 }
@@ -161,6 +167,11 @@ function getLastKnownLoginTime() {
   if (!fs.existsSync(gomaLoginFile)) return null;
   const contents = fs.readFileSync(gomaLoginFile);
   return new Date(parseInt(contents, 10));
+}
+
+function clearGomaLoginTime() {
+  if (!fs.existsSync(gomaLoginFile)) return;
+  fs.unlinkSync(gomaLoginFile);
 }
 
 function recordGomaLoginTime() {
@@ -183,11 +194,9 @@ function ensureGomaStart(config) {
     };
   }
 
-  console.log(color.childExec('goma_ctl.py', ['ensure_start'], { cwd: gomaDir }));
-  childProcess.execFileSync('python', ['goma_ctl.py', 'ensure_start'], {
+  depot.execFileSync(config, 'python3', ['goma_ctl.py', 'ensure_start'], {
     cwd: gomaDir,
     env: {
-      ...process.env,
       ...gomaEnv(config),
       ...subprocs,
     },
@@ -236,5 +245,6 @@ module.exports = {
   downloadAndPrepare: downloadAndPrepareGoma,
   gnFilePath: gomaGnFile,
   env: gomaEnv,
+  clearGomaLoginTime,
   recordGomaLoginTime,
 };

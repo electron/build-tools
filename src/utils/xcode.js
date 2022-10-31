@@ -11,8 +11,7 @@ const { color, fatal } = require('./logging');
 const XcodeDir = path.resolve(__dirname, '..', '..', 'third_party', 'Xcode');
 const XcodePath = path.resolve(XcodeDir, 'Xcode.app');
 const XcodeZip = path.resolve(XcodeDir, 'Xcode.zip');
-const XcodeBaseURL = `${process.env.ELECTRON_BUILD_TOOLS_MIRROR ||
-  'https://electron-build-tools.s3-us-west-2.amazonaws.com'}/macos/`;
+const XcodeBaseURL = 'https://dev-cdn.electronjs.org/xcode/';
 
 const XcodeVersions = {
   '9.4.1': {
@@ -75,6 +74,14 @@ function getXcodeVersion() {
   return 'unknown';
 }
 
+function extractXcodeVersion(config) {
+  const legacyMatch = /xcode: "?(\d+.\d+.\d+?)"?/.exec(config);
+  if (legacyMatch) return legacyMatch;
+  const modernMatch = /description: "xcode version"\n +default: ([^\n]+)\n/gm.exec(config);
+  if (modernMatch) return modernMatch;
+  return null;
+}
+
 function expectedXcodeVersion() {
   const { root } = evmConfig.maybeCurrent() ?? {};
 
@@ -85,14 +92,19 @@ function expectedXcodeVersion() {
   if (root) {
     // First check CI build_config.yml
     const buildConfYaml = path.resolve(root, 'src', 'electron', '.circleci', 'build_config.yml');
-    let match =
-      fs.existsSync(buildConfYaml) && /xcode: "(.+?)"/.exec(fs.readFileSync(buildConfYaml, 'utf8'));
+    match =
+      fs.existsSync(buildConfYaml) && extractXcodeVersion(fs.readFileSync(buildConfYaml, 'utf8'));
 
     // Second check CI config.yml
     if (!match) {
       const configYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config.yml');
-      match =
-        fs.existsSync(configYaml) && /xcode: "(.+?)"/.exec(fs.readFileSync(configYaml, 'utf8'));
+      match = fs.existsSync(configYaml) && extractXcodeVersion(fs.readFileSync(configYaml, 'utf8'));
+    }
+
+    // Third check base.yml
+    if (!match) {
+      const baseYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config', 'base.yml');
+      match = fs.existsSync(baseYaml) && extractXcodeVersion(fs.readFileSync(baseYaml, 'utf8'));
     }
   }
 

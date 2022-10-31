@@ -20,13 +20,13 @@ const color = {
   warn: chalk.bgYellowBright.black('WARN'),
 };
 
-function fatal(e) {
+function fatal(e, code = 1) {
   if (typeof e === 'string') {
     console.error(`${color.err} ${e}`);
   } else {
     console.error(`${color.err} ${e.stack ? e.stack : e.message}`);
   }
-  process.exit(1);
+  process.exit(code);
 }
 
 module.exports = {

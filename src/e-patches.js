@@ -3,25 +3,25 @@
 const fs = require('fs');
 const path = require('path');
 const program = require('commander');
-const childProcess = require('child_process');
 
 const evmConfig = require('./evm-config.js');
+const depot = require('./utils/depot-tools');
 const { color, fatal } = require('./utils/logging');
 
 program
-  .argument('[target]')
+  .arguments('[target]')
   .description(
     "Refresh all patches if 'all' is specified; otherwise, refresh patches in $root/src/electron/patches/$target",
   )
   .option('--list-targets', 'Show all supported patch targets', false)
   .action((target, options) => {
     try {
-      const { root } = evmConfig.current();
-      const srcdir = path.resolve(root, 'src');
+      const config = evmConfig.current();
+      const srcdir = path.resolve(config.root, 'src');
 
       // build the list of targets
       const targets = {};
-      const patchesConfig = path.resolve(root, 'src', 'electron', 'patches', 'config.json');
+      const patchesConfig = path.resolve(config.root, 'src', 'electron', 'patches', 'config.json');
       for (const [key, val] of Object.entries(JSON.parse(fs.readFileSync(patchesConfig)))) {
         targets[path.basename(key)] = val;
       }
@@ -39,17 +39,18 @@ program
 
       if (target === 'all') {
         const script = path.resolve(srcdir, 'electron', 'script', 'export_all_patches.py');
-        childProcess.execFileSync('python', [script, patchesConfig], {
-          cwd: root,
+        depot.execFileSync(config, 'python3', [script, patchesConfig], {
+          cwd: config.root,
           stdio: 'inherit',
           encoding: 'utf8',
         });
       } else if (targets[target]) {
         const script = path.resolve(srcdir, 'electron', 'script', 'git-export-patches');
-        childProcess.execFileSync(
-          'python',
+        depot.execFileSync(
+          config,
+          'python3',
           [script, '-o', path.resolve(srcdir, 'electron', 'patches', target)],
-          { cwd: path.resolve(root, targets[target]), stdio: 'inherit', encoding: 'utf8' },
+          { cwd: path.resolve(config.root, targets[target]), stdio: 'inherit', encoding: 'utf8' },
         );
       } else {
         console.log(`${color.err} Unrecognized target ${color.cmd(target)}.`);
@@ -59,11 +60,11 @@ program
             .map(a => color.cmd(a))
             .join(', ')}`,
         );
-        console.log(`${color.err} See ${color.path(patchesConfig)}`);
-        process.exit(1);
+        fatal(`See ${color.path(patchesConfig)}`);
       }
     } catch (e) {
       fatal(e);
     }
-  })
-  .parse(process.argv);
+  });
+
+program.parse(process.argv);
