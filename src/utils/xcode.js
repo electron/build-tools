@@ -83,26 +83,29 @@ function extractXcodeVersion(config) {
 }
 
 function expectedXcodeVersion() {
-  const { root } = evmConfig.current();
+  const { root } = evmConfig.maybeCurrent() ?? {};
 
   // NOTE: the location of CI's xcode definition changed in PR #31741 (or commit
   // 43f36b5 on the main branch)
 
-  // First check CI build_config.yml
-  const buildConfYaml = path.resolve(root, 'src', 'electron', '.circleci', 'build_config.yml');
-  let match =
-    fs.existsSync(buildConfYaml) && extractXcodeVersion(fs.readFileSync(buildConfYaml, 'utf8'));
+  let match;
+  if (root) {
+    // First check CI build_config.yml
+    const buildConfYaml = path.resolve(root, 'src', 'electron', '.circleci', 'build_config.yml');
+    match =
+      fs.existsSync(buildConfYaml) && extractXcodeVersion(fs.readFileSync(buildConfYaml, 'utf8'));
 
-  // Second check CI config.yml
-  if (!match) {
-    const configYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config.yml');
-    match = fs.existsSync(configYaml) && extractXcodeVersion(fs.readFileSync(configYaml, 'utf8'));
-  }
+    // Second check CI config.yml
+    if (!match) {
+      const configYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config.yml');
+      match = fs.existsSync(configYaml) && extractXcodeVersion(fs.readFileSync(configYaml, 'utf8'));
+    }
 
-  // Third check base.yml
-  if (!match) {
-    const baseYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config', 'base.yml');
-    match = fs.existsSync(baseYaml) && extractXcodeVersion(fs.readFileSync(baseYaml, 'utf8'));
+    // Third check base.yml
+    if (!match) {
+      const baseYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config', 'base.yml');
+      match = fs.existsSync(baseYaml) && extractXcodeVersion(fs.readFileSync(baseYaml, 'utf8'));
+    }
   }
 
   if (!match) {
