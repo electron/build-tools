@@ -52,7 +52,7 @@ const XcodeVersions = {
   },
   '14.1.0': {
     fileName: 'Xcode-14.1.0.zip',
-    md5: 'b997ab3c4da397c514a579ffa29b6194',
+    md5: '3dc1a4d8bc6abd5448be4f2d96a04f62',
   },
 };
 
