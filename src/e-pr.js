@@ -60,7 +60,10 @@ async function getPullRequestInfo(pullNumber) {
 
 function guessPRTarget(config) {
   const script = path.resolve(config.root, 'src', 'electron', 'script', 'lib', 'get-version.js');
-  const version = childProcess.execSync(`node -p 'require("${script}").getElectronVersion()'`);
+  const version = childProcess
+    .execSync(`node -p 'require("${script}").getElectronVersion()'`)
+    .toString()
+    .trim();
 
   // Nightlies are only released off of main, so we can safely make this assumption.
   if (version.includes('nightly')) return 'main';
@@ -73,7 +76,7 @@ function guessPRTarget(config) {
   }
 
   console.warn(
-    `Unable to guess default target PR branch -- ${filename}'s version '${version}' should include 'nightly' or match ${versionPattern}`,
+    `Unable to guess default target PR branch -- generated version '${version}' should include 'nightly' or match ${versionPattern}`,
   );
 }
 
