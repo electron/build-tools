@@ -1,4 +1,4 @@
-const childProcess = require('child_process');
+const cp = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
@@ -50,6 +50,10 @@ const XcodeVersions = {
     fileName: 'Xcode-13.3.0.zip',
     md5: 'b216a27212fdd0be922d83687aad22bf',
   },
+  '14.1.0': {
+    fileName: 'Xcode-14.1.0.zip',
+    md5: '3dc1a4d8bc6abd5448be4f2d96a04f62',
+  },
 };
 
 const fallbackXcode = () => {
@@ -61,7 +65,7 @@ const fallbackXcode = () => {
 };
 
 function getXcodeVersion() {
-  const result = childProcess.spawnSync('defaults', [
+  const result = cp.spawnSync('defaults', [
     'read',
     path.resolve(XcodePath, 'Contents', 'Info.plist'),
     'CFBundleShortVersionString',
@@ -85,13 +89,20 @@ function extractXcodeVersion(config) {
 function expectedXcodeVersion() {
   const { root } = evmConfig.current();
 
-  // NOTE: the location of CI's xcode definition changed in PR #31741 (or commit
-  // 43f36b5 on the main branch)
+  let match;
+
+  // macOS Ventura only supports Xcode 14 and newer.
+  const macOSVersion = cp.execSync('sw_vers -productVersion').toString();
+  if (macOSVersion.startsWith('13')) {
+    match = '14.1.0';
+  }
 
   // First check CI build_config.yml
-  const buildConfYaml = path.resolve(root, 'src', 'electron', '.circleci', 'build_config.yml');
-  let match =
-    fs.existsSync(buildConfYaml) && extractXcodeVersion(fs.readFileSync(buildConfYaml, 'utf8'));
+  if (!match) {
+    const buildConfYaml = path.resolve(root, 'src', 'electron', '.circleci', 'build_config.yml');
+    match =
+      fs.existsSync(buildConfYaml) && extractXcodeVersion(fs.readFileSync(buildConfYaml, 'utf8'));
+  }
 
   // Second check CI config.yml
   if (!match) {
@@ -169,7 +180,7 @@ function ensureXcode() {
       if (shouldDownload) {
         const XcodeURL = `${XcodeBaseURL}${XcodeVersions[expected].fileName}`;
         console.log(`Downloading ${color.cmd(XcodeURL)} into ${color.path(XcodeZip)}`);
-        childProcess.spawnSync(
+        cp.spawnSync(
           process.execPath,
           [path.resolve(__dirname, '..', 'download.js'), XcodeURL, XcodeZip],
           {
@@ -189,7 +200,7 @@ function ensureXcode() {
       console.log(`Extracting ${color.cmd(XcodeZip)} into ${color.path(eventualVersionedPath)}`);
       const unzipPath = path.resolve(XcodeDir, 'tmp_unzip');
       rimraf.sync(unzipPath);
-      childProcess.spawnSync('unzip', ['-q', '-o', XcodeZip, '-d', unzipPath], {
+      cp.spawnSync('unzip', ['-q', '-o', XcodeZip, '-d', unzipPath], {
         stdio: 'inherit',
       });
 
@@ -223,7 +234,7 @@ function ensureXcode() {
 
 function hashFile(file) {
   console.log(`Calculating hash for ${color.path(file)}`);
-  return childProcess
+  return cp
     .spawnSync('md5', ['-q', file])
     .stdout.toString()
     .trim();
