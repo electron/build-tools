@@ -20,11 +20,15 @@ let gomaPlatform = process.platform;
 if (gomaPlatform === 'darwin' && getIsArm()) {
   gomaPlatform = 'darwin-arm64';
 }
+if (gomaPlatform === 'linux' && process.arch === 'arm64') {
+  gomaPlatform = 'linux-arm64';
+}
 
 const GOMA_PLATFORM_SHAS = {
   darwin: 'b2e2d4c75882a2eb61b4b78dd7f0d8762909ac9ec54b66fbc91399d6ef9e46d7',
   'darwin-arm64': '88fe81bb4cdda558121aa9e3f439f5e2799cb0a31cae68a1763b2b33a6c79a8b',
   linux: 'ac970f8567d4e7e2ec78f7b5c44ca9d3e982eefd1db621e20a64270294ce63f7',
+  'linux-arm64': '17f976d5672531b1927708d21222de2bc1d05cf75b1f7a24549eb6205caf8f6f',
   win32: 'edec48c4820a451b38c99177cfd529c30b050a08001b51be6dba02ec020cff0d',
 };
 
@@ -64,6 +68,7 @@ function downloadAndPrepareGoma(config) {
     darwin: 'goma-mac.tgz',
     'darwin-arm64': 'goma-mac-arm64.tgz',
     linux: 'goma-linux.tgz',
+    'linux-arm64': 'goma-linux-arm64.tgz',
     win32: 'goma-win.zip',
   }[gomaPlatform];
 
