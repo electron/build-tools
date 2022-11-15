@@ -80,43 +80,43 @@ function getXcodeVersion() {
 
 function extractXcodeVersion(config) {
   const legacyMatch = /xcode: "?(\d+.\d+.\d+?)"?/.exec(config);
-  if (legacyMatch) return legacyMatch;
+  if (legacyMatch) return legacyMatch[1];
   const modernMatch = /description: "xcode version"\n +default: ([^\n]+)\n/gm.exec(config);
-  if (modernMatch) return modernMatch;
+  if (modernMatch) return modernMatch[1];
   return null;
 }
 
 function expectedXcodeVersion() {
   const { root } = evmConfig.current();
 
-  let match;
+  let version;
 
   // macOS Ventura only supports Xcode 14 and newer.
   const macOSVersion = cp.execSync('sw_vers -productVersion').toString();
   if (macOSVersion.startsWith('13')) {
-    match = '14.1.0';
+    version = '14.1.0';
   }
 
   // First check CI build_config.yml
-  if (!match) {
+  if (!version) {
     const buildConfYaml = path.resolve(root, 'src', 'electron', '.circleci', 'build_config.yml');
-    match =
+    version =
       fs.existsSync(buildConfYaml) && extractXcodeVersion(fs.readFileSync(buildConfYaml, 'utf8'));
   }
 
   // Second check CI config.yml
-  if (!match) {
+  if (!version) {
     const configYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config.yml');
-    match = fs.existsSync(configYaml) && extractXcodeVersion(fs.readFileSync(configYaml, 'utf8'));
+    version = fs.existsSync(configYaml) && extractXcodeVersion(fs.readFileSync(configYaml, 'utf8'));
   }
 
   // Third check base.yml
-  if (!match) {
+  if (!version) {
     const baseYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config', 'base.yml');
-    match = fs.existsSync(baseYaml) && extractXcodeVersion(fs.readFileSync(baseYaml, 'utf8'));
+    version = fs.existsSync(baseYaml) && extractXcodeVersion(fs.readFileSync(baseYaml, 'utf8'));
   }
 
-  if (!match) {
+  if (!version) {
     console.warn(
       color.warn,
       'failed to automatically identify the required version of Xcode, falling back to default of',
@@ -124,7 +124,7 @@ function expectedXcodeVersion() {
     );
     return fallbackXcode();
   }
-  const version = match[1].trim();
+
   if (!XcodeVersions[version]) {
     console.warn(
       color.warn,
