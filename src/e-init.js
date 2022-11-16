@@ -55,6 +55,10 @@ function createConfig(options) {
       GIT_CACHE_PATH: process.env.GIT_CACHE_PATH
         ? resolvePath(process.env.GIT_CACHE_PATH)
         : path.resolve(homedir, '.git_cache'),
+      GOMA_CACHE_DIR: path.resolve(homedir, '.goma_cache'),
+      GOMA_DEPS_CACHE_FILE: 'deps-cache',
+      GOMA_COMPILER_INFO_CACHE_FILE: 'compiler-info-cache',
+      GOMA_LOCAL_OUTPUT_CACHE_DIR: path.resolve(homedir, '.gome_output_cache'),
     },
   };
 }

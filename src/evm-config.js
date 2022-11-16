@@ -194,7 +194,9 @@ function sanitizeConfig(name, overwrite = false) {
     changes.push(`removed ${color.config('cc_wrapper')} definition because goma is enabled`);
   }
 
-  if (!config.env || !config.env.CHROMIUM_BUILDTOOLS_PATH) {
+  if (!config.env) config.env = {};
+
+  if (!config.env.CHROMIUM_BUILDTOOLS_PATH) {
     const toolsPath = path.resolve(config.root, 'src', 'buildtools');
     config.env.CHROMIUM_BUILDTOOLS_PATH = toolsPath;
     changes.push(`defined ${color.config('CHROMIUM_BUILDTOOLS_PATH')}`);
