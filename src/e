@@ -234,6 +234,8 @@ program
   .allowUnknownOption()
   .helpOption('\0')
   .action(() => {
+    depot.ensure();
+
     const args = process.argv.slice(3);
     if (args.length === 0) {
       fatal(`Must provide a command to 'e depot-tools'`);
