@@ -18,7 +18,7 @@ if (Xcode.ensureXcode() === false) {
 // Select our new xcode
 const output = childProcess.execFileSync('xcode-select', ['-p']).toString();
 if (!output.trim().startsWith(Xcode.XcodePath)) {
-  if (process.env.DEVELOPER_DIR.length) {
+  if (process.env.DEVELOPER_DIR) {
     console.info(`${color.info} Using overridden Xcode at ${process.env.DEVELOPER_DIR}`);
     return;
   } else {
