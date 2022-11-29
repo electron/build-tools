@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const { validateConfig } = require('../src/evm-config');
+
 const createSandbox = require('./sandbox');
 
 describe('e-init', () => {
@@ -67,6 +69,9 @@ describe('e-init', () => {
       expect(config.env).toHaveProperty('GIT_CACHE_PATH');
 
       expect(config.gen.out).toStrictEqual('Testing');
+
+      const validationErrors = validateConfig(config);
+      expect(validationErrors).toBeFalsy();
     });
 
     it('logs an info message when the new build config root already has a .gclient file', () => {
