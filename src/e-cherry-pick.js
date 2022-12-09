@@ -3,6 +3,7 @@
 const d = require('debug')('build-tools:cherry-pick');
 const program = require('commander');
 const https = require('https');
+const got = require('got');
 const { Octokit } = require('@octokit/rest');
 
 const { getCveForBugNr } = require('./utils/crbug');
@@ -25,6 +26,81 @@ function fetchBase64(url) {
       })
       .end();
   });
+}
+
+async function getPatchDetailsFromURL(urlStr, security) {
+  const parsedUrl = new URL(urlStr);
+  if (parsedUrl.host.endsWith('.googlesource.com')) {
+    return await getGerritPatchDetailsFromURL(parsedUrl, security);
+  }
+  if (parsedUrl.host === 'github.com') {
+    return await getGitHubPatchDetailsFromURL(parsedUrl, security);
+  }
+  fatal(
+    'Expected a gerrit or github URL (e.g. https://chromium-review.googlesource.com/c/v8/v8/+/2465830)',
+  );
+}
+
+async function getGerritPatchDetailsFromURL(gerritUrl, security) {
+  if (
+    gerritUrl.host !== 'chromium-review.googlesource.com' &&
+    gerritUrl.host !== 'skia-review.googlesource.com' &&
+    gerritUrl.host !== 'webrtc-review.googlesource.com' &&
+    gerritUrl.host !== 'pdfium-review.googlesource.com'
+  ) {
+    fatal('Unsupported gerrit host');
+  }
+  const [, repo, number] = /^\/c\/(.+?)\/\+\/(\d+)/.exec(gerritUrl.pathname);
+
+  d(`fetching patch from gerrit`);
+  const changeId = `${repo}~${number}`;
+  const patchUrl = new URL(
+    `/changes/${encodeURIComponent(changeId)}/revisions/current/patch`,
+    gerritUrl,
+  );
+  const patch = await fetchBase64(patchUrl.toString());
+
+  const [, commitId] = /^From ([0-9a-f]+)/.exec(patch);
+
+  const bugNumber =
+    (/^Bug[:=] ?(.+)$/im.exec(patch) || [])[1] || 6(/^Bug= ?chromium:(.+)$/m.exec(patch) || [])[1];
+  const cve = security ? await getCveForBugNr(bugNumber.replace('chromium:', '')) : '';
+
+  const patchDirName =
+    {
+      'chromium-review.googlesource.com:chromium/src': 'chromium',
+      'skia-review.googlesource.com:skia': 'skia',
+      'webrtc-review.googlesource.com:src': 'webrtc',
+    }[gerritUrl.host + ':' + repo] || repo.split('/').reverse()[0];
+
+  const shortCommit = commitId.substr(0, 12);
+
+  return { patchDirName, shortCommit, patch, bugNumber, cve };
+}
+
+async function getGitHubPatchDetailsFromURL(gitHubUrl, security) {
+  if (security) {
+    fatal('GitHub cherry-picks can not be security backports currently');
+  }
+
+  if (!gitHubUrl.pathname.startsWith('/nodejs/node/commit/')) {
+    fatal('Unsupport github repo');
+  }
+
+  const commitSha = gitHubUrl.pathname.split('/')[4];
+  if (!commitSha) {
+    fatal('Could not find commit sha in url');
+  }
+
+  const response = await got.get(`https://github.com/nodejs/node/commit/${commitSha}.patch`);
+  const shortCommit = commitSha.slice(0, 7);
+  const patch = response.body;
+
+  return {
+    patchDirName: 'node',
+    shortCommit,
+    patch,
+  };
 }
 
 program
@@ -54,48 +130,15 @@ program
         );
       }
 
+      const { patchDirName, shortCommit, patch, bugNumber, cve } = await getPatchDetailsFromURL(
+        patchUrlStr,
+        security,
+      );
+      const patchName = `cherry-pick-${shortCommit}.patch`;
+      const commitMessage = /Subject: \[PATCH\] (.+?)^---$/ms.exec(patch)[1];
+      const patchPath = `patches/${patchDirName}`;
       const targetBranches = [targetBranch, ...additionalBranches];
 
-      const gerritUrl = new URL(patchUrlStr);
-      if (
-        gerritUrl.host !== 'chromium-review.googlesource.com' &&
-        gerritUrl.host !== 'skia-review.googlesource.com' &&
-        gerritUrl.host !== 'webrtc-review.googlesource.com' &&
-        gerritUrl.host !== 'pdfium-review.googlesource.com'
-      ) {
-        fatal(
-          'Expected a gerrit URL (e.g. https://chromium-review.googlesource.com/c/v8/v8/+/2465830)',
-        );
-      }
-      const [, repo, number] = /^\/c\/(.+?)\/\+\/(\d+)/.exec(gerritUrl.pathname);
-
-      d(`fetching patch from gerrit`);
-      const changeId = `${repo}~${number}`;
-      const patchUrl = new URL(
-        `/changes/${encodeURIComponent(changeId)}/revisions/current/patch`,
-        gerritUrl,
-      );
-      const patch = await fetchBase64(patchUrl.toString());
-
-      const [, commitId] = /^From ([0-9a-f]+)/.exec(patch);
-
-      const bugNumber =
-        (/^Bug[:=] ?(.+)$/im.exec(patch) || [])[1] ||
-        (/^Bug= ?chromium:(.+)$/m.exec(patch) || [])[1];
-      const cve = security ? await getCveForBugNr(bugNumber.replace('chromium:', '')) : '';
-
-      const commitMessage = /Subject: \[PATCH\] (.+?)^---$/ms.exec(patch)[1];
-
-      const patchDirName =
-        {
-          'chromium-review.googlesource.com:chromium/src': 'chromium',
-          'skia-review.googlesource.com:skia': 'skia',
-          'webrtc-review.googlesource.com:src': 'webrtc',
-        }[gerritUrl.host + ':' + repo] || repo.split('/').reverse()[0];
-
-      const shortCommit = commitId.substr(0, 12);
-      const patchName = `cherry-pick-${shortCommit}.patch`;
-      const patchPath = `patches/${patchDirName}`;
       for (const target of targetBranches) {
         const branchName = `cherry-pick/${target}/${patchDirName}/${shortCommit}`;
         d(`fetching electron base branch info for ${target}`);
@@ -122,7 +165,7 @@ program
             path: `${patchPath}/.patches`,
             ref: targetSha,
           })
-          .catch(err => {
+          .catch(() => {
             console.log(
               `NOTE: No patches existing for ${patchDirName} in ${target}, added a dir under patches/ but you'll need to manually edit patches/config.json`,
             );
