@@ -386,6 +386,12 @@ $ e sanitize-config --help
 
 Sometimes `build-tools` will make updates to its config requirements. In these events warnings will be output to console to inform you that `build-tools` has temporarily handled the issues. You can make these warnings go away either by manually updating your config files or by running this command to automatically overwrite the existing configs to update formatting.
 
+### `e load-xcode`
+`e load-xcode` downloads and unpacks Xcode and required macOS SDK into the electron buildtools (`.electron_build_tools`) directory
+and symlinks them. This is automatically run by `e init`. 
+
+In case you get a pop up saying that "Xcode is damaged", you need to acknowledge the dialog with cancel and open it through system preferences. Go to System Preferences/Security & Privacy. There will be a section stating that "Xcode is from an unidentified developer". Press "Open Anyway" to acknowledge that you want to open Xcode.app. You might want to run `e load-xcode` again. 
+
 ## Common Usage
 
 ### Building a Specific Electron Version
@@ -434,3 +440,5 @@ Regardless of whether automatic updates are enabled, you can manually call the f
 ```
 e auto-update check
 ```
+
+
