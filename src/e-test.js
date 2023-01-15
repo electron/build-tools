@@ -41,7 +41,7 @@ program
   .addOption(
     new program.Option(
       '--runners <runner>',
-      "A subset of tests to run - not used with either the node or nan specs",
+      'A subset of tests to run - not used with either the node or nan specs',
     ).choices(['main', 'native']),
   )
   .action((specRunnerArgs, options) => {
