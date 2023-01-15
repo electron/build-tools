@@ -38,9 +38,11 @@ program
   .allowUnknownOption()
   .option('--node', 'Run node spec runner', false)
   .option('--nan', 'Run nan spec runner', false)
-  .option(
-    '--runners=<main|remote|native>',
-    "A subset of tests to run - either 'main', 'remote', or 'native', not used with either the node or nan specs",
+  .addOption(
+    new program.Option(
+      '--runners <runner>',
+      "A subset of tests to run - not used with either the node or nan specs",
+    ).choices(['main', 'native']),
   )
   .action((specRunnerArgs, options) => {
     try {
@@ -49,6 +51,9 @@ program
         fatal(
           'Can not run both node and nan specs at the same time, --node and --nan are mutually exclusive',
         );
+      }
+      if (options.runners) {
+        specRunnerArgs.push(`--runners=${options.runners}`);
       }
       let script = './script/spec-runner.js';
       if (options.node) {
