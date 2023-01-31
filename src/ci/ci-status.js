@@ -37,12 +37,23 @@ const colorForStatus = status => {
   }
 };
 
-const getStatusString = check => {
+const getCircleStatusString = check => {
   return check.status === 'completed'
     ? check.conclusion === 'success'
       ? chalk.green('success')
       : chalk.redBright('failed')
     : chalk.yellow('running');
+};
+
+const getAppveyorStatusString = check => {
+  switch (check.state) {
+    case 'success':
+      return chalk.green('success');
+    case 'failure':
+      return chalk.redBright('failed');
+    default:
+      return chalk.yellow('running');
+  }
 };
 
 const formatLink = (name, url) => `\x1B]8;;${url}\x1B\\${name}\x1B]8;;\x1B\\`;
@@ -60,7 +71,8 @@ const printChecks = (checks, link) => {
       result += `  ⦿ ${name} - ${chalk.blue('Missing')}\n`;
       continue;
     }
-    const status = getStatusString(check);
+
+    const status = getCircleStatusString(check);
     const url = new URL(check.details_url);
 
     if (link) {
@@ -102,7 +114,8 @@ const printStatuses = (statuses, link) => {
       result += `  ⦿ ${chalk.bold(name)} - ${chalk.blue('Missing')}\n\n`;
       continue;
     }
-    const status = getStatusString(check);
+
+    const status = getAppveyorStatusString(check);
     const url = new URL(check.target_url);
 
     if (link) {
