@@ -51,7 +51,7 @@ function runNinja(config, target, useGoma, ninjaArgs) {
   depot.ensure(config);
   ensureGNGen(config);
 
-  const exec = os.platform() === 'win32' ? 'ninja.exe' : 'ninja';
+  const exec = os.platform() === 'win32' ? 'ninja.bat' : 'ninja';
   const args = [...ninjaArgs, target];
   const opts = {
     cwd: evmConfig.outDir(config),
