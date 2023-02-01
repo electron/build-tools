@@ -87,13 +87,17 @@ function downloadAndPrepareGoma(config) {
 
   const downloadURL = `${gomaBaseURL}/${sha}/${filename}`;
   console.log(`Downloading ${color.cmd(downloadURL)} into ${color.path(tmpDownload)}`);
-  childProcess.spawnSync(
+  const { status } = childProcess.spawnSync(
     process.execPath,
     [path.resolve(__dirname, '..', 'download.js'), downloadURL, tmpDownload],
     {
       stdio: 'inherit',
     },
   );
+  if (status !== 0) {
+    rimraf.sync(tmpDownload);
+    fatal(`Failure while downloading goma`);
+  }
   const hash = crypto
     .createHash('SHA256')
     .update(fs.readFileSync(tmpDownload))
