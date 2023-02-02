@@ -13,7 +13,7 @@ const goma = require('./utils/goma');
 const depot = require('./utils/depot-tools');
 const { checkGlobalGitConfig } = require('./utils/git');
 
-// https://gn.googlesource.com/gn/+/master/docs/reference.md?pli=1#var_target_cpu
+// https://gn.googlesource.com/gn/+/main/docs/reference.md?pli=1#var_target_cpu
 const archOption = new Option(
   '--target-cpu <arch>',
   'Set the desired architecture for the build',
