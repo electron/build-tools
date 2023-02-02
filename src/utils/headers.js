@@ -5,7 +5,7 @@ const path = require('path');
 const evmConfig = require('../evm-config');
 const { ensureDir } = require('./paths');
 
-function ensureNodeHeaders(config) {
+function ensureNodeHeaders(config, useGoma) {
   const src_dir = path.resolve(config.root, 'src');
   const out_dir = evmConfig.outDir(config);
   const node_headers_dir = path.resolve(out_dir, 'gen', 'node_headers');
@@ -24,7 +24,7 @@ function ensureNodeHeaders(config) {
   if (needs_build) {
     const exec = process.execPath;
     const args = [path.resolve(__dirname, '..', 'e'), 'build', 'node:headers'];
-    if (config.goma === 'none') args.push('--no-goma');
+    if (!useGoma) args.push('--no-goma');
 
     const opts = { stdio: 'inherit', encoding: 'utf8' };
     childProcess.execFileSync(exec, args, opts);
