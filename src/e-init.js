@@ -4,7 +4,7 @@ const childProcess = require('child_process');
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
-const program = require('commander');
+const { program, Option } = require('commander');
 
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
@@ -12,6 +12,12 @@ const { resolvePath, ensureDir } = require('./utils/paths');
 const goma = require('./utils/goma');
 const depot = require('./utils/depot-tools');
 const { checkGlobalGitConfig } = require('./utils/git');
+
+// https://gn.googlesource.com/gn/+/main/docs/reference.md?pli=1#var_target_cpu
+const archOption = new Option(
+  '--target-cpu <arch>',
+  'Set the desired architecture for the build',
+).choices(['x86', 'x64', 'arm', 'arm64']);
 
 function createConfig(options) {
   const root = resolvePath(options.root);
@@ -28,6 +34,8 @@ function createConfig(options) {
   if (options.lsan) gn_args.push('is_lsan=true');
   if (options.msan) gn_args.push('is_msan=true');
   if (options.tsan) gn_args.push('is_tsan=true');
+
+  if (options.targetCpu) gn_args.push(`target_cpu="${options.targetCpu}"`);
 
   const electron = {
     origin: options.useHttps
@@ -118,6 +126,7 @@ program
   .option('--tsan', `When building, enable clang's thread sanitizer`, false)
   .option('--msan', `When building, enable clang's memory sanitizer`, false)
   .option('--lsan', `When building, enable clang's leak sanitizer`, false)
+  .addOption(archOption)
   .option('--bootstrap', 'Run `e sync` and `e build` after creating the build config.')
   .option(
     '--goma <target>',
