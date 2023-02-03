@@ -167,6 +167,11 @@ function sanitizeConfig(name, overwrite = false) {
   const config = loadConfigFileRaw(name);
   const changes = [];
 
+  if (!('$schema' in config)) {
+    config.$schema = path.resolve(__dirname, '..', 'evm-config.schema.json');
+    changes.push(`added missing property ${color.config('$schema')}`);
+  }
+
   if (!['none', 'cluster', 'cache-only'].includes(config.goma)) {
     config.goma = 'cache-only';
     changes.push(`added missing property ${color.config('goma: cache-only')}`);

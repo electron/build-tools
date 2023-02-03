@@ -49,6 +49,7 @@ function createConfig(options) {
   };
 
   return {
+    $schema: path.resolve(__dirname, '..', 'evm-config.schema.json'),
     goma: options.goma,
     root,
     remotes: {
