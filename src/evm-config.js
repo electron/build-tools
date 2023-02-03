@@ -4,6 +4,7 @@ const os = require('os');
 const path = require('path');
 const Ajv = require('ajv');
 const yml = require('js-yaml');
+const { URI } = require('vscode-uri');
 const { color, fatal } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
 const goma = require('./utils/goma');
@@ -168,7 +169,7 @@ function sanitizeConfig(name, overwrite = false) {
   const changes = [];
 
   if (!('$schema' in config)) {
-    config.$schema = path.resolve(__dirname, '..', 'evm-config.schema.json');
+    config.$schema = URI.file(path.resolve(__dirname, '..', 'evm-config.schema.json')).toString();
     changes.push(`added missing property ${color.config('$schema')}`);
   }
 
