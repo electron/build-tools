@@ -9,7 +9,6 @@ const path = require('path');
 const { current } = require('../evm-config');
 const { getGitHubAuthToken } = require('../utils/github-auth');
 const { fatal } = require('../utils/logging');
-const { APPVEYOR_ACCOUNT_NAME } = require('./common');
 
 const { CIRCLE_TOKEN, APPVEYOR_CLOUD_TOKEN } = process.env;
 
