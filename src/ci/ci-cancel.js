@@ -9,19 +9,14 @@ const { archOption, ArchTypes, BuildTypes, getCIType } = require('./common');
 
 const { CIRCLE_TOKEN, APPVEYOR_CLOUD_TOKEN } = process.env;
 
-const APPVEYOR_ACCOUNT_NAME = 'electron-bot';
-
 const cancelAppveyorBuild = async id => {
   const { statusCode } = await got
-    .delete(
-      `https://ci.appveyor.com/api/builds/${APPVEYOR_ACCOUNT_NAME}/${ArchTypes[arch]}/${id}`,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${APPVEYOR_CLOUD_TOKEN}`,
-        },
+    .delete(`https://ci.appveyor.com/api/builds/electron-bot/${ArchTypes[arch]}/${id}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${APPVEYOR_CLOUD_TOKEN}`,
       },
-    )
+    })
     .json();
 
   const msg = statusCode === 204 ? 'Successfully cancelled' : 'Failed to cancel';

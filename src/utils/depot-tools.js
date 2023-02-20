@@ -107,6 +107,9 @@ function depotOpts(config, opts = {}) {
 
 function depotSpawnSync(config, cmd, args, opts_in) {
   const opts = depotOpts(config, opts_in);
+  if (os.platform() === 'win32' && ['python', 'python3'].includes(cmd)) {
+    cmd = `${cmd}.bat`;
+  }
   if (opts_in.msg) {
     console.log(opts_in.msg);
   } else {

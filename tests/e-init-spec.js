@@ -56,6 +56,7 @@ describe('e-init', () => {
       expect(fs.existsSync(configPath)).toStrictEqual(true);
 
       const config = require(configPath);
+      expect(config).toHaveProperty('$schema');
       expect(config.goma).toStrictEqual('cache-only');
 
       expect(config.remotes).toHaveProperty('electron');

@@ -38,6 +38,7 @@ program
   .allowUnknownOption()
   .option('--node', 'Run node spec runner', false)
   .option('--nan', 'Run nan spec runner', false)
+  .option('--no-goma', 'Build test runner components (e.g. node:headers) without goma')
   .addOption(
     new program.Option(
       '--runners <runner>',
@@ -62,7 +63,7 @@ program
       if (options.nan) {
         script = './script/nan-spec-runner.js';
       }
-      ensureNodeHeaders(config);
+      ensureNodeHeaders(config, options.goma);
       runSpecRunner(config, script, specRunnerArgs);
     } catch (e) {
       fatal(e);

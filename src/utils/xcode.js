@@ -180,13 +180,18 @@ function ensureXcode() {
       if (shouldDownload) {
         const XcodeURL = `${XcodeBaseURL}${XcodeVersions[expected].fileName}`;
         console.log(`Downloading ${color.cmd(XcodeURL)} into ${color.path(XcodeZip)}`);
-        cp.spawnSync(
+        const { status } = cp.spawnSync(
           process.execPath,
           [path.resolve(__dirname, '..', 'download.js'), XcodeURL, XcodeZip],
           {
             stdio: 'inherit',
           },
         );
+
+        if (status !== 0) {
+          rimraf.sync(XcodeZip);
+          fatal(`Failure while downloading Xcode zip`);
+        }
 
         const newHash = hashFile(XcodeZip);
         if (newHash !== expectedXcodeHash) {

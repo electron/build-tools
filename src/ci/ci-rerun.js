@@ -8,8 +8,6 @@ const { archOption, ArchTypes, BuildTypes, getCIType } = require('./common');
 const { fatal } = require('../utils/logging');
 const { CIRCLE_TOKEN, APPVEYOR_CLOUD_TOKEN } = process.env;
 
-const APPVEYOR_ACCOUNT_NAME = 'electron-bot';
-
 const rerunCircleCIWorkflow = async (id, options) => {
   const jobs = options.jobs ? options.jobs.split(',') : [];
 
@@ -72,7 +70,7 @@ const rerunAppveyorBuild = async (id, options) => {
   console.log(`${chalk.bgMagenta(chalk.white('Build Rerun'))}
 
 ⦿ ${chalk.white(
-    `https://ci.appveyor.com/project/${APPVEYOR_ACCOUNT_NAME}/${ArchTypes[options.arch]}/builds/${
+    `https://ci.appveyor.com/project/electron-bot/${ArchTypes[options.arch]}/builds/${
       data.buildId
     }`,
   )}
