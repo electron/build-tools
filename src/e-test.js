@@ -36,6 +36,7 @@ function runSpecRunner(config, script, runnerArgs) {
 program
   .argument('[specRunnerArgs...]')
   .allowUnknownOption()
+  .option('--electronVersion <version>', 'Electron release to run tests against')
   .option('--node', 'Run node spec runner', false)
   .option('--nan', 'Run nan spec runner', false)
   .option('--no-goma', 'Build test runner components (e.g. node:headers) without goma')
@@ -50,6 +51,9 @@ program
         fatal(
           'Can not run both node and nan specs at the same time, --node and --nan are mutually exclusive',
         );
+      }
+      if (options.electronVersion) {
+        specRunnerArgs.push(`--electronVersion=${options.electronVersion}`);
       }
       let script = './script/spec-runner.js';
       if (options.node) {
