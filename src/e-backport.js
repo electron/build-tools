@@ -100,13 +100,15 @@ program
       cwd: gitOpts.cwd,
     });
 
+    const isFork = !!config.remotes.electron.fork;
+
     console.info(
       '\n',
       chalk.cyan(
         `Cherry pick complete, fix conflicts locally and then run the following commands "${chalk.yellow(
           'git cherry-pick --continue',
-        )}", "${chalk.yellow('git push')}" and finally "${chalk.yellow(
-          'e pr',
+        )}", "${chalk.yellow(isFork ? 'git push fork' : 'git push')}" and finally "${chalk.yellow(
+          `e pr --backport ${prNumber}`,
         )}" to create your new pull request`,
       ),
     );
