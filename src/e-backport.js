@@ -90,17 +90,25 @@ program
       return;
     }
 
+    const yarnInstallResult = spawnSync(config, 'yarn', ['install'], gitOpts);
+    if (yarnInstallResult.status !== 0) {
+      fatal(`Failed to do "yarn install" on new branch`);
+      return;
+    }
+
     spawnSync(config, 'git', ['cherry-pick', pr.merge_commit_sha], {
       cwd: gitOpts.cwd,
     });
+
+    const isFork = !!config.remotes.electron.fork;
 
     console.info(
       '\n',
       chalk.cyan(
         `Cherry pick complete, fix conflicts locally and then run the following commands "${chalk.yellow(
           'git cherry-pick --continue',
-        )}", "${chalk.yellow('git push')}" and finally "${chalk.yellow(
-          'e pr',
+        )}", "${chalk.yellow(isFork ? 'git push fork' : 'git push')}" and finally "${chalk.yellow(
+          `e pr --backport ${prNumber}`,
         )}" to create your new pull request`,
       ),
     );

@@ -36,6 +36,7 @@ function runSpecRunner(config, script, runnerArgs) {
 program
   .argument('[specRunnerArgs...]')
   .allowUnknownOption()
+  .option('--electronVersion <version>', 'Electron release to run tests against')
   .option('--node', 'Run node spec runner', false)
   .option('--nan', 'Run nan spec runner', false)
   .option('--no-goma', 'Build test runner components (e.g. node:headers) without goma')
@@ -55,6 +56,9 @@ program
       }
       if (options.runners) {
         specRunnerArgs.push(`--runners=${options.runners}`);
+      }
+      if (options.electronVersion) {
+        specRunnerArgs.push(`--electronVersion=${options.electronVersion}`);
       }
       let script = './script/spec-runner.js';
       if (options.node) {
