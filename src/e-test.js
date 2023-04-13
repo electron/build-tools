@@ -40,9 +40,11 @@ program
   .option('--node', 'Run node spec runner', false)
   .option('--nan', 'Run nan spec runner', false)
   .option('--no-goma', 'Build test runner components (e.g. node:headers) without goma')
-  .option(
-    '--runners=<main|remote|native>',
-    "A subset of tests to run - either 'main', 'remote', or 'native', not used with either the node or nan specs",
+  .addOption(
+    new program.Option(
+      '--runners <runner>',
+      'A subset of tests to run - not used with either the node or nan specs',
+    ).choices(['main', 'native']),
   )
   .action((specRunnerArgs, options) => {
     try {
@@ -51,6 +53,9 @@ program
         fatal(
           'Can not run both node and nan specs at the same time, --node and --nan are mutually exclusive',
         );
+      }
+      if (options.runners) {
+        specRunnerArgs.push(`--runners=${options.runners}`);
       }
       if (options.electronVersion) {
         specRunnerArgs.push(`--electronVersion=${options.electronVersion}`);

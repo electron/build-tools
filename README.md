@@ -267,7 +267,7 @@ e test --runners=main
 
 Possible extra arguments to pass:
 * `--node` - Run Node.js' own tests with Electron in `RUN_AS_NODE` mode.
-* `--runners=<main|remote|native>` - The set of tests to run, can be either `main`, `remote`, or `native`.
+* `--runners=<main|native>` - The set of tests to run, can be either `main` or `native`.
 
 ### `e show`
 
