@@ -90,6 +90,12 @@ program
       return;
     }
 
+    const yarnInstallResult = spawnSync(config, 'yarn', ['install'], gitOpts);
+    if (yarnInstallResult.status !== 0) {
+      fatal(`Failed to do "yarn install" on new branch`);
+      return;
+    }
+
     spawnSync(config, 'git', ['cherry-pick', pr.merge_commit_sha], {
       cwd: gitOpts.cwd,
     });
