@@ -16,7 +16,8 @@
         "electron",
         "electron:dist",
         "mksnapshot",
-        "node:headers"
+        "node:headers",
+        "chrome"
       ]
     },
     "extends": {
@@ -141,6 +142,19 @@
     {
       "required": [
         "extends"
+      ]
+    },
+    {
+      "properties": {
+        "defaultTarget": {
+          "type": "string",
+          "pattern": "chrome"
+        }
+      },
+      "required": [
+        "defaultTarget",
+        "env",
+        "root"
       ]
     },
     {

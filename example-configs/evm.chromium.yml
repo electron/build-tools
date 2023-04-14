@@ -1,15 +1,11 @@
-root: /path/to/your/developer/folder
-remotes:
-  electron:
-    # SSH or HTTPS url
-    # ssh: git@github.com:electron/electron.git
-    # https: https://github.com/electron/electron
-    origin: git@github.com:electron/electron.git
+root: /path/to/chromium/
+defaultTarget: chrome
 gen:
   args:
     # path to goma for faster builds (https://notgoma.com)
     - import("/Users/user_name/.electron_build_tools/third_party/goma.gn")
-  out: Testing
+    - is_debug = false
+  out: Default
 env:
   GIT_CACHE_PATH: /Users/user_name/.git_cache
   CHROMIUM_BUILDTOOLS_PATH: /path/to/your/developer/folder/src/build-tools
