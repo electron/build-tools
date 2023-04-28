@@ -130,10 +130,13 @@ program
   .option('--lsan', `When building, enable clang's leak sanitizer`, false)
   .addOption(archOption)
   .option('--bootstrap', 'Run `e sync` and `e build` after creating the build config.')
-  .option(
-    '--goma <target>',
-    `Use Electron's custom deployment of Goma.  Can be "cache-only", "cluster" or "none".  The "cluster" mode is only available to maintainers`,
-    'cache-only',
+  .addOption(
+    new Option(
+      '--goma <target>',
+      `Use Electron's custom deployment of Goma. The "cluster" mode is only available to maintainers`,
+    )
+      .choices(['cache-only', 'cluster', 'none'])
+      .default('cache-only'),
   )
   .option(
     '--use-https',
@@ -169,15 +172,6 @@ program
             )} already exists and points at a different root folder! (${color.path(filename)})`,
           );
         }
-      }
-
-      // Make sure the goma options are valid
-      if (!['none', 'cache-only', 'cluster'].includes(options.goma)) {
-        fatal(
-          `Config property ${color.config('goma')} must be one of ${color.config(
-            'cache-only',
-          )} or ${color.config('cluster')} but you provided ${color.config(options.goma)}`,
-        );
       }
 
       // save the new config
