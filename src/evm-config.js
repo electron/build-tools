@@ -157,6 +157,10 @@ function loadConfigFileRaw(name) {
 }
 
 function validateConfig(config) {
+  if (config.configValidationLevel === 'none') {
+    return;
+  }
+
   const validate = ajv.compile(schema);
 
   if (!validate(config)) {
@@ -164,9 +168,12 @@ function validateConfig(config) {
   }
 }
 
-function sanitizeConfig(name, overwrite = false) {
-  const config = loadConfigFileRaw(name);
+function sanitizeConfig(name, config, overwrite = false) {
   const changes = [];
+
+  if (!config.configValidationLevel) {
+    config.configValidationLevel = 'strict';
+  }
 
   if (!('$schema' in config)) {
     config.$schema = URI.file(path.resolve(__dirname, '..', 'evm-config.schema.json')).toString();
@@ -232,11 +239,22 @@ function sanitizeConfig(name, overwrite = false) {
   const validationErrors = validateConfig(config);
 
   if (validationErrors) {
-    console.warn(`${color.warn} Config file '${name}' had the following validation errors:`);
-    console.warn(JSON.stringify(validationErrors, undefined, 2));
+    const log = config.configValidationLevel === 'strict' ? console.error : console.warn;
+    const logColor = config.configValidationLevel === 'strict' ? color.err : color.warn;
+
+    log(`${logColor} Config file ${color.config(`${name}`)} had the following validation errors:`);
+    log(JSON.stringify(validationErrors, undefined, 2));
+
+    if (config.configValidationLevel === 'strict') {
+      process.exit(1);
+    }
   }
 
   return config;
+}
+
+function sanitizeConfigWithName(name, overwrite = false) {
+  return sanitizeConfig(name, loadConfigFileRaw(name), overwrite);
 }
 
 function remove(name) {
@@ -262,15 +280,16 @@ function remove(name) {
 
 module.exports = {
   buildTargets,
-  current: () => sanitizeConfig(currentName()),
+  current: () => sanitizeConfigWithName(currentName()),
   currentName,
   execOf,
-  fetchByName: name => sanitizeConfig(name),
+  fetchByName: name => sanitizeConfigWithName(name),
   names,
   outDir,
   pathOf,
   remove,
   sanitizeConfig,
+  sanitizeConfigWithName,
   save,
   setCurrent,
   validateConfig,

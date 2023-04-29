@@ -189,7 +189,7 @@ program
   .action(name => {
     try {
       const configName = name || evmConfig.currentName();
-      evmConfig.sanitizeConfig(configName, true);
+      evmConfig.sanitizeConfigWithName(configName, true);
       console.log(`${color.success} Sanitized contents of ${color.config(configName)}`);
       process.exit(0);
     } catch (e) {
