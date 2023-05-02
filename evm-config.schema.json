@@ -135,6 +135,16 @@
       "required": [
         "CHROMIUM_BUILDTOOLS_PATH"
       ]
+    },
+    "configValidationLevel": {
+      "description": "Validation level for this configuration",
+      "type": "string",
+      "enum": [
+        "strict",
+        "warn",
+        "none"
+      ],
+      "default": "strict"
     }
   },
   "additionalProperties": false,
