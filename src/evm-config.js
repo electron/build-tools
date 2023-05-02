@@ -24,7 +24,7 @@ const currentFiles = _.compact([
 
 const getDefaultTarget = () => {
   const name = getCurrentFileName();
-  const result = name ? sanitizeConfig(name).defaultTarget : null;
+  const result = name ? sanitizeConfigWithName(name).defaultTarget : null;
 
   return result || 'electron';
 };
