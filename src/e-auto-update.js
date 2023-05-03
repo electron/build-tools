@@ -68,7 +68,7 @@ function checkForUpdates() {
       globalNodeModulesPaths.push(
         path.join(
           cp
-            .execSync('yarn global dir')
+            .execSync('npx yarn global dir')
             .toString('utf8')
             .trim(),
           'node_modules',
