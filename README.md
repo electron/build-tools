@@ -386,6 +386,18 @@ $ e sanitize-config --help
 
 Sometimes `build-tools` will make updates to its config requirements. In these events warnings will be output to console to inform you that `build-tools` has temporarily handled the issues. You can make these warnings go away either by manually updating your config files or by running this command to automatically overwrite the existing configs to update formatting.
 
+### `e shell`
+
+`e shell` launches a shell environment populated with build-tools' environment variables and context.
+
+Developers may for example find themselves wishing to access `gn` and `ninja` directly - instead of using `e d gn` to access that this command can be used. This also enables bash completion and the ability to copy-paste commands from Chromium docs without modification.
+
+```sh
+$ e shell
+# Launching build-tools shell with "/bin/zsh"
+# Running "/bin/zsh"
+```
+
 ## Common Usage
 
 ### Building a Specific Electron Version

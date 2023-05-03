@@ -279,6 +279,33 @@ program
     process.exit(0);
   });
 
+program
+  .command('shell')
+  .description(
+    "Launch a shell environment populated with build-tools' environment variables and context",
+  )
+  .action(() => {
+    depot.ensure();
+
+    if (!['linux', 'darwin'].includes(process.platform)) {
+      fatal(`'e shell' is not supported on non-unix platforms`);
+    }
+
+    if (!process.env.SHELL) {
+      fatal('Could not detect shell to launch');
+    }
+
+    console.info(`Launching build-tools shell with ${color.cmd(process.env.SHELL)}`);
+    const { status } = depot.spawnSync(evmConfig.current(), process.env.SHELL, [], {
+      stdio: 'inherit',
+      env: {
+        ...process.env,
+        SHELL_CONTEXT: evmConfig.currentName(),
+      },
+    });
+    process.exit(status);
+  });
+
 program.on('--help', () => {
   console.log(`
 See https://github.com/electron/build-tools/blob/main/README.md for usage.`);
