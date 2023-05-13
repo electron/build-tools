@@ -96,21 +96,22 @@ program
       return;
     }
 
-    spawnSync(config, 'git', ['cherry-pick', pr.merge_commit_sha], {
+    const cherryPickResult = spawnSync(config, 'git', ['cherry-pick', pr.merge_commit_sha], {
       cwd: gitOpts.cwd,
     });
 
-    const isFork = !!config.remotes.electron.fork;
+    const pushCommand = chalk.yellow(!!config.remotes.electron.fork ? 'git push fork' : 'git push');
+    const cherryPickCommand = chalk.yellow('git cherry-pick --continue');
+    const prCommand = chalk.yellow(`e pr --backport ${prNumber}`);
+
+    const followupMessage =
+      cherryPickResult.status !== 0
+        ? `Cherry pick complete, fix conflicts locally and then run the following commands: "${cherryPickCommand}", "${pushCommand}"`
+        : `Cherry pick succeeded, run "${pushCommand}"`;
 
     console.info(
       '\n',
-      chalk.cyan(
-        `Cherry pick complete, fix conflicts locally and then run the following commands "${chalk.yellow(
-          'git cherry-pick --continue',
-        )}", "${chalk.yellow(isFork ? 'git push fork' : 'git push')}" and finally "${chalk.yellow(
-          `e pr --backport ${prNumber}`,
-        )}" to create your new pull request`,
-      ),
+      chalk.cyan(`${followupMessage} and finally "${prCommand}" to create your new pull request`),
     );
   });
 
