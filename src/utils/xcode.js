@@ -56,7 +56,7 @@ const XcodeVersions = {
   },
   '14.3.0': {
     fileName: 'Xcode-14.3.0.zip',
-    md5: '87332224a06194739899526bfe9164aa',
+    md5: '4bc9043b275625568f81d9727ad6aef8',
   },
 };
 
