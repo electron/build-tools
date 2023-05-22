@@ -85,7 +85,9 @@ function getXcodeVersion() {
 function extractXcodeVersion(config) {
   const legacyMatch = /xcode: "?(\d+.\d+.\d+?)"?/.exec(config);
   if (legacyMatch) return legacyMatch[1];
-  const modernMatch = /description: "xcode version"\n +default: ([^\n]+)\n/gm.exec(config);
+  const modernMatch = /description: "xcode version"\n[\S\s]+default: (\d+.\d+.\d+?)\n/gm.exec(
+    config,
+  );
   if (modernMatch) return modernMatch[1];
   return null;
 }
