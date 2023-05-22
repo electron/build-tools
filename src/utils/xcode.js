@@ -95,12 +95,6 @@ function expectedXcodeVersion() {
 
   let version;
 
-  // macOS Ventura only supports Xcode 14 and newer.
-  const macOSVersion = cp.execSync('sw_vers -productVersion').toString();
-  if (macOSVersion.startsWith('13')) {
-    version = '14.1.0';
-  }
-
   // First check CI build_config.yml
   if (!version) {
     const buildConfYaml = path.resolve(root, 'src', 'electron', '.circleci', 'build_config.yml');
@@ -118,6 +112,20 @@ function expectedXcodeVersion() {
   if (!version) {
     const baseYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config', 'base.yml');
     version = fs.existsSync(baseYaml) && extractXcodeVersion(fs.readFileSync(baseYaml, 'utf8'));
+  }
+
+  // macOS Ventura only supports Xcode 14 and newer.
+  const isVentura = cp
+    .execSync('sw_vers -productVersion')
+    .toString()
+    .startsWith('13');
+  if (isVentura && version && !version.startsWith('14')) {
+    console.warn(
+      color.warn,
+      `Xcode ${version} is not supported on macOS Ventura, falling back to default of`,
+      fallbackXcode(),
+    );
+    return fallbackXcode();
   }
 
   if (!version) {
