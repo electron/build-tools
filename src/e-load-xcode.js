@@ -4,8 +4,10 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
+const depot = require('./utils/depot-tools');
 const { color, fatal } = require('./utils/logging');
 const Xcode = require('./utils/xcode');
+const evmConfig = require('./evm-config');
 
 if (process.platform !== 'darwin') {
   fatal('Should only configure Xcode on darwin platform');
@@ -15,26 +17,17 @@ if (Xcode.ensureXcode() === false) {
   process.exit(0);
 }
 
-// Select our new xcode
-const output = childProcess.execFileSync('xcode-select', ['-p']).toString();
-if (!output.trim().startsWith(Xcode.XcodePath)) {
-  console.info(
-    `Setting your Xcode installation to ${color.path(Xcode.XcodePath)}, this will require sudo`,
-  );
-  childProcess.execFileSync('sudo', ['xcode-select', '-s', Xcode.XcodePath], {
-    stdio: 'inherit',
-  });
-}
+const { env } = depot.opts(evmConfig.current());
 
 // Ensure that we have accepted the Xcode license agreement
-const out = childProcess.spawnSync('lldb', ['--help']);
+const out = childProcess.spawnSync('lldb', ['--help'], { env });
 if (out.status !== 0 && out.stderr.toString().includes('xcodebuild')) {
   console.info('You need to accept the Xcode license agreement, this will require sudo');
-  childProcess.execFileSync('sudo', ['xcodebuild', '-license', 'accept']);
+  childProcess.execFileSync('sudo', ['xcodebuild', '-license', 'accept'], { env });
 }
 
 // Ensure XcodeSystemResources is installed
-const result = childProcess.execSync('pkgutil --pkgs');
+const result = childProcess.execSync('pkgutil --pkgs', { env });
 const isSystemResourcesInstalled = result
   .toString()
   .split('\n')
@@ -60,6 +53,7 @@ if (!isSystemResourcesInstalled) {
     ],
     {
       stdio: 'inherit',
+      env,
     },
   );
 }
@@ -96,7 +90,7 @@ for (const sdk of SDK_TO_UNLINK) {
 
   console.warn(`${color.info} Removing symbolic link ${color.path(targetDirectory)}`);
 
-  childProcess.execFileSync('unlink', [targetDirectory]);
+  childProcess.execFileSync('unlink', [targetDirectory], { env });
 }
 
 if (!process.argv.includes('--quiet')) console.log(color.success);
