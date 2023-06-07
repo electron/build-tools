@@ -7,7 +7,9 @@
   "main": "null",
   "private": true,
   "scripts": {
-    "lint": "prettier --check \"src/**/*.js\" \"tests/*.js\" \"src/e\"",
+    "lint:markdown": "electron-markdownlint \"**/*.md\"",
+    "lint:js": "prettier --check \"src/**/*.js\" \"tests/*.js\" \"src/e\"",
+    "lint": "npm run lint:js && npm run lint:markdown",
     "prettier:write": "prettier --write \"src/**/*.js\" \"tests/*.js\" \"src/e\"",
     "test": "nyc --reporter=lcov --reporter=text-summary jest --config=jest.fast.json -i",
     "test:all": "nyc --reporter=lcov --reporter=text-summary jest --config=jest.slow.json -i"
@@ -39,6 +41,7 @@
     "which": "^2.0.2"
   },
   "devDependencies": {
+    "@electron/lint-roller": "^1.5.0",
     "husky": "^4.2.0",
     "jest": "^27.5.1",
     "lint-staged": "^10.0.2",
