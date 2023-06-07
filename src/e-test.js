@@ -67,7 +67,9 @@ program
       if (options.nan) {
         script = './script/nan-spec-runner.js';
       }
-      ensureNodeHeaders(config, options.goma);
+      if (!options.electronVersion) {
+        ensureNodeHeaders(config, options.goma);
+      }
       runSpecRunner(config, script, specRunnerArgs);
     } catch (e) {
       fatal(e);
