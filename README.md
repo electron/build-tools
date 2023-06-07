@@ -257,6 +257,7 @@ $ e test --help
 ```
 
 Example:
+
 ```sh
 # run all tests
 e test
@@ -266,6 +267,7 @@ e test --runners=main
 ```
 
 Possible extra arguments to pass:
+
 * `--node` - Run Node.js' own tests with Electron in `RUN_AS_NODE` mode.
 * `--runners=<main|native>` - The set of tests to run, can be either `main` or `native`.
 
@@ -279,15 +281,15 @@ To see all potential options for this command, run:
 $ e show --help
 ```
 
-| Command           | Description                                                    |
-|:------------------|:---------------------------------------------------------------|
-| e show current    | The name of the active build config                            |
-| e show configs    | Lists all build configs                                        |
-| e show env        | Show environment variables injected by the active build config |
-| e show exe        | The path of the built Electron executable                      |
-| e show root       | The path of the root directory from `e init --root`.           |
-| e show src [name] | The path of the named (default: electron) source dir           |
-| e show stats      | Build statistics                                               |
+| Command            | Description                                                    |
+|:-------------------|:---------------------------------------------------------------|
+| e show current     | The name of the active build config                            |
+| e show configs     | Lists all build configs                                        |
+| e show env         | Show environment variables injected by the active build config |
+| e show exe         | The path of the built Electron executable                      |
+| e show root        | The path of the root directory from `e init --root`.           |
+| e show src \[name] | The path of the named (default: electron) source dir           |
+| e show stats       | Build statistics                                               |
 
 Example usage:
 
@@ -436,13 +438,13 @@ With the default configuration, build-tools will automatically check for updates
 
 You can enable and disable these automatic updates with the following commands:
 
-```
-e auto-update enable
-e auto-update disable
+```sh
+$ e auto-update enable
+$ e auto-update disable
 ```
 
 Regardless of whether automatic updates are enabled, you can manually call the following command to immediately trigger an update.
 
-```
-e auto-update check
+```sh
+$ e auto-update check
 ```
