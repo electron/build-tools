@@ -69,6 +69,7 @@ function createConfig(options) {
       GOMA_DEPS_CACHE_FILE: 'deps-cache',
       GOMA_COMPILER_INFO_CACHE_FILE: 'compiler-info-cache',
       GOMA_LOCAL_OUTPUT_CACHE_DIR: path.resolve(homedir, '.goma_output_cache'),
+      ...(options.goma !== 'cluster' && { GOMACTL_SKIP_AUTH: 'true' }),
     },
   };
 }

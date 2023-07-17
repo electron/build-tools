@@ -129,7 +129,6 @@ function downloadAndPrepareGoma(config) {
 }
 
 function gomaIsAuthenticated(config) {
-  if (!isSupportedPlatform) return false;
   const lastKnownLogin = getLastKnownLoginTime();
   // Assume if we authed in the last 12 hours it is still valid
   if (lastKnownLogin && Date.now() - lastKnownLogin.getTime() < 1000 * 60 * 60 * 12) return true;
@@ -144,8 +143,7 @@ function gomaIsAuthenticated(config) {
     return false;
   }
 
-  const loggedInPattern = /^Login as (\w+\s\w+)$/;
-  return loggedInPattern.test(loggedInInfo.toString().trim());
+  return /^Login as (\w+\s\w+)$/.test(loggedInInfo.toString().trim());
 }
 
 function authenticateGoma(config) {
@@ -197,7 +195,7 @@ function ensureGomaStart(config) {
   // Set number of subprocs to equal number of CPUs for MacOS
   let subprocs = {};
   if (process.platform === 'darwin') {
-    const cpus = os.cpus().length;
+    const { length: cpus } = os.cpus();
     subprocs = {
       GOMA_MAX_SUBPROCS: cpus.toString(),
       GOMA_MAX_SUBPROCS_LOW: cpus.toString(),
@@ -232,7 +230,6 @@ function gomaEnv(config) {
 }
 
 module.exports = {
-  isAuthenticated: gomaIsAuthenticated,
   auth: authenticateGoma,
   ensure: ensureGomaStart,
   dir: gomaDir,
