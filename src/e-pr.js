@@ -59,9 +59,12 @@ async function getPullRequestInfo(pullNumber) {
 }
 
 function guessPRTarget(config) {
-  const script = path.resolve(config.root, 'src', 'electron', 'script', 'lib', 'get-version.js');
+  let script = path.resolve(config.root, 'src', 'electron', 'script', 'lib', 'get-version.js');
+  if (process.platform === 'win32') {
+    script = script.replace(new RegExp(/\\/, 'g'), '\\\\');
+  }
   const version = childProcess
-    .execSync(`node -p 'require("${script}").getElectronVersion()'`)
+    .execSync(`node -p "require('${script}').getElectronVersion()"`)
     .toString()
     .trim();
 
