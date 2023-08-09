@@ -58,12 +58,41 @@ const getAppveyorStatusString = check => {
   }
 };
 
+const appveyorArchMap = {
+  branch: {
+    'Windows x64': 'appveyor: win-x64-testing',
+    'Windows ia32': 'appveyor: win-ia32-testing',
+    'Windows Arm': 'appveyor: win-woa-testing',
+  },
+  main: {
+    'Windows x64': 'appveyor: electron-x64-release',
+    'Windows ia32': 'appveyor: electron-ia32-release',
+    'Windows Arm': 'appveyor: win-woa-release',
+  },
+};
+
+const circleCIArchMap = {
+  macOS: 'build-mac',
+  Linux: 'build-linux',
+  Lint: 'lint',
+  'docs-only': 'docs-only',
+};
+
 const formatLink = (name, url) => `\x1B]8;;${url}\x1B\\${name}\x1B]8;;\x1B\\`;
 
 const getWorkflowID = url => url.pathname.replace('/workflow-run/', '');
 const getBuildID = ({ pathname }) => {
   const index = pathname.lastIndexOf('/builds/') + 8;
   return pathname.substring(index, pathname.length);
+};
+
+const getType = prs => {
+  // If there are no PRs, we're on a PR fork branch.
+  if (prs.length === 0) return 'branch';
+
+  const pr = prs[0];
+  const isMain = pr.base.ref === 'main' && pr.base.ref === pr.head.ref;
+  return isMain ? 'main' : 'branch';
 };
 
 const getArch = url => url.pathname.match(/(electron-[a-zA-Z0-9]*-testing)/)[0];
@@ -194,15 +223,11 @@ program
       });
 
       const checks = {};
-      checks['macOS'] = check_runs.find(
-        ({ app, name }) => app.id === CIRCLECI_APP_ID && name === 'build-mac',
-      );
-      checks['Linux'] = check_runs.find(
-        ({ app, name }) => app.id === CIRCLECI_APP_ID && name === 'build-linux',
-      );
-      checks['Lint'] = check_runs.find(
-        ({ app, name }) => app.id === CIRCLECI_APP_ID && name === 'lint',
-      );
+      for (const [name, arch] of Object.entries(circleCIArchMap)) {
+        checks[name] = check_runs.find(
+          ({ app, name }) => app.id === CIRCLECI_APP_ID && name === arch,
+        );
+      }
 
       const { data } = await octokit.repos.listCommitStatusesForRef({
         repo: 'electron',
@@ -211,26 +236,15 @@ program
       });
 
       const statuses = {};
-      statuses['Windows x64'] = data.find(
-        ({ creator, context }) =>
-          creator.id === APPVEYOR_BOT_ID && context === 'appveyor: win-x64-testing',
-      );
-      statuses['Windows x64 (PR)'] = data.find(
-        ({ creator, context }) =>
-          creator.id === APPVEYOR_BOT_ID && context === 'appveyor: win-x64-testing-pr',
-      );
-      statuses['Windows ia32'] = data.find(
-        ({ creator, context }) =>
-          creator.id === APPVEYOR_BOT_ID && context === 'appveyor: win-ia32-testing',
-      );
-      statuses['Windows ia32 (PR)'] = data.find(
-        ({ creator, context }) =>
-          creator.id === APPVEYOR_BOT_ID && context === 'appveyor: win-ia32-testing-pr',
-      );
-      statuses['Windows Arm'] = data.find(
-        ({ creator, context }) =>
-          creator.id === APPVEYOR_BOT_ID && context === 'appveyor: win-woa-testing',
-      );
+
+      const prs = check_runs[0].pull_requests;
+      const archTypes = appveyorArchMap[getType(prs)];
+
+      for (const [name, arch] of Object.entries(archTypes)) {
+        statuses[name] = data.find(
+          ({ creator, context }) => creator.id === APPVEYOR_BOT_ID && context === arch,
+        );
+      }
 
       if (options.showJobs) {
         // Fetch jobs for CircleCI Workflows
