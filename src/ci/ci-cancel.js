@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const { default: chalk } = require('chalk');
-const { program } = require('commander');
+const { program, InvalidArgumentError } = require('commander');
 const got = require('got');
 
 const { fatal } = require('../utils/logging');
@@ -60,13 +60,13 @@ program
 
       if (type === BuildTypes.CIRCLECI) {
         if (!CIRCLE_TOKEN) {
-          fatal('process.env.CIRCLE_TOKEN required for AppVeyor cancellations');
+          fatal('process.env.CIRCLE_TOKEN required for CircleCI cancellations');
         }
 
         await cancelCircleCIWorkflow(id);
       } else if (type === BuildTypes.APPVEYOR) {
         if (!arch) {
-          throw new commander.InvalidArgumentError('arch is required for Appveyor cancellations');
+          throw new InvalidArgumentError('arch is required for Appveyor cancellations');
         } else if (!APPVEYOR_CLOUD_TOKEN) {
           fatal('process.env.APPVEYOR_CLOUD_TOKEN required for AppVeyor cancellations');
         }

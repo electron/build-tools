@@ -3,7 +3,7 @@
 const { Octokit } = require('@octokit/rest');
 const { default: chalk } = require('chalk');
 const { execFileSync } = require('child_process');
-const program = require('commander');
+const { program } = require('commander');
 const got = require('got');
 const path = require('path');
 const { current } = require('../evm-config');

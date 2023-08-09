@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const { default: chalk } = require('chalk');
-const { program } = require('commander');
+const { program, InvalidArgumentError } = require('commander');
 const got = require('got');
 
 const { archOption, ArchTypes, BuildTypes, getCIType } = require('./common');
@@ -14,14 +14,12 @@ const rerunCircleCIWorkflow = async (id, options) => {
   // See https://circleci.com/docs/api/v2/#operation/rerunWorkflow.
   if (options.enableSsh) {
     if (options.fromFailed) {
-      throw new commander.InvalidArgumentError(
-        '--enable-ssh and --from-failed are mutually exclusive',
-      );
+      throw new InvalidArgumentError('--enable-ssh and --from-failed are mutually exclusive');
     } else if (jobs.length === 0) {
-      throw new commander.InvalidArgumentError('--enable-ssh requires --jobs');
+      throw new InvalidArgumentError('--enable-ssh requires --jobs');
     }
   } else if (options.fromFailed && jobs.length) {
-    throw new commander.InvalidArgumentError('--enable-ssh and --jobs are mutually exclusive');
+    throw new InvalidArgumentError('--enable-ssh and --jobs are mutually exclusive');
   }
 
   const { pipeline_number } = await got(`https://circleci.com/api/v2/workflow/${id}`, {
@@ -90,13 +88,13 @@ program
 
       if (type === BuildTypes.CIRCLECI) {
         if (!CIRCLE_TOKEN) {
-          fatal('process.env.CIRCLE_TOKEN required for AppVeyor cancellations');
+          fatal('process.env.CIRCLE_TOKEN required for CircleCI cancellations');
         }
 
         await rerunCircleCIWorkflow(id, options);
       } else if (type === BuildTypes.APPVEYOR) {
         if (!options.arch) {
-          throw new commander.InvalidArgumentError('arch is required for Appveyor reruns');
+          throw new InvalidArgumentError('arch is required for Appveyor reruns');
         } else if (!APPVEYOR_CLOUD_TOKEN) {
           fatal('process.env.APPVEYOR_CLOUD_TOKEN required for AppVeyor reruns');
         }
