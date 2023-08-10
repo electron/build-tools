@@ -209,7 +209,7 @@ program
       .trim();
 
     const octokit = new Octokit({
-      auth: process.env.ELECTRON_BUILD_TOOLS_GH_AUTH || (await getGitHubAuthToken(['repo'])),
+      auth: await getGitHubAuthToken(['repo']),
     });
 
     const ref = options.ref ? parseRef(options.ref) : currentRef;

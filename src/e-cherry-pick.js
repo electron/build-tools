@@ -115,7 +115,7 @@ program
       targetBranch = tmp;
     }
     const octokit = new Octokit({
-      auth: process.env.ELECTRON_BUILD_TOOLS_GH_AUTH || (await getGitHubAuthToken(['repo'])),
+      auth: await getGitHubAuthToken(['repo']),
     });
     try {
       const {
