@@ -3,7 +3,7 @@
 const d = require('debug')('build-tools:gh-auth');
 const program = require('commander');
 
-const { getGitHubAuthToken } = require('./utils/github-auth');
+const { createGitHubAuthToken } = require('./utils/github-auth');
 const { fatal } = require('./utils/logging');
 
 program
@@ -12,7 +12,7 @@ program
   .allowExcessArguments(false)
   .action(async ({ shell }) => {
     try {
-      const token = await getGitHubAuthToken(['repo']);
+      const token = await createGitHubAuthToken(['repo']);
       if (shell) {
         console.log(`export ELECTRON_BUILD_TOOLS_GH_AUTH="${token}"`);
       } else {

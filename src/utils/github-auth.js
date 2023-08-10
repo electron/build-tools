@@ -4,6 +4,10 @@ const { createOAuthDeviceAuth } = require('@octokit/auth-oauth-device');
 const ELECTRON_BUILD_TOOLS_GITHUB_CLIENT_ID = '03581ca0d21228704ab3';
 
 async function getGitHubAuthToken(scopes = []) {
+  if (process.env.ELECTRON_BUILD_TOOLS_GH_AUTH) {
+    return process.env.ELECTRON_BUILD_TOOLS_GH_AUTH;
+  }
+
   try {
     const gh = spawn('gh', ['auth', 'status', '--show-token']);
     const done = new Promise((resolve, reject) => {
@@ -23,6 +27,10 @@ async function getGitHubAuthToken(scopes = []) {
   } catch (e) {
     // fall through to fetching the token through oauth
   }
+  return await createGitHubAuthToken(scopes);
+}
+
+async function createGitHubAuthToken(scopes = []) {
   const auth = createOAuthDeviceAuth({
     clientType: 'oauth-app',
     clientId: ELECTRON_BUILD_TOOLS_GITHUB_CLIENT_ID,
@@ -40,5 +48,6 @@ async function getGitHubAuthToken(scopes = []) {
 }
 
 module.exports = {
+  createGitHubAuthToken,
   getGitHubAuthToken,
 };
