@@ -36,7 +36,7 @@ const buildTargets = () => ({
   chromium: 'chrome',
   'electron:dist': 'electron:electron_dist_zip',
   mksnapshot: 'electron:electron_mksnapshot_zip',
-  'node:headers': 'third_party/electron_node:headers',
+  'node:headers': 'electron_node:headers',
   default: getDefaultTarget(),
 });
 
