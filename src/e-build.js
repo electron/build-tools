@@ -118,7 +118,20 @@ program
         target = targets['default'];
       }
 
-      runNinja(config, target, options.goma, ninjaArgs);
+      try {
+        runNinja(config, target, options.goma, ninjaArgs);
+      } catch (ex) {
+        if (target === targets['node:headers']) {
+          // Older versions of electron use a different target for node headers so try that if the new one fails.
+          const olderTarget = 'third_party/electron_node:headers';
+          console.info(
+            `${color.info} Error building ${target}; trying older ${olderTarget} target`,
+          );
+          runNinja(config, olderTarget, options.goma, ninjaArgs);
+        } else {
+          throw ex;
+        }
+      }
     } catch (e) {
       fatal(e);
     }
