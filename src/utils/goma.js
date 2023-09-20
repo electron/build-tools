@@ -33,11 +33,11 @@ const GOMA_PLATFORM_SHAS = {
 };
 
 const MSFT_GOMA_PLATFORM_SHAS = {
-  darwin: 'dac2881cf5f7565fa432f32bc4635a9752e56984966b5fe43f7b37892b4d4553',
-  'darwin-arm64': 'd8006830527a37cce19ea03a37fd43db2e0a7c65e90e8d1eac7874ea08e16d45',
-  linux: 'ee0199542ced43908f1d60c67872ec1d4925d0d97200ff214eaf6cbf18f2a92b',
-  'linux-arm64': '486bd5da5ac16919cb6a7e33c3c29aa35ca345364fb6e2f2438348e6a6d07222',
-  win32: 'a54dd1f574f92fa8a6bc81a939d9415fa2dc8f36cea9ea64eb43736dd3ecac4b',
+  darwin: '6879aa235d7dac31c6b2d28588f5fe412a2f02c93656e49ce1d88c2ce9b7ce67',
+  'darwin-arm64': 'c74ed6df2ef73cafb3a2fcf21d8435da6bb715aa6a2fda42b5ec6036283759c9',
+  linux: 'df4df287ac0caf2f72eb64984327a920a431d9ea9ef79fc43f448d332eafcb3f',
+  'linux-arm64': '73050c51a78b9e94540e7cb62055e4cd888792881c9f0d464b92ae8c179f7b61',
+  win32: 'fda81616241ac1108fee53531779fab48e74995ca3951b0b39e8080de1bf6d65',
 };
 
 const isSupportedPlatform = !!GOMA_PLATFORM_SHAS[gomaPlatform];
