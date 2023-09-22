@@ -58,6 +58,10 @@ const XcodeVersions = {
     fileName: 'Xcode-14.3.0.zip',
     md5: '4bc9043b275625568f81d9727ad6aef8',
   },
+  '15.0.0': {
+    fileName: 'Xcode-15.0.zip',
+    md5: 'eb5d8dad732e6893991d86fb205c5c48',
+  },
 };
 
 const fallbackXcode = () => {
