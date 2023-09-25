@@ -58,6 +58,10 @@ const XcodeVersions = {
     fileName: 'Xcode-14.3.0.zip',
     md5: '4bc9043b275625568f81d9727ad6aef8',
   },
+  '15.0.0': {
+    fileName: 'Xcode-15.0.zip',
+    md5: 'eb5d8dad732e6893991d86fb205c5c48',
+  },
 };
 
 const fallbackXcode = () => {
@@ -116,24 +120,11 @@ function expectedXcodeVersion() {
     version = fs.existsSync(baseYaml) && extractXcodeVersion(fs.readFileSync(baseYaml, 'utf8'));
   }
 
-  // macOS Ventura only supports Xcode 14 and newer.
-  const isVentura = cp
-    .execSync('sw_vers -productVersion')
-    .toString()
-    .startsWith('13');
-  if (isVentura && version && !version.startsWith('14')) {
+  if (!semver.valid(semver.coerce(version))) {
     console.warn(
       color.warn,
-      `Xcode ${version} is not supported on macOS Ventura, falling back to default of`,
-      fallbackXcode(),
-    );
-    return fallbackXcode();
-  }
-
-  if (!version) {
-    console.warn(
-      color.warn,
-      'failed to automatically identify the required version of Xcode, falling back to default of',
+      `failed to automatically identify the required version of Xcode - falling back
+to default of`,
       fallbackXcode(),
     );
     return fallbackXcode();
@@ -144,11 +135,28 @@ function expectedXcodeVersion() {
       color.warn,
       `automatically detected an unknown version of Xcode ${color.path(
         version,
-      )}, falling back to default of`,
+      )} - falling back to default of`,
       fallbackXcode(),
     );
     return fallbackXcode();
   }
+
+  // macOS Ventura only supports Xcode 14 and newer.
+  const productVersion = cp
+    .execSync('sw_vers -productVersion')
+    .toString()
+    .trim();
+  const isVenturaOrHigher = semver.coerce(productVersion).major >= 13;
+
+  if (isVenturaOrHigher && !semver.gt(version, '14.0.0')) {
+    console.warn(
+      color.warn,
+      `Xcode ${version} is not supported on macOS Ventura - falling back to default of`,
+      fallbackXcode(),
+    );
+    return fallbackXcode();
+  }
+
   return version;
 }
 
