@@ -142,12 +142,13 @@ to default of`,
   }
 
   // macOS Ventura only supports Xcode 14 and newer.
-  const isVentura = cp
+  const productVersion = cp
     .execSync('sw_vers -productVersion')
     .toString()
-    .startsWith('13');
+    .trim();
+  const isVenturaOrHigher = semver.coerce(productVersion).major >= 13;
 
-  if (isVentura && !semver.gt(version, '14.0.0')) {
+  if (isVenturaOrHigher && !semver.gt(version, '14.0.0')) {
     console.warn(
       color.warn,
       `Xcode ${version} is not supported on macOS Ventura - falling back to default of`,
