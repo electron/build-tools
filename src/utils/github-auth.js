@@ -1,7 +1,23 @@
 const { spawnSync } = require('child_process');
 const { createOAuthDeviceAuth } = require('@octokit/auth-oauth-device');
 
+const { color } = require('./logging');
+
 const ELECTRON_BUILD_TOOLS_GITHUB_CLIENT_ID = '03581ca0d21228704ab3';
+
+function runGhCliCommand(args) {
+  const { error, status, stdout } = spawnSync('gh', args, { encoding: 'utf8' });
+
+  if (status !== 0) {
+    if (error) {
+      throw error;
+    } else {
+      throw new Error(`gh cli exited with non-zero exit code: ${status}`);
+    }
+  }
+
+  return stdout;
+}
 
 async function getGitHubAuthToken(scopes = []) {
   if (process.env.ELECTRON_BUILD_TOOLS_GH_AUTH) {
@@ -9,9 +25,29 @@ async function getGitHubAuthToken(scopes = []) {
   }
 
   try {
-    const { stdout } = spawnSync('gh', ['auth', 'token'], { encoding: 'utf8' });
-    return stdout.trim();
-  } catch {
+    const authStatus = runGhCliCommand(['auth', 'status']);
+
+    // Check that the scopes on the token include the requested scopes
+    const regexMatch = authStatus.match(/^.*Token scopes: (.*)$/gm);
+
+    if (regexMatch) {
+      const tokenScopes = regexMatch[0].split(',').map(scope => scope.trim());
+
+      if (scopes.every(scope => tokenScopes.includes(scope))) {
+        return runGhCliCommand(['auth', 'token']).trim();
+      } else {
+        console.info(
+          `${color.info} Token from gh CLI does not have required scopes, requesting new token`,
+        );
+      }
+    } else {
+      console.warn(`${color.warn} Could not determine token scopes from gh CLI`);
+    }
+  } catch (e) {
+    if (e instanceof Error && (!('code' in e) || e.code !== 'ENOENT')) {
+      console.error(`${color.err} ${e.stack ? e.stack : e.message}`);
+    }
+
     // fall through to fetching the token through oauth
   }
   return await createGitHubAuthToken(scopes);
