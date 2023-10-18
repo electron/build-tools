@@ -46,7 +46,8 @@ async function getGerritPatchDetailsFromURL(gerritUrl, security) {
     gerritUrl.host !== 'chromium-review.googlesource.com' &&
     gerritUrl.host !== 'skia-review.googlesource.com' &&
     gerritUrl.host !== 'webrtc-review.googlesource.com' &&
-    gerritUrl.host !== 'pdfium-review.googlesource.com'
+    gerritUrl.host !== 'pdfium-review.googlesource.com' &&
+    gerritUrl.host !== 'dawn-review.googlesource.com'
   ) {
     fatal('Unsupported gerrit host');
   }
