@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 const childProcess = require('child_process');
-const fs = require('fs');
 const path = require('path');
 const querystring = require('querystring');
+const semver = require('semver');
 
 const got = require('got');
 const open = require('open');
@@ -68,14 +68,21 @@ function guessPRTarget(config) {
     .toString()
     .trim();
 
+  const latestVersion = childProcess
+    .execSync('git describe --tags `git rev-list --tags --max-count=1`')
+    .toString()
+    .trim();
+
   // Nightlies are only released off of main, so we can safely make this assumption.
-  if (version.includes('nightly')) return 'main';
+  // However, if the nearest reachable tag from this commit is also the latest tag
+  // across all branches, and neither is a nightly, we're in the small time window
+  // between a stable release and the next nightly, and should also target main.
+  const inNightlyWindow = !version.includes('nightly') && version === latestVersion;
+  if (version.includes('nightly') || inNightlyWindow) return 'main';
 
-  const versionPattern = /^(?<major>\d+)\.(?<minor>\d+)\.\d+.*$/;
-  const match = versionPattern.exec(version);
-
+  const match = semver.valid(version);
   if (match) {
-    return `${match.groups.major}-x-y`;
+    return `${semver.major(match)}-x-y`;
   }
 
   console.warn(
