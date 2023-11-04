@@ -67,7 +67,12 @@ program
   .alias('new')
   .command('sync [gclientArgs...]', 'Get or update source code')
   .command('build [options]', 'Build Electron and other things')
-  .alias('make');
+  .alias('make')
+  .command(
+    'depot-tools [depotToolsArgs...]',
+    'Run a command from the depot-tools directory with the correct configuration',
+  )
+  .alias('d');
 
 program
   .command('start [args...]')
