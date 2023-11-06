@@ -9,6 +9,8 @@ const { color } = require('./logging');
 const defaultDepotPath = path.resolve(__dirname, '..', '..', 'third_party', 'depot_tools');
 const DEPOT_TOOLS_DIR = process.env.DEPOT_TOOLS_DIR || defaultDepotPath;
 
+const markerFilePath = path.join(DEPOT_TOOLS_DIR, '.disable_auto_update');
+
 function updateDepotTools() {
   const depot_dir = DEPOT_TOOLS_DIR;
   console.log(`Updating ${color.path(depot_dir)}`);
@@ -131,10 +133,27 @@ function depotExecFileSync(config, exec, args, opts_in) {
   return childProcess.execFileSync(exec, args, opts);
 }
 
+function setAutoUpdate(enable) {
+  try {
+    if (enable) {
+      if (fs.existsSync(markerFilePath)) {
+        fs.unlinkSync(markerFilePath);
+      }
+      console.info(`${color.info} Automatic depot_tools updates enabled`);
+    } else {
+      fs.closeSync(fs.openSync(markerFilePath, 'w'));
+      console.info(`${color.info} Automatic depot_tools updates disabled`);
+    }
+  } catch (e) {
+    fatal(e);
+  }
+}
+
 module.exports = {
   opts: depotOpts,
   path: DEPOT_TOOLS_DIR,
   ensure: ensureDepotTools,
   execFileSync: depotExecFileSync,
   spawnSync: depotSpawnSync,
+  setAutoUpdate,
 };
