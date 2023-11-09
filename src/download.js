@@ -39,7 +39,7 @@ function tryDownload(attemptsLeft = 3) {
       return fatal(err);
     }
 
-    console.log('Download failed, trying'.attemptsLeft, 'more times');
+    console.log('Download failed, trying', attemptsLeft, 'more times');
     tryDownload(attemptsLeft - 1);
   });
 }
