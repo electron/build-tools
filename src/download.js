@@ -30,7 +30,18 @@ const progressStream = function(tokens) {
 const progress = progressStream('[:bar] :rateMB/s :percent :etas');
 const write = fs.createWriteStream(process.argv[3]);
 
-pipeline(
-  got.default.stream(process.argv[2]),
-  ...(process.env.CI ? [write] : [progress, write]),
-).catch(fatal);
+function tryDownload(attemptsLeft = 3) {
+  pipeline(
+    got.default.stream(process.argv[2]),
+    ...(process.env.CI ? [write] : [progress, write]),
+  ).catch(err => {
+    if (attemptsLeft === 0) {
+      return fatal(err);
+    }
+
+    console.log('Download failed, trying', attemptsLeft, 'more times');
+    tryDownload(attemptsLeft - 1);
+  });
+}
+
+tryDownload();
