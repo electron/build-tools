@@ -32,6 +32,13 @@ function ensureDepotTools() {
     updateDepotTools();
   }
 
+  if (fs.existsSync(markerFilePath)) {
+    console.info(
+      `${color.info} Automatic depot_tools updates disabled, skipping check for updates`,
+    );
+    return;
+  }
+
   // If it's been awhile, update it.
   const now = new Date();
   const msec_per_day = 86400000;
