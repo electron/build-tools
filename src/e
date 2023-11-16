@@ -17,9 +17,13 @@ refreshPathVariable();
 
 function maybeCheckForUpdates() {
   // skip auto-update check if disabled
+  //
+  // NB: send updater's stdout to stderr so its log messages are visible
+  // but don't pollute stdout. For example, calling `FOO="$(e show exec)"`
+  // should not get a FOO that includes "Checking for build-tools updates".
   const disableAutoUpdatesFile = path.resolve(__dirname, '..', '.disable-auto-updates');
   if (fs.existsSync(disableAutoUpdatesFile)) {
-    console.info(`${color.info} Auto-updates disabled, skipping check for updates`);
+    console.error(`${color.info} Auto-updates disabled, skipping check for updates`);
     return;
   }
   // don't check if we already checked recently
