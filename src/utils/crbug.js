@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const chrome = require('chrome-cookies-secure');
+const chrome = require('@marshallofsound/chrome-cookies-secure');
 const { color } = require('./logging');
 
 const BASE_URL = 'https://bugs.chromium.org';
