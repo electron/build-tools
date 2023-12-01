@@ -33,7 +33,10 @@ function ensureDepotTools() {
   }
 
   if (fs.existsSync(markerFilePath)) {
-    console.info(
+    // NB: send updater's stdout to stderr so its log messages are visible
+    // but don't pollute stdout. For example, calling `FOO="$(e show exec)"`
+    // should not get a FOO that includes "Checking for build-tools updates".
+    console.error(
       `${color.info} Automatic depot_tools updates disabled, skipping check for updates`,
     );
     return;
