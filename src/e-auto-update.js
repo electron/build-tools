@@ -122,8 +122,14 @@ function checkForUpdates() {
       );
     }
 
-    console.log(color.childExec('git', ['pull', '--rebase', '--autostash'], execOpts));
-    git('pull --rebase --autostash');
+    console.log(
+      color.childExec(
+        'git',
+        ['pull', 'origin', desiredBranch, '--rebase', '--autostash'],
+        execOpts,
+      ),
+    );
+    git(`pull origin ${desiredBranch} --rebase --autostash`);
 
     if (headBefore === git(headCmd)) {
       console.log('build-tools is up-to-date');
