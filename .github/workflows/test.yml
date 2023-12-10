@@ -3,7 +3,7 @@ name: Continuous Integration
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 22 * * 1-5'
+    - cron: '0 19 * * 1-5'
   push:
     branches:
       - main
