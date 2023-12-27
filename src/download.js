@@ -8,7 +8,7 @@ const pipeline = promisify(stream.pipeline);
 
 const { fatal } = require('./utils/logging');
 
-const MB_BYTES = 1025 * 1024;
+const MB_BYTES = 1024 * 1024;
 
 const progressStream = function(tokens) {
   var pt = new stream.PassThrough();
@@ -16,10 +16,14 @@ const progressStream = function(tokens) {
   pt.on('pipe', function(stream) {
     stream.on('response', function(res) {
       const total = parseInt(res.headers['content-length'], 10);
-      const bar = new ProgressBar(tokens, { total: Math.round(total / MB_BYTES) });
+      const bar = new ProgressBar(tokens, { total: Math.round(total) });
 
       pt.on('data', function(chunk) {
-        bar.tick(chunk.length / MB_BYTES);
+        const elapsed = new Date() - bar.start;
+        const rate = bar.curr / (elapsed / 1000);
+        bar.tick(chunk.length, {
+          mbRate: (rate / MB_BYTES).toFixed(2),
+        });
       });
     });
   });
@@ -27,7 +31,7 @@ const progressStream = function(tokens) {
   return pt;
 };
 
-const progress = progressStream('[:bar] :rateMB/s :percent :etas');
+const progress = progressStream('[:bar] :mbRateMB/s :percent :etas');
 const write = fs.createWriteStream(process.argv[3]);
 
 function tryDownload(attemptsLeft = 3) {

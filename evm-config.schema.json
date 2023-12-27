@@ -42,6 +42,14 @@
         "msft"
       ]
     },
+    "reclient": {
+      "description": "Whether to use the Electron RBE infrastructure",
+      "type": "string",
+      "enum": [
+        "remote_exec",
+        "none"
+      ]
+    },
     "root": {
       "description": "Path of the top directory. Home of the .gclient file",
       "type": "string",

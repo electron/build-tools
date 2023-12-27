@@ -185,15 +185,6 @@ function sanitizeConfig(name, config, overwrite = false) {
     changes.push(`added missing property ${color.config('goma: cache-only')}`);
   }
 
-  if (
-    config.goma !== 'none' &&
-    (!config.gen || !config.gen.args || !config.gen.args.find(arg => arg.includes(goma.gnFilePath)))
-  ) {
-    const str = `import("${goma.gnFilePath}")`;
-    config.gen.args.push(str);
-    changes.push(`added ${color.cmd(str)} needed by goma`);
-  }
-
   if (config.origin) {
     config.remotes = {
       electron: {
@@ -216,6 +207,53 @@ function sanitizeConfig(name, config, overwrite = false) {
   ) {
     config.gen.args = config.gen.args.filter(arg => !arg.includes('cc_wrapper'));
     changes.push(`removed ${color.config('cc_wrapper')} definition because goma is enabled`);
+  }
+
+  if (!config.reclient) {
+    config.reclient = 'none';
+    changes.push(`defined ${color.config('remoteexec')} to default value of none`);
+  }
+
+  if (!['none', 'remote_exec'].includes(config.reclient)) {
+    config.reclient = 'none';
+    changes.push(`fixed invalid property ${color.config('remoteexec: none')}`);
+  }
+
+  if (config.reclient !== 'none' && config.goma !== 'none') {
+    config.goma = 'none';
+    changes.push(`disabled ${color.config('goma')} as ${color.config('remoteexec')} is enabled`);
+  }
+
+  const gomaGnArg = `import("${goma.gnFilePath}")`;
+  const hasGomaImport = !(
+    !config.gen ||
+    !config.gen.args ||
+    !config.gen.args.find(arg => arg.includes(goma.gnFilePath))
+  );
+  if (config.goma !== 'none' && !hasGomaImport) {
+    config.gen = config.gen || {};
+    config.gen.args = config.gen.args || [];
+    config.gen.args.push(gomaGnArg);
+    changes.push(`added ${color.cmd(gomaGnArg)} needed by goma`);
+  } else if (config.goma === 'none' && hasGomaImport) {
+    config.gen.args = config.gen.args.filter(arg => !arg.includes(goma.gnFilePath));
+    changes.push(`removed gn arg ${color.cmd(gomaGnArg)} as goma is disabled`);
+  }
+
+  const remoteExecGnArg = 'use_remoteexec = true';
+  const hasRemoteExecGN = !(
+    !config.gen ||
+    !config.gen.args ||
+    !config.gen.args.find(arg => /^use_remoteexec ?= ?true$/.test(arg))
+  );
+  if (config.reclient !== 'none' && !hasRemoteExecGN) {
+    config.gen = config.gen || {};
+    config.gen.args = config.gen.args || [];
+    config.gen.args.push(remoteExecGnArg);
+    changes.push(`added gn arg ${color.cmd(remoteExecGnArg)} needed by remoteexec`);
+  } else if (config.reclient === 'none' && hasRemoteExecGN) {
+    config.gen.args = config.gen.args.filter(arg => !/^use_remoteexec ?= ?true$/.test(arg));
+    changes.push(`removed gn arg ${color.cmd(remoteExecGnArg)} as remoteexec is disabled`);
   }
 
   if (!config.env) config.env = {};

@@ -14,6 +14,7 @@ const validConfig = {
     },
   },
   goma: 'none',
+  reclient: 'none',
   gen: {
     args: [],
     out: 'Testing',
