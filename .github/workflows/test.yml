@@ -30,16 +30,16 @@ jobs:
         git config --global core.eol lf
         git config --global core.filemode false
         git config --global branch.autosetuprebase always
-    - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # tag: v3.3.0
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # tag: v4.1.1
       with:
         fetch-depth: 1
     - name: Setup Node.js
-      uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c  # tag: v3.6.0
+      uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8  # tag: v4.0.1
       with:
         node-version: lts/-1
     - name: Cache node_modules
       id: cache-node-modules
-      uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920  # tag: v3.2.4
+      uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84  # tag: v3.3.2
       with:
         path: node_modules
         key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}-node-modules
