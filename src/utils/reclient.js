@@ -2,6 +2,7 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
+const tar = require('tar');
 
 const { color, fatal } = require('./logging');
 
@@ -15,8 +16,8 @@ const rbeServiceAddress = 'rbe.notgoma.com:443';
 
 const CREDENTIAL_HELPER_TAG = 'v0.1.0';
 
-function downloadAndPrepareReclient(config) {
-  if (config.reclient === 'none') return;
+function downloadAndPrepareReclient(config, force = false) {
+  if (config.reclient === 'none' && !force) return;
 
   // Reclient itself comes down with a "gclient sync"
   // run.  We just need to ensure we have the cred helper
@@ -68,15 +69,18 @@ function downloadAndPrepareReclient(config) {
     fatal(`Failure while downloading reclient`);
   }
 
-  const targetDir = path.resolve(tmpDownload, '..');
-
   fs.mkdirSync(reclientDir);
-  const result = childProcess.spawnSync('tar', ['zxvf', 'reclient.tar.gz', '-C', reclientDir], {
-    cwd: targetDir,
+
+  tar.x({
+    file: tmpDownload,
+    C: reclientDir,
+    sync: true,
   });
-  if (result.status !== 0) {
-    fatal('Failed to extract reclient');
+
+  if (process.platform === 'win32') {
+    fs.renameSync(reclientHelperPath.replace(/\.exe$/, ''), reclientHelperPath);
   }
+
   rimraf.sync(tmpDownload);
   fs.writeFileSync(reclientTagFile, CREDENTIAL_HELPER_TAG);
   return;

@@ -41,7 +41,7 @@ program
     }
 
     if (args[0] === 'rbe') {
-      reclient.downloadAndPrepare(evmConfig.current());
+      reclient.downloadAndPrepare(evmConfig.current(), true);
       args[0] = reclient.helperPath;
     }
 
