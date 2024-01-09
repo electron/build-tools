@@ -96,6 +96,7 @@ function depotOpts(config, opts = {}) {
     ...opts.env,
     // Circular reference so we have to delay load
     ...require('./goma').env(config),
+    ...require('./reclient').env(config),
   };
 
   // put depot tools at the front of the path

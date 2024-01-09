@@ -7,6 +7,7 @@ const evmConfig = require('./evm-config');
 const { fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
+const reclient = require('./utils/reclient');
 
 program
   .command('depot-tools')
@@ -37,6 +38,11 @@ program
       cwd = goma.dir;
       args[0] = `${args[0]}.py`;
       args.unshift('python3');
+    }
+
+    if (args[0] === 'rbe') {
+      reclient.downloadAndPrepare(evmConfig.current(), true);
+      args[0] = reclient.helperPath;
     }
 
     if (args[0] === '--') {

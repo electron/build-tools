@@ -9,6 +9,7 @@ const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
+const reclient = require('./utils/reclient');
 
 function runGNGen(config) {
   depot.ensure();
@@ -44,6 +45,14 @@ function runNinja(config, target, useGoma, ninjaArgs) {
     if (!ninjaArgs.includes('-j') && !ninjaArgs.find(arg => /^-j[0-9]+$/.test(arg.trim()))) {
       ninjaArgs.push('-j', 200);
     }
+  } else if (config.reclient !== 'none') {
+    reclient.downloadAndPrepare(config);
+    reclient.auth(config);
+
+    // Autoninja sets this absurdly high, we take it down a notch
+    if (!ninjaArgs.includes('-j') && !ninjaArgs.find(arg => /^-j[0-9]+$/.test(arg.trim()))) {
+      ninjaArgs.push('-j', 200);
+    }
   } else {
     console.info(`${color.info} Building ${target} with Goma disabled`);
   }
@@ -51,7 +60,11 @@ function runNinja(config, target, useGoma, ninjaArgs) {
   depot.ensure(config);
   ensureGNGen(config);
 
-  const exec = os.platform() === 'win32' ? 'ninja.bat' : 'ninja';
+  // Using remoteexec means that we need autoninja so that reproxy is started + stopped
+  // correctly
+  const ninjaName = config.reclient !== 'none' ? 'autoninja' : 'ninja';
+
+  const exec = os.platform() === 'win32' ? `${ninjaName}.bat` : ninjaName;
   const args = [...ninjaArgs, target];
   const opts = {
     cwd: evmConfig.outDir(config),
