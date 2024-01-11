@@ -128,8 +128,8 @@ function checkForUpdates() {
     if (headBefore === git(headCmd)) {
       console.log('build-tools is up-to-date');
     } else {
-      console.log(color.childExec('npx', ['yarn'], execOpts));
-      cp.execSync('npx yarn', execOpts);
+      console.log(color.childExec('npx', ['yarn', '--prod'], execOpts));
+      cp.execSync('npx yarn --prod', execOpts);
       console.log('build-tools updated to latest version!');
     }
   } catch (e) {
