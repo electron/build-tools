@@ -1,9 +1,9 @@
 root: /path/to/chromium/
+reclient: remote_exec
 defaultTarget: chrome
 gen:
   args:
-    # path to goma for faster builds (https://notgoma.com)
-    - import("/Users/user_name/.electron_build_tools/third_party/goma.gn")
+    - use_remoteexec = true
     - is_debug = false
   out: Default
 env:

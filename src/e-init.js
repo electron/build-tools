@@ -10,7 +10,7 @@ const { URI } = require('vscode-uri');
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const { resolvePath, ensureDir } = require('./utils/paths');
-const goma = require('./utils/goma');
+const reclient = require('./utils/reclient');
 const depot = require('./utils/depot-tools');
 const { checkGlobalGitConfig } = require('./utils/git');
 
@@ -27,8 +27,8 @@ function createConfig(options) {
   // build the `gn gen` args
   const gn_args = [`import("//electron/build/args/${options.import}.gn")`];
 
-  if (options.goma !== 'none') {
-    gn_args.push(`import("${goma.gnFilePath}")`);
+  if (options.reclient !== 'none') {
+    gn_args.push(`use_remoteexec = true`);
   }
 
   if (options.asan) gn_args.push('is_asan=true');
@@ -51,7 +51,8 @@ function createConfig(options) {
 
   return {
     $schema: URI.file(path.resolve(__dirname, '..', 'evm-config.schema.json')).toString(),
-    goma: options.goma,
+    goma: 'none',
+    reclient: options.reclient,
     root,
     remotes: {
       electron,
@@ -65,11 +66,6 @@ function createConfig(options) {
       GIT_CACHE_PATH: process.env.GIT_CACHE_PATH
         ? resolvePath(process.env.GIT_CACHE_PATH)
         : path.resolve(homedir, '.git_cache'),
-      GOMA_CACHE_DIR: path.resolve(homedir, '.goma_cache'),
-      GOMA_DEPS_CACHE_FILE: 'deps-cache',
-      GOMA_COMPILER_INFO_CACHE_FILE: 'compiler-info-cache',
-      GOMA_LOCAL_OUTPUT_CACHE_DIR: path.resolve(homedir, '.goma_output_cache'),
-      ...(options.goma !== 'cluster' && { GOMACTL_SKIP_AUTH: 'true' }),
     },
   };
 }
@@ -133,11 +129,11 @@ program
   .option('--bootstrap', 'Run `e sync` and `e build` after creating the build config.')
   .addOption(
     new Option(
-      '--goma <target>',
-      `Use Electron's custom deployment of Goma. The "cluster" mode is only available to maintainers`,
+      '--reclient <target>',
+      `Use Electron's RBE backend. The "remote_exec" mode will fall back to cache-only depending on the auth provided`,
     )
-      .choices(['cache-only', 'cluster', 'none'])
-      .default('cache-only'),
+      .choices(['remote_exec', 'none'])
+      .default('remote_exec'),
   )
   .option(
     '--use-https',
@@ -190,9 +186,9 @@ program
         childProcess.execFileSync(process.execPath, [e, 'sync', '-v'], opts);
       }
 
-      // maybe authenticate with Goma
-      if (config.goma === 'cluster') {
-        goma.auth(config);
+      // maybe authenticate with RBE
+      if (config.reclient === 'remote_exec') {
+        childProcess.execFileSync(process.execPath, [e, 'd', 'rbe', 'login'], opts);
       }
 
       // (maybe) build Electron
