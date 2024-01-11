@@ -39,7 +39,10 @@ program
   .option('--electronVersion <version>', 'Electron release to run tests against')
   .option('--node', 'Run node spec runner', false)
   .option('--nan', 'Run nan spec runner', false)
-  .option('--no-goma', 'Build test runner components (e.g. node:headers) without goma')
+  .option(
+    '--no-remote',
+    'Build test runner components (e.g. node:headers) without remote execution',
+  )
   .addOption(
     new program.Option(
       '--runners <runner>',
@@ -68,7 +71,7 @@ program
         script = './script/nan-spec-runner.js';
       }
       if (!options.electronVersion) {
-        ensureNodeHeaders(config, options.goma);
+        ensureNodeHeaders(config, options.remote);
       }
       runSpecRunner(config, script, specRunnerArgs);
     } catch (e) {
