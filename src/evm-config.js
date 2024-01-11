@@ -211,17 +211,17 @@ function sanitizeConfig(name, config, overwrite = false) {
 
   if (!config.reclient) {
     config.reclient = 'none';
-    changes.push(`defined ${color.config('remoteexec')} to default value of none`);
+    changes.push(`defined ${color.config('reclient')} to default value of none`);
   }
 
   if (!['none', 'remote_exec'].includes(config.reclient)) {
     config.reclient = 'none';
-    changes.push(`fixed invalid property ${color.config('remoteexec: none')}`);
+    changes.push(`fixed invalid property ${color.config('reclient: none')}`);
   }
 
   if (config.reclient !== 'none' && config.goma !== 'none') {
     config.goma = 'none';
-    changes.push(`disabled ${color.config('goma')} as ${color.config('remoteexec')} is enabled`);
+    changes.push(`disabled ${color.config('goma')} as ${color.config('reclient')} is enabled`);
   }
 
   const gomaGnArg = `import("${goma.gnFilePath}")`;
