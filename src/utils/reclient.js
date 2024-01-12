@@ -94,6 +94,7 @@ function reclientEnv(config) {
   return {
     RBE_service: rbeServiceAddress,
     RBE_experimental_credentials_helper: reclientHelperPath,
+    RBE_experimental_credentials_helper_args: 'print',
   };
 }
 
