@@ -233,11 +233,17 @@ function createSandbox() {
     env: {
       // have `e` use our test sandbox's build-tools config dir
       EVM_CONFIG: evm_config_dir,
-      // vpython requires $HOME be set
-      HOME: process.env.HOME,
+
       [pathKey]: process.env[pathKey],
     },
   };
+
+  // vpython pulls user home directory from environment variables
+  if (os.platform() === 'win32') {
+    execOptions.env['%LocalAppData%'] = process.env['%LocalAppData%'];
+  } else {
+    execOptions.env.HOME = process.env.HOME;
+  }
 
   return {
     cleanup: () => rimraf.sync(tmpdir),
