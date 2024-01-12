@@ -240,7 +240,7 @@ function createSandbox() {
 
   // vpython pulls user home directory from environment variables
   if (os.platform() === 'win32') {
-    execOptions.env['%LocalAppData%'] = process.env['%LocalAppData%'];
+    execOptions.env.LocalAppData = process.env.LocalAppData;
   } else {
     execOptions.env.HOME = process.env.HOME;
   }
