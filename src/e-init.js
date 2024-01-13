@@ -187,7 +187,7 @@ program
       }
 
       // maybe authenticate with RBE
-      if (config.reclient === 'remote_exec') {
+      if (process.env.NODE_ENV !== 'test' && config.reclient === 'remote_exec') {
         childProcess.execFileSync(process.execPath, [e, 'd', 'rbe', 'login'], opts);
       }
 
