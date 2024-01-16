@@ -1,4 +1,5 @@
 root: /path/to/your/developer/folder
+reclient: remote_exec
 remotes:
   electron:
     # SSH or HTTPS url
@@ -7,8 +8,8 @@ remotes:
     origin: git@github.com:electron/electron.git
 gen:
   args:
-    # path to goma for faster builds (https://notgoma.com)
-    - import("/Users/user_name/.electron_build_tools/third_party/goma.gn")
+    # Enable reclient
+    - use_remoteexec = true
   out: Testing
 env:
   GIT_CACHE_PATH: /Users/user_name/.git_cache

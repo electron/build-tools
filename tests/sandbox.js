@@ -231,6 +231,7 @@ function createSandbox() {
   const execOptions = {
     encoding: 'utf8',
     env: {
+      NODE_ENV: process.env.NODE_ENV,
       // have `e` use our test sandbox's build-tools config dir
       EVM_CONFIG: evm_config_dir,
 

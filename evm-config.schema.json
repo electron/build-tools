@@ -26,6 +26,7 @@
       "minLength": 1
     },
     "goma": {
+      "$comment": "Deprecated, use reclient instead",
       "description": "Goma mode to use",
       "type": "string",
       "enum": [
