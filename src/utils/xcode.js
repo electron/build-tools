@@ -236,14 +236,13 @@ function ensureXcode() {
       rimraf.sync(unzipPath);
     }
 
-    // We keep the old Xcode around to avoid redownloading incase we ever want
-    // build-tools to support hot-switching of Xcode versions
     if (fs.existsSync(XcodePath)) {
       if (fs.statSync(XcodePath).isSymbolicLink()) {
         fs.unlinkSync(XcodePath);
       } else {
+        const { preserveXcode } = evmConfig.current();
         const versionedXcode = path.resolve(XcodeDir, `Xcode-${getXcodeVersion()}.app`);
-        if (!fs.existsSync(versionedXcode)) {
+        if (preserveXcode && !fs.existsSync(versionedXcode)) {
           fs.renameSync(XcodePath, versionedXcode);
         } else {
           rimraf.sync(XcodePath);

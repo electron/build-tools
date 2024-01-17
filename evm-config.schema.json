@@ -20,6 +20,11 @@
         "chrome"
       ]
     },
+    "preserveXcode": {
+      "description": "Whether to delete unused Xcode versions",
+      "type": "boolean",
+      "default": true
+    },
     "extends": {
       "description": "Name of base config to extend",
       "type": "string",
