@@ -199,16 +199,6 @@ function sanitizeConfig(name, config, overwrite = false) {
     changes.push(`removed deprecated ${color.config('remotes.node')} property`);
   }
 
-  if (
-    config.goma !== 'none' &&
-    config.gen &&
-    config.gen.args &&
-    config.gen.args.find(arg => arg.includes('cc_wrapper'))
-  ) {
-    config.gen.args = config.gen.args.filter(arg => !arg.includes('cc_wrapper'));
-    changes.push(`removed ${color.config('cc_wrapper')} definition because goma is enabled`);
-  }
-
   if (!config.reclient) {
     config.reclient = 'none';
     changes.push(`defined ${color.config('reclient')} to default value of none`);
