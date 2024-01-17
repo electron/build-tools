@@ -32,8 +32,8 @@ function ensureGNGen(config) {
     return runGNGen(config);
 }
 
-function runNinja(config, target, useGoma, ninjaArgs) {
-  if (useGoma && config.goma !== 'none') {
+function runNinja(config, target, useRemote, ninjaArgs) {
+  if (useRemote && config.goma !== 'none') {
     goma.downloadAndPrepare(config);
 
     // maybe authenticate with Goma
@@ -45,7 +45,7 @@ function runNinja(config, target, useGoma, ninjaArgs) {
     if (!ninjaArgs.includes('-j') && !ninjaArgs.find(arg => /^-j[0-9]+$/.test(arg.trim()))) {
       ninjaArgs.push('-j', 200);
     }
-  } else if (config.reclient !== 'none') {
+  } else if (useRemote && config.reclient !== 'none') {
     reclient.downloadAndPrepare(config);
     reclient.auth(config);
 
@@ -54,7 +54,7 @@ function runNinja(config, target, useGoma, ninjaArgs) {
       ninjaArgs.push('-j', 200);
     }
   } else {
-    console.info(`${color.info} Building ${target} with Goma disabled`);
+    console.info(`${color.info} Building ${target} with remote execution disabled`);
   }
 
   depot.ensure(config);
@@ -68,8 +68,12 @@ function runNinja(config, target, useGoma, ninjaArgs) {
   const args = [...ninjaArgs, target];
   const opts = {
     cwd: evmConfig.outDir(config),
-    ...(useGoma ? {} : { env: { GOMA_DISABLED: true } }),
   };
+  if (!useRemote && config.goma !== 'none') {
+    opts.env = { GOMA_DISABLED: true };
+  } else if (!useRemote && config.reclient !== 'none') {
+    opts.env = { RBE_remote_disabled: true };
+  }
   depot.execFileSync(config, exec, args, opts);
 }
 
@@ -79,7 +83,7 @@ program
   .option('--list-targets', 'Show all supported build targets', false)
   .option('--gen', 'Force a re-run of `gn gen` before building', false)
   .option('-t|--target [target]', 'Forces a specific ninja target')
-  .option('--no-goma', 'Build without goma')
+  .option('--no-remote', 'Build without remote execution (entirely locally)')
   .allowUnknownOption()
   .action((target, ninjaArgs, options) => {
     try {
@@ -132,7 +136,7 @@ program
       }
 
       try {
-        runNinja(config, target, options.goma, ninjaArgs);
+        runNinja(config, target, options.remote, ninjaArgs);
       } catch (ex) {
         if (target === targets['node:headers']) {
           // Older versions of electron use a different target for node headers so try that if the new one fails.
@@ -140,7 +144,7 @@ program
           console.info(
             `${color.info} Error building ${target}; trying older ${olderTarget} target`,
           );
-          runNinja(config, olderTarget, options.goma, ninjaArgs);
+          runNinja(config, olderTarget, options.remote, ninjaArgs);
         } else {
           throw ex;
         }
