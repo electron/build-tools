@@ -86,6 +86,22 @@ function getXcodeVersion() {
   return 'unknown';
 }
 
+function removeUnusedXcodes() {
+  const recent = fs
+    .readdirSync(XcodeDir)
+    .map(xcode => {
+      const xcodePath = path.join(XcodeDir, xcode);
+      const { atime } = fs.statSync(xcodePath);
+      return { name: xcodePath, atime };
+    })
+    .sort((a, b) => b.atime - a.atime);
+
+  const { preserveXcode } = evmConfig.current();
+  for (const { name } of recent.slice(0, preserveXcode)) {
+    rimraf.sync(name);
+  }
+}
+
 function extractXcodeVersion(config) {
   const legacyMatch = /xcode: "?(\d+.\d+.\d+?)"?/.exec(config);
   if (legacyMatch) return legacyMatch[1];
@@ -240,9 +256,8 @@ function ensureXcode() {
       if (fs.statSync(XcodePath).isSymbolicLink()) {
         fs.unlinkSync(XcodePath);
       } else {
-        const { preserveXcode } = evmConfig.current();
         const versionedXcode = path.resolve(XcodeDir, `Xcode-${getXcodeVersion()}.app`);
-        if (preserveXcode && !fs.existsSync(versionedXcode)) {
+        if (!fs.existsSync(versionedXcode)) {
           fs.renameSync(XcodePath, versionedXcode);
         } else {
           rimraf.sync(XcodePath);
@@ -253,7 +268,10 @@ function ensureXcode() {
     console.log(`Updating active Xcode version to ${color.path(expected)}`);
     fs.symlinkSync(eventualVersionedPath, XcodePath);
   }
+
   rimraf.sync(XcodeZip);
+
+  removeUnusedXcodes();
 
   return true;
 }

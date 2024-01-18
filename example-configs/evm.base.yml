@@ -1,6 +1,6 @@
 root: /path/to/your/developer/folder
 reclient: remote_exec
-preserveXcode: true
+preserveXcode: 5
 remotes:
   electron:
     # SSH or HTTPS url

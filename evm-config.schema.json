@@ -22,8 +22,8 @@
     },
     "preserveXcode": {
       "description": "Whether to delete unused Xcode versions",
-      "type": "boolean",
-      "default": true
+      "type": "number",
+      "default": 5
     },
     "extends": {
       "description": "Name of base config to extend",
