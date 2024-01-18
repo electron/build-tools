@@ -97,7 +97,7 @@ function removeUnusedXcodes() {
     .sort((a, b) => b.atime - a.atime);
 
   const { preserveXcode } = evmConfig.current();
-  for (const { name } of recent.slice(0, preserveXcode)) {
+  for (const { name } of recent.slice(preserveXcode)) {
     rimraf.sync(name);
   }
 }
