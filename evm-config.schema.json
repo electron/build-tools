@@ -22,8 +22,9 @@
     },
     "preserveXcode": {
       "description": "Preserve the N most recent Xcode versions",
-      "type": "number",
-      "default": 5
+      "type": "integer",
+      "default": 5,
+      "minimum": 1
     },
     "extends": {
       "description": "Name of base config to extend",
