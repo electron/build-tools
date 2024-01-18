@@ -21,7 +21,7 @@
       ]
     },
     "preserveXcode": {
-      "description": "Whether to delete unused Xcode versions",
+      "description": "Preserve the N most recent Xcode versions",
       "type": "number",
       "default": 5
     },
