@@ -20,6 +20,12 @@
         "chrome"
       ]
     },
+    "preserveXcode": {
+      "description": "Preserve the N most recent Xcode versions",
+      "type": "integer",
+      "default": 5,
+      "minimum": 1
+    },
     "extends": {
       "description": "Name of base config to extend",
       "type": "string",

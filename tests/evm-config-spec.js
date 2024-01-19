@@ -15,6 +15,7 @@ const validConfig = {
   },
   goma: 'none',
   reclient: 'none',
+  preserveXcode: 5,
   gen: {
     args: [],
     out: 'Testing',

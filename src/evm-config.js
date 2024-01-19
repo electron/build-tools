@@ -214,6 +214,11 @@ function sanitizeConfig(name, config, overwrite = false) {
     changes.push(`disabled ${color.config('goma')} as ${color.config('reclient')} is enabled`);
   }
 
+  if (!('preserveXcode' in config)) {
+    config.preserveXcode = 5;
+    changes.push(`defined ${color.config('preserveXcode')} to default value of 5`);
+  }
+
   const gomaGnArg = `import("${goma.gnFilePath}")`;
   const hasGomaImport = !(
     !config.gen ||

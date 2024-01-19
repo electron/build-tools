@@ -86,6 +86,22 @@ function getXcodeVersion() {
   return 'unknown';
 }
 
+function removeUnusedXcodes() {
+  const recent = fs
+    .readdirSync(XcodeDir)
+    .map(xcode => {
+      const xcodePath = path.join(XcodeDir, xcode);
+      const { atime } = fs.statSync(xcodePath);
+      return { name: xcodePath, atime };
+    })
+    .sort((a, b) => b.atime - a.atime);
+
+  const { preserveXcode } = evmConfig.current();
+  for (const { name } of recent.slice(preserveXcode)) {
+    rimraf.sync(name);
+  }
+}
+
 function extractXcodeVersion(config) {
   const legacyMatch = /xcode: "?(\d+.\d+.\d+?)"?/.exec(config);
   if (legacyMatch) return legacyMatch[1];
@@ -236,8 +252,6 @@ function ensureXcode() {
       rimraf.sync(unzipPath);
     }
 
-    // We keep the old Xcode around to avoid redownloading incase we ever want
-    // build-tools to support hot-switching of Xcode versions
     if (fs.existsSync(XcodePath)) {
       if (fs.statSync(XcodePath).isSymbolicLink()) {
         fs.unlinkSync(XcodePath);
@@ -254,7 +268,10 @@ function ensureXcode() {
     console.log(`Updating active Xcode version to ${color.path(expected)}`);
     fs.symlinkSync(eventualVersionedPath, XcodePath);
   }
+
   rimraf.sync(XcodeZip);
+
+  removeUnusedXcodes();
 
   return true;
 }

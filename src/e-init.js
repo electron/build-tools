@@ -61,6 +61,7 @@ function createConfig(options) {
       args: gn_args,
       out: options.out,
     },
+    preserveXcode: 5,
     env: {
       CHROMIUM_BUILDTOOLS_PATH: path.resolve(root, 'src', 'buildtools'),
       GIT_CACHE_PATH: process.env.GIT_CACHE_PATH
