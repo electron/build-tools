@@ -13,6 +13,7 @@ program
   .description(
     "Refresh all patches if 'all' is specified; otherwise, refresh patches in $root/src/electron/patches/$target",
   )
+  .option('-c, --config <filename>', "Specify a config file", path.resolve(evmConfig.current().root, 'src', 'electron', 'patches', 'config.json'))
   .option('--list-targets', 'Show all supported patch targets', false)
   .action((target, options) => {
     try {
@@ -21,7 +22,7 @@ program
 
       // build the list of targets
       const targets = {};
-      const patchesConfig = path.resolve(config.root, 'src', 'electron', 'patches', 'config.json');
+      const patchesConfig = options.config;
       for (const [key, val] of Object.entries(JSON.parse(fs.readFileSync(patchesConfig)))) {
         targets[path.basename(key)] = val;
       }
