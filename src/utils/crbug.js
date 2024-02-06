@@ -1,66 +1,79 @@
 const fetch = require('node-fetch');
 const chrome = require('@marshallofsound/chrome-cookies-secure');
-const { color } = require('./logging');
+const { fatal } = require('./logging');
 
-const BASE_URL = 'https://bugs.chromium.org';
-const GET_ISSUE = '/prpc/monorail.Issues/GetIssue';
+const BASE_URL = 'https://issues.chromium.org';
 
-async function getChromeCookies(url) {
-  const cookies = await chrome.getCookiesPromised(url);
+const getPayload = (html, start, end) =>
+  html.substring(html.indexOf(start) + start.length, html.indexOf(end));
 
-  return cookies;
-}
-
-async function getXsrfToken(cookies) {
-  const html = await fetch(BASE_URL, {
+async function getXsrfToken(osid) {
+  const html = await fetch(`${BASE_URL}/issues`, {
     headers: {
-      Cookie: `SACSID=${cookies.SACSID}`,
+      Cookie: `OSID=${osid}`,
+      'Content-Type': 'application/json',
     },
   }).then(r => r.text());
-  const m = /'token': '(.+?)'/.exec(html);
-  if (!m) {
-    throw new Error("Couldn't find xsrf token.");
+
+  const DATA_START = 'var buganizerSessionJspb = ';
+  const DATA_END = '; var defrostedResourcesJspb';
+
+  const payload = getPayload(html, DATA_START, DATA_END);
+  const parsed = JSON.parse(payload);
+
+  if (parsed[0][4] === 'ANONYMOUS') {
+    throw new Error('Not signed in');
   }
-  return m[1];
+
+  return parsed[2];
 }
 
 async function getBugInfo(bugNr) {
-  const cookies = await getChromeCookies(BASE_URL);
-  const xsrfToken = await getXsrfToken(cookies);
+  const profile = process.env.CHROME_SECURITY_PROFILE ?? 'Profile 1';
+  const { OSID } = await chrome.getCookiesPromised(BASE_URL, 'object', profile);
+  const xsrfToken = await getXsrfToken(OSID);
 
-  const options = {
-    issueRef: {
-      projectName: 'chromium',
-      localId: bugNr,
-    },
-  };
-  const result = await fetch(`${BASE_URL}${GET_ISSUE}`, {
+  // Endpoint found via the included buganizer js file in script tag of BASE_URL.
+  const result = await fetch(`${BASE_URL}/action/issues/${bugNr}`, {
     headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      Cookie: `SACSID=${cookies.SACSID}`,
+      Accept: '*/*',
+      Cookie: `OSID=${OSID}`,
       'x-xsrf-token': xsrfToken,
     },
-    body: JSON.stringify(options),
-    method: 'POST',
+    method: 'GET',
   })
-    .then(j => j.text())
-    .then(t => JSON.parse(t.substr(4)));
+    .then(r => r.text())
+    .then(rawJSON => {
+      // This API call can sometimes return errant invalid characters at the start of the response.
+      const cleaned = rawJSON.substring(rawJSON.indexOf('['), rawJSON.length);
+      return JSON.parse(cleaned);
+    });
 
   return result;
 }
 
-async function getCveForBugNr(bugNr) {
-  try {
-    const bugInfo = await getBugInfo(bugNr);
-    const cve = bugInfo.issue.labelRefs.find(l => /^CVE-/.test(l.label));
+function parseCveFromIssue(issue) {
+  const CVE_ID = 1223136;
 
-    return cve.label;
-  } catch (error) {
-    console.log(color.err, error);
+  const issueData = issue[0][1];
+  const issueMetaData = issueData[issueData.length - 1];
+  const cveData = issueMetaData[2][14].find(d => d[0] === CVE_ID);
+  const cve = cveData[cveData.length - 2];
+
+  return /\d{4}-\d{4,7}/.test(cve) ? `CVE-${cve}` : null;
+}
+
+async function getCveForBugNr(bugNr) {
+  if (Number.isNaN(bugNr)) {
+    fatal(`Invalid Chromium bug number ${bugNr}`);
   }
 
-  return '';
+  try {
+    const issue = await getBugInfo(bugNr);
+    return parseCveFromIssue(issue);
+  } catch (error) {
+    fatal(error.message);
+  }
 }
 
 module.exports = {
