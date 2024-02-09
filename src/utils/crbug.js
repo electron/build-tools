@@ -21,8 +21,9 @@ async function getXsrfToken(osid) {
   const payload = getPayload(html, DATA_START, DATA_END);
   const parsed = JSON.parse(payload);
 
+  // There won't be a valid xsrf token for unsigned-in users.
   if (parsed[0][4] === 'ANONYMOUS') {
-    throw new Error('Not signed in');
+    return null;
   }
 
   return parsed[2];
@@ -45,9 +46,21 @@ async function getBugInfo(bugNr) {
     .then(r => r.text())
     .then(rawJSON => {
       // This API call can sometimes return errant invalid characters at the start of the response.
-      const cleaned = rawJSON.substring(rawJSON.indexOf('['), rawJSON.length);
+      let cleaned;
+      if (rawJSON.indexOf('[') > -1) {
+        cleaned = rawJSON.substring(rawJSON.indexOf('['), rawJSON.length);
+      } else if (rawJSON.indexOf('{') > -1) {
+        cleaned = rawJSON.substring(rawJSON.indexOf('{'), rawJSON.length);
+      } else {
+        throw new Error(`Unxpected payload received for issue ${bugNr}`);
+      }
+
       return JSON.parse(cleaned);
     });
+
+  if (/IamPermissionDeniedException/.test(result.message)) {
+    throw new Error(`Requested access to issue with insufficient permissions ${bugNr}`);
+  }
 
   return result;
 }
@@ -72,7 +85,7 @@ async function getCveForBugNr(bugNr) {
     const issue = await getBugInfo(bugNr);
     return parseCveFromIssue(issue);
   } catch (error) {
-    fatal(error.message);
+    fatal(error);
   }
 }
 
