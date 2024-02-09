@@ -27,6 +27,7 @@ program
       // build the list of targets
       const targets = {};
       const patchesConfig = options.config;
+      if (!fs.existsSync(patchesConfig)) throw `Config file '${patchesConfig}' not found`;
       const configData = JSON.parse(fs.readFileSync(patchesConfig));
       if (Array.isArray(configData)) {
         for (const target of configData) targets[path.basename(target.patch_dir)] = target;
