@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -17,10 +16,10 @@ const ajv = require('ajv-formats')(new Ajv());
 // If you want your shell sessions to each have different active configs,
 // try this in your ~/.profile or ~/.zshrc or ~/.bashrc:
 // export EVM_CURRENT_FILE="$(mktemp --tmpdir evm-current.XXXXXXXX.txt)"
-const currentFiles = _.compact([
+const currentFiles = [
   process.env.EVM_CURRENT_FILE,
   path.resolve(configRoot, 'evm-current.txt'),
-]);
+].filter(Boolean);
 
 const getDefaultTarget = () => {
   const name = getCurrentFileName();
