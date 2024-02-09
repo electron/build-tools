@@ -46,8 +46,7 @@
     "jest": "^27.5.1",
     "lint-staged": "^10.0.2",
     "nyc": "^14.1.1",
-    "prettier": "^1.19.1",
-    "rimraf": "^3.0.0"
+    "prettier": "^1.19.1"
   },
   "lint-staged": {
     "*.js": [

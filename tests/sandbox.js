@@ -2,9 +2,7 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-
-// for `rm -rf`'ing the sandbox tmpdir
-const rimraf = require('rimraf');
+const { deleteDir } = require('../src/utils/paths');
 
 // Get the PATH environment variable key cross-platform
 // It's usually PATH, but on Windows it can be any casing like Path...
@@ -247,7 +245,7 @@ function createSandbox() {
   }
 
   return {
-    cleanup: () => rimraf.sync(tmpdir),
+    cleanup: () => deleteDir(tmpdir),
     eInitRunner: () => {
       return eInitRunner(execOptions);
     },
