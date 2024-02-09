@@ -2,7 +2,6 @@ const childProcess = require('child_process');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const rimraf = require('rimraf');
 const { unzipSync } = require('cross-zip');
 const { color, fatal } = require('./logging');
 const depot = require('./depot-tools');
@@ -82,8 +81,8 @@ function downloadAndPrepareGoma(config) {
 
   const tmpDownload = path.resolve(gomaDir, '..', filename);
   // Clean Up
-  rimraf.sync(gomaDir);
-  rimraf.sync(tmpDownload);
+  fs.rmSync(gomaDir, { force: true, recursive: true });
+  fs.rmSync(tmpDownload, { force: true, recursive: true });
 
   const downloadURL = `${gomaBaseURL}/${sha}/${filename}`;
   console.log(`Downloading ${color.cmd(downloadURL)} into ${color.path(tmpDownload)}`);
@@ -95,7 +94,7 @@ function downloadAndPrepareGoma(config) {
     },
   );
   if (status !== 0) {
-    rimraf.sync(tmpDownload);
+    fs.rmSync(tmpDownload, { force: true, recursive: true });
     fatal(`Failure while downloading goma`);
   }
   const hash = crypto
@@ -108,7 +107,7 @@ function downloadAndPrepareGoma(config) {
         sha,
       )}. Halting now`,
     );
-    rimraf.sync(tmpDownload);
+    fs.rmSync(tmpDownload, { force: true, recursive: true });
     process.exit(1);
   }
 
@@ -123,7 +122,7 @@ function downloadAndPrepareGoma(config) {
   } else {
     unzipSync(tmpDownload, targetDir);
   }
-  rimraf.sync(tmpDownload);
+  fs.rmSync(tmpDownload, { force: true, recursive: true });
   fs.writeFileSync(gomaShaFile, sha);
   return sha;
 }

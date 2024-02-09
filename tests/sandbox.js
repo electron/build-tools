@@ -3,9 +3,6 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-// for `rm -rf`'ing the sandbox tmpdir
-const rimraf = require('rimraf');
-
 // Get the PATH environment variable key cross-platform
 // It's usually PATH, but on Windows it can be any casing like Path...
 // https://github.com/sindresorhus/path-key
@@ -247,7 +244,7 @@ function createSandbox() {
   }
 
   return {
-    cleanup: () => rimraf.sync(tmpdir),
+    cleanup: () => fs.rmSync(tmpdir, { force: true, recursive: true }),
     eInitRunner: () => {
       return eInitRunner(execOptions);
     },
