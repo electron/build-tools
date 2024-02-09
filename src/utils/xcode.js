@@ -6,6 +6,7 @@ const { ensureDir } = require('./paths');
 const evmConfig = require('../evm-config');
 
 const { color, fatal } = require('./logging');
+const { deleteDir } = require('./paths');
 
 const XcodeDir = path.resolve(__dirname, '..', '..', 'third_party', 'Xcode');
 const XcodePath = path.resolve(XcodeDir, 'Xcode.app');
@@ -97,7 +98,7 @@ function removeUnusedXcodes() {
 
   const { preserveXcode } = evmConfig.current();
   for (const { name } of recent.slice(preserveXcode)) {
-    fs.rmSync(name, { force: true, recursive: true });
+    deleteDir(name);
   }
 }
 
@@ -180,7 +181,7 @@ function fixBadVersioned103() {
   const good = path.resolve(XcodeDir, `Xcode-10.3.0.app`);
   if (fs.existsSync(bad)) {
     if (fs.existsSync(good)) {
-      fs.rmSync(bad, { force: true, recursive: true });
+      deleteDir(bad);
     } else {
       fs.renameSync(bad, good);
     }
@@ -210,7 +211,7 @@ function ensureXcode() {
               existingHash,
             )} which did not match ${color.cmd(expectedXcodeHash)} so redownloading Xcode`,
           );
-          fs.rmSync(XcodeZip, { force: true, recursive: true });
+          deleteDir(XcodeZip);
         }
       }
 
@@ -226,13 +227,13 @@ function ensureXcode() {
         );
 
         if (status !== 0) {
-          fs.rmSync(XcodeZip, { force: true, recursive: true });
+          deleteDir(XcodeZip);
           fatal(`Failure while downloading Xcode zip`);
         }
 
         const newHash = hashFile(XcodeZip);
         if (newHash !== expectedXcodeHash) {
-          fs.rmSync(XcodeZip, { force: true, recursive: true });
+          deleteDir(XcodeZip);
           fatal(
             `Downloaded Xcode zip had hash "${newHash}" which does not match expected hash "${expectedXcodeHash}"`,
           );
@@ -241,14 +242,14 @@ function ensureXcode() {
 
       console.log(`Extracting ${color.cmd(XcodeZip)} into ${color.path(eventualVersionedPath)}`);
       const unzipPath = path.resolve(XcodeDir, 'tmp_unzip');
-      fs.rmSync(unzipPath, { force: true, recursive: true });
+      deleteDir(unzipPath);
       cp.spawnSync('unzip', ['-q', '-o', XcodeZip, '-d', unzipPath], {
         stdio: 'inherit',
       });
 
       fs.renameSync(path.resolve(unzipPath, 'Xcode.app'), eventualVersionedPath);
-      fs.rmSync(XcodeZip, { force: true, recursive: true });
-      fs.rmSync(unzipPath, { force: true, recursive: true });
+      deleteDir(XcodeZip);
+      deleteDir(unzipPath);
     }
 
     if (fs.existsSync(XcodePath)) {
@@ -259,7 +260,7 @@ function ensureXcode() {
         if (!fs.existsSync(versionedXcode)) {
           fs.renameSync(XcodePath, versionedXcode);
         } else {
-          fs.rmSync(XcodePath, { force: true, recursive: true });
+          deleteDir(XcodePath);
         }
       }
     }
@@ -268,7 +269,7 @@ function ensureXcode() {
     fs.symlinkSync(eventualVersionedPath, XcodePath);
   }
 
-  fs.rmSync(XcodeZip, { force: true, recursive: true });
+  deleteDir(XcodeZip);
 
   removeUnusedXcodes();
 

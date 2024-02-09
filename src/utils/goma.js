@@ -7,6 +7,7 @@ const { color, fatal } = require('./logging');
 const depot = require('./depot-tools');
 const os = require('os');
 const { getIsArm } = require('./arm');
+const { deleteDir } = require('./paths');
 
 const gomaDir = path.resolve(__dirname, '..', '..', 'third_party', 'goma');
 const gomaGnFile = path.resolve(__dirname, '..', '..', 'third_party', 'goma.gn');
@@ -81,8 +82,8 @@ function downloadAndPrepareGoma(config) {
 
   const tmpDownload = path.resolve(gomaDir, '..', filename);
   // Clean Up
-  fs.rmSync(gomaDir, { force: true, recursive: true });
-  fs.rmSync(tmpDownload, { force: true, recursive: true });
+  deleteDir(gomaDir);
+  deleteDir(tmpDownload);
 
   const downloadURL = `${gomaBaseURL}/${sha}/${filename}`;
   console.log(`Downloading ${color.cmd(downloadURL)} into ${color.path(tmpDownload)}`);
@@ -94,7 +95,7 @@ function downloadAndPrepareGoma(config) {
     },
   );
   if (status !== 0) {
-    fs.rmSync(tmpDownload, { force: true, recursive: true });
+    deleteDir(tmpDownload);
     fatal(`Failure while downloading goma`);
   }
   const hash = crypto
@@ -107,7 +108,7 @@ function downloadAndPrepareGoma(config) {
         sha,
       )}. Halting now`,
     );
-    fs.rmSync(tmpDownload, { force: true, recursive: true });
+    deleteDir(tmpDownload);
     process.exit(1);
   }
 
@@ -122,7 +123,7 @@ function downloadAndPrepareGoma(config) {
   } else {
     unzipSync(tmpDownload, targetDir);
   }
-  fs.rmSync(tmpDownload, { force: true, recursive: true });
+  deleteDir(tmpDownload);
   fs.writeFileSync(gomaShaFile, sha);
   return sha;
 }

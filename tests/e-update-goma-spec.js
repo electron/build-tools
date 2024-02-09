@@ -1,9 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 const goma = require('../src/utils/goma');
+const { deleteDir } = require('../src/utils/paths');
 
 afterAll(() => {
-  fs.rmSync(goma.dir, { recursive: true, force: true });
+  deleteDir(goma.dir);
 });
 
 describe('e update-goma', () => {

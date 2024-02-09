@@ -17,7 +17,10 @@ function ensureDir(dir) {
   }
 }
 
+const deleteDir = dir => fs.rmSync(dir, { force: true, recursive: true });
+
 module.exports = {
   resolvePath,
   ensureDir,
+  deleteDir,
 };

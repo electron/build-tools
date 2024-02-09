@@ -4,6 +4,7 @@ const path = require('path');
 const tar = require('tar');
 
 const { color, fatal } = require('./logging');
+const { deleteDir } = require('./paths');
 
 const reclientDir = path.resolve(__dirname, '..', '..', 'third_party', 'reclient');
 const reclientTagFile = path.resolve(reclientDir, '.tag');
@@ -51,8 +52,8 @@ function downloadAndPrepareReclient(config, force = false) {
 
   const tmpDownload = path.resolve(reclientDir, '..', 'reclient.tar.gz');
   // Clean Up
-  fs.rmSync(reclientDir, { force: true, recursive: true });
-  fs.rmSync(tmpDownload, { force: true, recursive: true });
+  deleteDir(reclientDir);
+  deleteDir(tmpDownload);
 
   const downloadURL = `https://dev-cdn.electronjs.org/reclient/credential-helper/${CREDENTIAL_HELPER_TAG}/electron-rbe-credential-helper-${targetPlatform}.tar.gz`;
   console.log(`Downloading ${color.cmd(downloadURL)} into ${color.path(tmpDownload)}`);
@@ -64,7 +65,7 @@ function downloadAndPrepareReclient(config, force = false) {
     },
   );
   if (status !== 0) {
-    fs.rmSync(tmpDownload, { force: true, recursive: true });
+    deleteDir(tmpDownload);
     fatal(`Failure while downloading reclient`);
   }
 
@@ -80,7 +81,7 @@ function downloadAndPrepareReclient(config, force = false) {
     fs.renameSync(reclientHelperPath.replace(/\.exe$/, ''), reclientHelperPath);
   }
 
-  fs.rmSync(tmpDownload, { force: true, recursive: true });
+  deleteDir(tmpDownload);
   fs.writeFileSync(reclientTagFile, CREDENTIAL_HELPER_TAG);
   return;
 }
