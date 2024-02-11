@@ -10,6 +10,14 @@ const { getCveForBugNr } = require('./utils/crbug');
 const { getGitHubAuthToken } = require('./utils/github-auth');
 const { fatal } = require('./utils/logging');
 
+const gerritSources = [
+  'chromium-review.googlesource.com',
+  'skia-review.googlesource.com',
+  'webrtc-review.googlesource.com',
+  'pdfium-review.googlesource.com',
+  'dawn-review.googlesource.com',
+];
+
 function fetchBase64(url) {
   return new Promise((resolve, reject) => {
     https
@@ -42,16 +50,12 @@ async function getPatchDetailsFromURL(urlStr, security) {
 }
 
 async function getGerritPatchDetailsFromURL(gerritUrl, security) {
-  if (
-    gerritUrl.host !== 'chromium-review.googlesource.com' &&
-    gerritUrl.host !== 'skia-review.googlesource.com' &&
-    gerritUrl.host !== 'webrtc-review.googlesource.com' &&
-    gerritUrl.host !== 'pdfium-review.googlesource.com' &&
-    gerritUrl.host !== 'dawn-review.googlesource.com'
-  ) {
+  const { host, pathname } = gerritUrl;
+
+  if (!gerritSources.includes(host)) {
     fatal('Unsupported gerrit host');
   }
-  const [, repo, number] = /^\/c\/(.+?)\/\+\/(\d+)/.exec(gerritUrl.pathname);
+  const [, repo, number] = /^\/c\/(.+?)\/\+\/(\d+)/.exec(pathname);
 
   d(`fetching patch from gerrit`);
   const changeId = `${repo}~${number}`;
@@ -72,7 +76,7 @@ async function getGerritPatchDetailsFromURL(gerritUrl, security) {
       'chromium-review.googlesource.com:chromium/src': 'chromium',
       'skia-review.googlesource.com:skia': 'skia',
       'webrtc-review.googlesource.com:src': 'webrtc',
-    }[gerritUrl.host + ':' + repo] || repo.split('/').reverse()[0];
+    }[`${host}:${repo}`] || repo.split('/').reverse()[0];
 
   const shortCommit = commitId.substr(0, 12);
 
@@ -125,7 +129,7 @@ program
         owner: 'electron',
         repo: 'electron',
       });
-      if (!permissions || !permissions.push) {
+      if (!permissions?.push) {
         fatal(
           'The supplied $GITHUB_TOKEN does not have write access to electron/electron - exiting',
         );
