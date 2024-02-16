@@ -18,6 +18,14 @@ const CREDENTIAL_HELPER_TAG = 'v0.2.2';
 
 function downloadAndPrepareReclient(config, force = false) {
   if (config.reclient === 'none' && !force) return;
+  // If a custom reclient credentials helper is specified, expect
+  // that it exists in the specified location
+  if (config.reclientHelperPath) {
+    console.log(
+      `Using custom reclient credentials helper at  ${color.path(config.reclientHelperPath)}`,
+    );
+    return;
+  }
 
   // Reclient itself comes down with a "gclient sync"
   // run.  We just need to ensure we have the cred helper
@@ -92,8 +100,8 @@ function reclientEnv(config) {
   }
 
   return {
-    RBE_service: rbeServiceAddress,
-    RBE_experimental_credentials_helper: reclientHelperPath,
+    RBE_service: config.reclientServiceAddress || rbeServiceAddress,
+    RBE_experimental_credentials_helper: getHelperPath(config),
     RBE_experimental_credentials_helper_args: 'print',
   };
 }
@@ -113,10 +121,14 @@ function ensureHelperAuth(config) {
   }
 }
 
+function getHelperPath(config) {
+  return config.reclientHelperPath || reclientHelperPath;
+}
+
 module.exports = {
   env: reclientEnv,
   downloadAndPrepare: downloadAndPrepareReclient,
-  helperPath: reclientHelperPath,
+  helperPath: getHelperPath,
   serviceAddress: rbeServiceAddress,
   auth: ensureHelperAuth,
 };

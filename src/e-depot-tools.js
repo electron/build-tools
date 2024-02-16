@@ -42,7 +42,7 @@ program
 
     if (args[0] === 'rbe') {
       reclient.downloadAndPrepare(evmConfig.current(), true);
-      args[0] = reclient.helperPath;
+      args[0] = reclient.helperPath(evmConfig.current());
     }
 
     if (args[0] === '--') {

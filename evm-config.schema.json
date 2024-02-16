@@ -57,6 +57,14 @@
         "none"
       ]
     },
+    "reclientHelperPath": {
+      "description": "Path to alternative reclient credential helper",
+      "type": "string"
+    },
+    "reclientServiceAddress": {
+      "description": "Alternative RBE cluster address",
+      "type": "string"
+    },
     "root": {
       "description": "Path of the top directory. Home of the .gclient file",
       "type": "string",
