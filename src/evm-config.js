@@ -167,6 +167,18 @@ function validateConfig(config) {
   }
 }
 
+function overwriteValue({ name, key, value }) {
+  const configName = name ?? currentName();
+  const config = loadConfigFileRaw(name);
+
+  if (!config.hasOwnProperty(key)) {
+    fatal(`Config ${color.config(configName)} does not have property ${color.config(key)}`);
+  }
+
+  config[key] = value;
+  save(configName, config);
+}
+
 function sanitizeConfig(name, config, overwrite = false) {
   const changes = [];
 
@@ -318,6 +330,7 @@ module.exports = {
   fetchByName: name => sanitizeConfigWithName(name),
   names,
   outDir,
+  overwriteValue,
   pathOf,
   remove,
   sanitizeConfig,
