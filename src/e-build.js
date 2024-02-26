@@ -10,6 +10,7 @@ const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
 const reclient = require('./utils/reclient');
+const { loadXcode } = require('./utils/load-xcode');
 
 function runGNGen(config) {
   depot.ensure();
@@ -101,17 +102,9 @@ program
       const isChromium = target
         ? target === targets.chromium
         : targets.default === targets.chromium;
+
       if (process.platform === 'darwin' && !isChromium) {
-        const result = depot.spawnSync(
-          config,
-          process.execPath,
-          [path.resolve(__dirname, 'e-load-xcode.js'), '--quiet'],
-          {
-            stdio: 'inherit',
-            msg: `Running ${color.cmd('e load-xcode --quiet')}`,
-          },
-        );
-        if (result.status !== 0) process.exit(result.status);
+        loadXcode(true);
       }
 
       if (options.gen) {

@@ -13,6 +13,12 @@ const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'conf
 const schema = require('../evm-config.schema.json');
 const ajv = require('ajv-formats')(new Ajv());
 
+let shouldWarn = true;
+
+const resetShouldWarn = () => {
+  shouldWarn = true;
+};
+
 // If you want your shell sessions to each have different active configs,
 // try this in your ~/.profile or ~/.zshrc or ~/.bashrc:
 // export EVM_CURRENT_FILE="$(mktemp --tmpdir evm-current.XXXXXXXX.txt)"
@@ -261,7 +267,8 @@ function sanitizeConfig(name, config, overwrite = false) {
   if (changes.length > 0) {
     if (overwrite) {
       save(name, config);
-    } else {
+    } else if (shouldWarn) {
+      shouldWarn = false;
       console.warn(`${color.warn} We've made these temporary changes to your configuration:`);
       console.warn(changes.map(change => ` * ${change}`).join('\n'));
       console.warn(`Run ${color.cmd('e sanitize-config')} to make these changes permanent.`);
@@ -320,6 +327,7 @@ module.exports = {
   outDir,
   pathOf,
   remove,
+  resetShouldWarn,
   sanitizeConfig,
   sanitizeConfigWithName,
   save,

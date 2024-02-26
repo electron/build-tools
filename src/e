@@ -10,6 +10,7 @@ const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
 const { refreshPathVariable } = require('./utils/refresh-path');
+const { loadXcode } = require('./utils/load-xcode');
 
 // Refresh the PATH variable at the top of this shell so that retries in the same shell get the latest PATH variable
 refreshPathVariable();
@@ -62,6 +63,7 @@ function maybeCheckForUpdates() {
 }
 
 maybeCheckForUpdates();
+evmConfig.resetShouldWarn();
 
 program.description('Electron build tool').usage('<command> [commandArgs...]');
 
@@ -162,10 +164,6 @@ program
   .command('pr [options]', 'Open a GitHub URL where you can PR your changes')
   .command('patches <target>', 'Refresh the patches in $root/src/electron/patches/$target')
   .command('open <sha1|PR#>', 'Open a GitHub URL for the given commit hash / pull # / issue #')
-  .command(
-    'load-xcode',
-    'Loads required versions of Xcode and the macOS SDK and symlinks them.  This may require sudo',
-  )
   .command('auto-update', 'Check for build-tools updates or enable/disable automatic updates')
   .alias('check-for-updates')
   .command(
@@ -179,6 +177,15 @@ const ci = program.command('ci').executableDir(path.join(__dirname, 'ci'));
 ci.command('status', 'Show information about CI job statuses');
 ci.command('rerun', 'Rerun CI workflows and builds');
 ci.command('cancel', 'Cancel CI workflows and builds');
+
+program
+  .command('load-xcode')
+  .description(
+    'Loads required versions of Xcode and the macOS SDK and symlinks them (may require sudo)',
+  )
+  .action(() => {
+    loadXcode();
+  });
 
 program
   .command('update-goma')
