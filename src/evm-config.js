@@ -171,7 +171,7 @@ function overwriteValue({ name, key, value }) {
   const configName = name ?? currentName();
   const config = loadConfigFileRaw(name);
 
-  if (!config.hasOwnProperty(key)) {
+  if (!config.has(key)) {
     fatal(`Config ${color.config(configName)} does not have property ${color.config(key)}`);
   }
 
