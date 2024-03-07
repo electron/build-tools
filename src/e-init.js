@@ -28,13 +28,20 @@ function createConfig(options) {
   const gn_args = [`import("//electron/build/args/${options.import}.gn")`];
 
   if (options.reclient !== 'none') {
-    gn_args.push(`use_remoteexec = true`);
+    gn_args.push('use_remoteexec = true');
   }
 
   if (options.asan) gn_args.push('is_asan=true');
   if (options.lsan) gn_args.push('is_lsan=true');
   if (options.msan) gn_args.push('is_msan=true');
   if (options.tsan) gn_args.push('is_tsan=true');
+
+  if (options.mas) {
+    if (process.platform !== 'darwin') {
+      fatal('macOS App Store builds are only supported on macOS');
+    }
+    gn_args.push('is_mas_build = true');
+  }
 
   if (options.targetCpu) gn_args.push(`target_cpu="${options.targetCpu}"`);
 
@@ -126,6 +133,7 @@ program
   .option('--tsan', `When building, enable clang's thread sanitizer`, false)
   .option('--msan', `When building, enable clang's memory sanitizer`, false)
   .option('--lsan', `When building, enable clang's leak sanitizer`, false)
+  .option('--mas', 'Build for the macOS App Store', false)
   .addOption(archOption)
   .option('--bootstrap', 'Run `e sync` and `e build` after creating the build config.')
   .addOption(
