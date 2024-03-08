@@ -13,6 +13,7 @@ const { resolvePath, ensureDir } = require('./utils/paths');
 const reclient = require('./utils/reclient');
 const depot = require('./utils/depot-tools');
 const { checkGlobalGitConfig } = require('./utils/git');
+const { loadXcode } = require('./utils/load-xcode');
 
 // https://gn.googlesource.com/gn/+/main/docs/reference.md?pli=1#var_target_cpu
 const archOption = new Option(
@@ -178,6 +179,11 @@ program
             )} already exists and points at a different root folder! (${color.path(filename)})`,
           );
         }
+      }
+
+      // ensure xcode is loaded
+      if (process.platform === 'darwin') {
+        loadXcode(true);
       }
 
       // save the new config
