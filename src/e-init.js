@@ -181,13 +181,7 @@ program
         }
       }
 
-      // ensure xcode is loaded
-      if (process.platform === 'darwin') {
-        loadXcode(true);
-      }
-
       // save the new config
-      ensureRoot(config, !!options.force);
       evmConfig.save(name, config);
       console.log(`New build config ${color.config(name)} created in ${color.path(filename)}`);
 
@@ -195,6 +189,13 @@ program
       const e = path.resolve(__dirname, 'e');
       const opts = { stdio: 'inherit' };
       childProcess.execFileSync(process.execPath, [e, 'use', name], opts);
+
+      // ensure xcode is loaded
+      if (process.platform === 'darwin') {
+        loadXcode(true);
+      }
+
+      ensureRoot(config, !!options.force);
 
       // (maybe) run sync to ensure external binaries are downloaded
       if (options.bootstrap) {
