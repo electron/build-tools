@@ -9,12 +9,15 @@ const { color, fatal } = require('./logging');
 const Xcode = require('./xcode');
 const evmConfig = require('../evm-config');
 
-function loadXcode(quiet = false) {
+function loadXcode(options) {
+  const target = options.target || 'electron';
+  const quiet = options.quiet || false;
+
   if (process.platform !== 'darwin') {
     fatal('Should only configure Xcode on darwin platform');
   }
 
-  if (Xcode.ensureXcode() === false) {
+  if (Xcode.ensureXcode(target) === false) {
     return;
   }
 

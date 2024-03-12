@@ -98,13 +98,8 @@ program
         return;
       }
 
-      // Only ensure Xcode version if we're building an Electron target.
-      const isChromium = target
-        ? target === targets.chromium
-        : targets.default === targets.chromium;
-
-      if (process.platform === 'darwin' && !isChromium) {
-        loadXcode(true);
+      if (process.platform === 'darwin') {
+        loadXcode({ target, quiet: true });
       }
 
       if (options.gen) {

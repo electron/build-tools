@@ -117,7 +117,7 @@ function extractXcodeVersion(config) {
   return null;
 }
 
-function expectedXcodeVersion() {
+function expectedXcodeVersion(target) {
   const { root, defaultTarget } = evmConfig.current();
 
   let version;
@@ -142,7 +142,7 @@ function expectedXcodeVersion() {
   }
 
   // Finally check build/mac_toolchain.py if we're building Chromium.
-  if (defaultTarget === 'chrome') {
+  if ([target, defaultTarget].includes('chrome')) {
     const macToolchainPy = path.resolve(root, 'src', 'build', 'mac_toolchain.py');
     version =
       fs.existsSync(macToolchainPy) && extractXcodeVersion(fs.readFileSync(macToolchainPy, 'utf8'));
@@ -203,8 +203,8 @@ function fixBadVersioned103() {
   }
 }
 
-function ensureXcode() {
-  const expected = expectedXcodeVersion();
+function ensureXcode(target) {
+  const expected = expectedXcodeVersion(target);
   fixBadVersioned103();
 
   const shouldEnsureXcode = !fs.existsSync(XcodePath) || getXcodeVersion() !== expected;
