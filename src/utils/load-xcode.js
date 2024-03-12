@@ -9,7 +9,7 @@ const { color, fatal } = require('./logging');
 const Xcode = require('./xcode');
 const evmConfig = require('../evm-config');
 
-function loadXcode(options) {
+function loadXcode(options = {}) {
   const target = options.target || 'electron';
   const quiet = options.quiet || false;
 
