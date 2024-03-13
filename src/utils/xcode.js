@@ -105,15 +105,20 @@ function removeUnusedXcodes() {
 function extractXcodeVersion(config) {
   const legacyMatch = /xcode: "?(\d+.\d+.\d+?)"?/.exec(config);
   if (legacyMatch) return legacyMatch[1];
+
   const modernMatch = /description: "xcode version"\n[\S\s]+default: (\d+.\d+.\d+?)\n/gm.exec(
     config,
   );
   if (modernMatch) return modernMatch[1];
+
+  const chromiumMatch = /Xcode (\d+\.\d+(\.\d+)?)/.exec(config);
+  if (chromiumMatch) return chromiumMatch[1];
+
   return null;
 }
 
-function expectedXcodeVersion() {
-  const { root } = evmConfig.current();
+function expectedXcodeVersion(target) {
+  const { root, defaultTarget } = evmConfig.current();
 
   let version;
 
@@ -136,7 +141,15 @@ function expectedXcodeVersion() {
     version = fs.existsSync(baseYaml) && extractXcodeVersion(fs.readFileSync(baseYaml, 'utf8'));
   }
 
-  if (!semver.valid(semver.coerce(version))) {
+  // Finally check build/mac_toolchain.py if we're building Chromium.
+  if ([target, defaultTarget].includes('chrome')) {
+    const macToolchainPy = path.resolve(root, 'src', 'build', 'mac_toolchain.py');
+    version =
+      fs.existsSync(macToolchainPy) && extractXcodeVersion(fs.readFileSync(macToolchainPy, 'utf8'));
+  }
+
+  const coerced = semver.coerce(version);
+  if (!semver.valid(coerced)) {
     console.warn(
       color.warn,
       `failed to automatically identify the required version of Xcode - falling back
@@ -144,6 +157,8 @@ to default of`,
       fallbackXcode(),
     );
     return fallbackXcode();
+  } else {
+    version = coerced.version;
   }
 
   if (!XcodeVersions[version]) {
@@ -188,8 +203,8 @@ function fixBadVersioned103() {
   }
 }
 
-function ensureXcode() {
-  const expected = expectedXcodeVersion();
+function ensureXcode(target) {
+  const expected = expectedXcodeVersion(target);
   fixBadVersioned103();
 
   const shouldEnsureXcode = !fs.existsSync(XcodePath) || getXcodeVersion() !== expected;
