@@ -8,7 +8,6 @@ const evmConfig = require('./evm-config');
 const { fatal } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
 const depot = require('./utils/depot-tools');
-const { loadXcode } = require('./utils/load-xcode');
 
 function setRemotes(cwd, repo) {
   for (const remote in repo) {
@@ -39,11 +38,6 @@ function runGClientSync(syncArgs, syncOpts) {
 
   if (config.env.GIT_CACHE_PATH) {
     ensureDir(config.env.GIT_CACHE_PATH);
-  }
-
-  // ensure xcode is loaded
-  if (process.platform === 'darwin') {
-    loadXcode(true);
   }
 
   depot.ensure();
