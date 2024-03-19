@@ -149,6 +149,7 @@ describe('e-init', () => {
       .name('name')
       .force()
       .run();
+    expect(result.stderr).toEqual('');
     expect(result.exitCode).toStrictEqual(0);
   });
 
