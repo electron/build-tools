@@ -192,4 +192,22 @@ describe('e-init', () => {
     expect(result.exitCode).toStrictEqual(0);
     expect(result.stdout).toStrictEqual('Debug');
   });
+
+  it('loadXcode is called on macOS', () => {
+    const root = path.resolve(sandbox.tmpdir, 'main');
+    const result = sandbox
+      .eInitRunner()
+      .root(root)
+      .import('debug')
+      .name('name')
+      .run();
+
+    expect(result.exitCode).toStrictEqual(0);
+    const output = expect.stringContaining('TEST: loadXcode called');
+    if (process.platform === 'darwin') {
+      expect(result.stdout).toEqual(output);
+    } else {
+      expect(result.stdout).not.toEqual(output);
+    }
+  });
 });

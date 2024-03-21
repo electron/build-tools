@@ -17,6 +17,12 @@ function loadXcode(options = {}) {
     fatal('Should only configure Xcode on darwin platform');
   }
 
+  // For testing purposes
+  if (process.env.__JEST__) {
+    console.log('TEST: loadXcode called');
+    return;
+  }
+
   if (Xcode.ensureXcode(target) === false) {
     return;
   }
