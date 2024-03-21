@@ -13,6 +13,7 @@ const { resolvePath, ensureDir } = require('./utils/paths');
 const reclient = require('./utils/reclient');
 const depot = require('./utils/depot-tools');
 const { checkGlobalGitConfig } = require('./utils/git');
+const { loadXcode } = require('./utils/load-xcode');
 
 // https://gn.googlesource.com/gn/+/main/docs/reference.md?pli=1#var_target_cpu
 const archOption = new Option(
@@ -181,7 +182,6 @@ program
       }
 
       // save the new config
-      ensureRoot(config, !!options.force);
       evmConfig.save(name, config);
       console.log(`New build config ${color.config(name)} created in ${color.path(filename)}`);
 
@@ -189,6 +189,13 @@ program
       const e = path.resolve(__dirname, 'e');
       const opts = { stdio: 'inherit' };
       childProcess.execFileSync(process.execPath, [e, 'use', name], opts);
+
+      // ensure xcode is loaded
+      if (process.platform === 'darwin') {
+        loadXcode(true);
+      }
+
+      ensureRoot(config, !!options.force);
 
       // (maybe) run sync to ensure external binaries are downloaded
       if (options.bootstrap) {
