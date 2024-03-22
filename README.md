@@ -402,7 +402,7 @@ $ e shell
 
 ### `e backport <PR>`
 
-`e backport <PR>` assists with manual backport processes the specified pull request.
+`e backport <PR>` assists with manual backport processes on the specified pull request.
 
 Example:
 
