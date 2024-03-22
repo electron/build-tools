@@ -77,7 +77,7 @@ and building the code. `e` wraps these tools:
 | e sync  | Get / update / synchronize source code branches                |
 | e build | Build it!                                                      |
 
-### e init
+### `e init`
 
 `e init` initializes a new local development environment for Electron.
 
@@ -398,6 +398,29 @@ Developers may for example find themselves wishing to access `gn` and `ninja` di
 $ e shell
 # Launching build-tools shell with "/bin/zsh"
 # Running "/bin/zsh"
+```
+
+### `e backport <PR>`
+
+`e backport <PR>` assists with manual backport processes the specified pull request.
+
+Example:
+
+```sh
+# select the PR to backport
+e backport 1234
+
+# select branch you want to backport PR to
+30-x-y
+
+# resolve any merge conflicts
+git cherry-pick --continue
+
+# push changes
+git push
+
+# create pull request
+e pr --backport 1234
 ```
 
 ## Common Usage
