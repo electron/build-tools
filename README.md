@@ -404,6 +404,12 @@ $ e shell
 
 `e backport <PR>` assists with manual backport processes on the specified pull request.
 
+To see all potential options for this command, run:
+
+```sh
+$ e backport --help
+```
+
 Example:
 
 ```sh
