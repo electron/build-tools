@@ -32,31 +32,32 @@ program
       return;
     }
 
+    const current = evmConfig.current();
+
     let cwd;
     if (['goma_ctl', 'goma_auth'].includes(args[0])) {
-      goma.downloadAndPrepare(evmConfig.current());
+      goma.downloadAndPrepare(current);
       cwd = goma.dir;
       args[0] = `${args[0]}.py`;
       args.unshift('python3');
     }
 
     if (args[0] === 'rbe') {
-      reclient.downloadAndPrepare(evmConfig.current(), true);
-      args[0] = reclient.helperPath(evmConfig.current());
+      reclient.downloadAndPrepare(current, true);
+      args[0] = reclient.helperPath(current);
     }
 
     if (args[0] === '--') {
       args.shift();
     }
 
-    const { status, error } = depot.spawnSync(evmConfig.current(), args[0], args.slice(1), {
+    const { status, error } = depot.spawnSync(current, args[0], args.slice(1), {
       cwd,
       stdio: 'inherit',
       env: {
         ...process.env,
         AGREE_NOTGOMA_TOS: '1',
       },
-      shell: os.platform() === 'win32',
     });
 
     if (status !== 0) {
