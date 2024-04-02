@@ -30,7 +30,7 @@ jobs:
         git config --global core.eol lf
         git config --global core.filemode false
         git config --global branch.autosetuprebase always
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # tag: v4.1.1
+    - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # tag: v4.1.2
       with:
         fetch-depth: 1
     - name: Setup Node.js
