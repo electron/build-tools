@@ -122,20 +122,13 @@ function expectedXcodeVersion(target) {
 
   let version;
 
-  // First check CI build_config.yml
-  if (!version) {
-    const buildConfYaml = path.resolve(root, 'src', 'electron', '.circleci', 'build_config.yml');
-    version =
-      fs.existsSync(buildConfYaml) && extractXcodeVersion(fs.readFileSync(buildConfYaml, 'utf8'));
-  }
-
-  // Second check CI config.yml
+  // First check CI config.yml
   if (!version) {
     const configYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config.yml');
     version = fs.existsSync(configYaml) && extractXcodeVersion(fs.readFileSync(configYaml, 'utf8'));
   }
 
-  // Third check base.yml
+  // Second check base.yml
   if (!version) {
     const baseYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config', 'base.yml');
     version = fs.existsSync(baseYaml) && extractXcodeVersion(fs.readFileSync(baseYaml, 'utf8'));
