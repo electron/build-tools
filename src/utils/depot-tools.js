@@ -82,6 +82,7 @@ function depotOpts(config, opts = {}) {
   opts = {
     encoding: 'utf8',
     stdio: 'inherit',
+    shell: process.platform === 'win32',
     ...opts,
   };
 
