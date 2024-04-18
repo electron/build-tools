@@ -27,6 +27,11 @@ function runSync(args, options) {
     exitCode: 0,
   };
 
+  // Necessary when spawning .cmd on Windows.
+  if (process.platform === 'win32') {
+    options = { ...options, shell: true };
+  }
+
   try {
     if (debug) console.log(args);
     const out = childProcess.execFileSync(spawnCmd, args, options);
