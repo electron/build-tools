@@ -16,8 +16,10 @@ function runGNGen(config) {
   depot.ensure();
   const gnBasename = os.platform() === 'win32' ? 'gn.bat' : 'gn';
   const gnPath = path.resolve(depot.path, gnBasename);
-  const gnArgs = config.gen.args.join(' ');
-  const execArgs = ['gen', `out/${config.gen.out}`, `--args=${gnArgs}`];
+  const gnArgs = config.gen.args.join(os.EOL);
+  const argsFile = path.resolve(evmConfig.outDir(config), 'args.gn');
+  fs.writeFileSync(argsFile, gnArgs, { encoding: 'utf8' });
+  const execArgs = ['gen', `out/${config.gen.out}`];
   const execOpts = { cwd: path.resolve(config.root, 'src') };
   depot.execFileSync(config, gnPath, execArgs, execOpts);
 }
@@ -29,8 +31,7 @@ function ensureGNGen(config) {
   if (!fs.existsSync(argsFile)) return runGNGen(config);
   const contents = fs.readFileSync(argsFile, 'utf8');
   // If the current args do not match the args file, re-run gen
-  if (contents.trim() !== config.gen.args.join(process.platform === 'win32' ? '\r\n' : '\n').trim())
-    return runGNGen(config);
+  if (contents.trim() !== config.gen.args.join(os.EOL).trim()) return runGNGen(config);
 }
 
 function runNinja(config, target, useRemote, ninjaArgs) {
