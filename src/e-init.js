@@ -94,7 +94,11 @@ function runGClientConfig(config) {
     cwd: root,
     shell: true,
   };
-  depot.spawnSync(config, exec, args, opts);
+  const { status } = depot.spawnSync(config, exec, args, opts);
+
+  if (status !== 0) {
+    fatal('gclient config failed');
+  }
 }
 
 function ensureRoot(config, force) {

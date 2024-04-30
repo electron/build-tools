@@ -10,6 +10,18 @@ const { ensureDir } = require('./utils/paths');
 const depot = require('./utils/depot-tools');
 
 function setRemotes(cwd, repo) {
+  // Confirm that cwd is the git root
+  const gitRoot = path.normalize(
+    cp
+      .execSync('git rev-parse --show-toplevel', { cwd })
+      .toString()
+      .trim(),
+  );
+
+  if (gitRoot !== cwd) {
+    fatal(`Expected git root to be ${cwd} but found ${gitRoot}`);
+  }
+
   for (const remote in repo) {
     // First check that the fork remote exists.
     if (remote === 'fork') {
@@ -53,7 +65,11 @@ function runGClientSync(syncArgs, syncOpts) {
         }
       : {},
   };
-  depot.spawnSync(config, exec, args, opts);
+  const { status } = depot.spawnSync(config, exec, args, opts);
+
+  if (status !== 0) {
+    fatal('gclient sync failed');
+  }
 
   // Only set remotes if we're building an Electron target.
   if (config.defaultTarget !== evmConfig.buildTargets().chromium) {
