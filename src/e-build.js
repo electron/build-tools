@@ -9,6 +9,7 @@ const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
+const { ensureDir } = require('./utils/paths');
 const reclient = require('./utils/reclient');
 const { loadXcode } = require('./utils/load-xcode');
 
@@ -18,6 +19,7 @@ function runGNGen(config) {
   const gnPath = path.resolve(depot.path, gnBasename);
   const gnArgs = config.gen.args.join(os.EOL);
   const argsFile = path.resolve(evmConfig.outDir(config), 'args.gn');
+  ensureDir(evmConfig.outDir(config));
   fs.writeFileSync(argsFile, gnArgs, { encoding: 'utf8' });
   const execArgs = ['gen', `out/${config.gen.out}`];
   const execOpts = { cwd: path.resolve(config.root, 'src') };
