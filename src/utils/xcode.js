@@ -251,9 +251,12 @@ function ensureXcode(target) {
       console.log(`Extracting ${color.cmd(XcodeZip)} into ${color.path(eventualVersionedPath)}`);
       const unzipPath = path.resolve(XcodeDir, 'tmp_unzip');
       deleteDir(unzipPath);
-      cp.spawnSync('unzip', ['-q', '-o', XcodeZip, '-d', unzipPath], {
+      const { status } = cp.spawnSync('unzip', ['-q', '-o', XcodeZip, '-d', unzipPath], {
         stdio: 'inherit',
       });
+      if (status !== 0) {
+        fatal('Failure while extracting Xcode zip');
+      }
 
       fs.renameSync(path.resolve(unzipPath, 'Xcode.app'), eventualVersionedPath);
       deleteDir(XcodeZip);
