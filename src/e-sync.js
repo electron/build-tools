@@ -18,7 +18,7 @@ function setRemotes(cwd, repo) {
       .trim(),
   );
 
-  if (gitRoot !== cwd) {
+  if (gitRoot.toLowerCase() !== cwd.toLowerCase()) {
     fatal(`Expected git root to be ${cwd} but found ${gitRoot}`);
   }
 
