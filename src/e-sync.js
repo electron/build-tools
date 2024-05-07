@@ -18,7 +18,10 @@ function setRemotes(cwd, repo) {
       .trim(),
   );
 
-  if (gitRoot.toLowerCase() !== cwd.toLowerCase()) {
+  const _match = (process.platform === "win32") ?
+    (gitRoot.toLowerCase() === cwd.toLowerCase()) :
+	(gitRoot === cwd);
+  if (!_match) {
     fatal(`Expected git root to be ${cwd} but found ${gitRoot}`);
   }
 
