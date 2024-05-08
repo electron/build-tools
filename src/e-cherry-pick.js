@@ -68,7 +68,7 @@ async function getGerritPatchDetailsFromURL(gerritUrl, security) {
   const [, commitId] = /^From ([0-9a-f]+)/.exec(patch);
 
   const bugNumber =
-    /^Bug[:=] ?(.+)$/im.exec(patch)?.[1] || /^Bug= ?chromium:(.+)$/m.exec(patch)?.[1];
+    /^(?:Bug|Fixed)[:=] ?(.+)$/im.exec(patch)?.[1] || /^Bug= ?chromium:(.+)$/m.exec(patch)?.[1];
   const cve = security ? await getCveForBugNr(bugNumber.replace('chromium:', '')) : '';
 
   const patchDirName =
