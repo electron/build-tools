@@ -18,10 +18,9 @@ function setRemotes(cwd, repo) {
       .trim(),
   );
 
-  const _match = (process.platform === "win32") ?
-    (gitRoot.toLowerCase() === cwd.toLowerCase()) :
-	(gitRoot === cwd);
-  if (!_match) {
+  // Check if the directories are the same in a way that handles case-insensitive
+  // filesystems
+  if (path.relative(gitRoot, cwd) !== '') {
     fatal(`Expected git root to be ${cwd} but found ${gitRoot}`);
   }
 
