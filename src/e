@@ -8,7 +8,6 @@ const path = require('path');
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
-const goma = require('./utils/goma');
 const { refreshPathVariable } = require('./utils/refresh-path');
 const { loadXcode } = require('./utils/load-xcode');
 
@@ -185,18 +184,6 @@ program
   )
   .action(() => {
     loadXcode();
-  });
-
-program
-  .command('update-goma')
-  .description('Ensure a fresh copy of Goma is installed')
-  .action(() => {
-    const args = process.argv.slice(3);
-    const config = {};
-    if (args.length > 0 && args[0] === 'msftGoma') {
-      config.gomaSource = 'msft';
-    }
-    console.log(`goma checksum: ${goma.downloadAndPrepare(config)}`);
   });
 
 program

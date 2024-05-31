@@ -13,7 +13,6 @@ const validConfig = {
       origin: 'git@github.com:electron/electron.git',
     },
   },
-  goma: 'none',
   reclient: 'none',
   preserveXcode: 5,
   gen: {

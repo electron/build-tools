@@ -10,7 +10,6 @@ const { URI } = require('vscode-uri');
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const { resolvePath, ensureDir } = require('./utils/paths');
-const reclient = require('./utils/reclient');
 const depot = require('./utils/depot-tools');
 const { checkGlobalGitConfig } = require('./utils/git');
 const { loadXcode } = require('./utils/load-xcode');
@@ -59,7 +58,6 @@ function createConfig(options) {
 
   return {
     $schema: URI.file(path.resolve(__dirname, '..', 'evm-config.schema.json')).toString(),
-    goma: 'none',
     reclient: options.reclient,
     root,
     remotes: {
