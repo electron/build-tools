@@ -59,7 +59,13 @@ async function getPullRequestInfo(pullNumber) {
 }
 
 function guessPRTarget(config) {
-  let script = path.resolve(config.root, 'src', 'electron', 'script', 'lib', 'get-version.js');
+  const electronDir = path.resolve(config.root, 'src', 'electron');
+  if (process.cwd() !== electronDir) {
+    fatal(`You must be in an Electron repository to guess the default target PR branch`);
+  }
+
+  let script = path.resolve(electronDir, 'script', 'lib', 'get-version.js');
+
   if (process.platform === 'win32') {
     script = script.replace(new RegExp(/\\/, 'g'), '\\\\');
   }
