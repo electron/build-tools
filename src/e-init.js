@@ -10,7 +10,6 @@ const { URI } = require('vscode-uri');
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const { resolvePath, ensureDir } = require('./utils/paths');
-const reclient = require('./utils/reclient');
 const depot = require('./utils/depot-tools');
 const { checkGlobalGitConfig } = require('./utils/git');
 const { loadXcode } = require('./utils/load-xcode');
@@ -139,6 +138,7 @@ program
   .option('--msan', `When building, enable clang's memory sanitizer`, false)
   .option('--lsan', `When building, enable clang's leak sanitizer`, false)
   .option('--mas', 'Build for the macOS App Store', false)
+  .option('--use-sdk', 'Use macOS SDKs instead of downloading full XCode versions.')
   .addOption(archOption)
   .option('--bootstrap', 'Run `e sync` and `e build` after creating the build config.')
   .addOption(
@@ -196,7 +196,11 @@ program
 
       // ensure xcode is loaded
       if (process.platform === 'darwin') {
-        loadXcode(true);
+        if (process.env.CI || options.useSdk) {
+          ensureSDK();
+        } else {
+          loadXcode({ target, quiet: true });
+        }
       }
 
       ensureRoot(config, !!options.force);

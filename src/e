@@ -11,6 +11,7 @@ const depot = require('./utils/depot-tools');
 const goma = require('./utils/goma');
 const { refreshPathVariable } = require('./utils/refresh-path');
 const { loadXcode } = require('./utils/load-xcode');
+const { ensureSDK } = require('./utils/sdk');
 
 // Refresh the PATH variable at the top of this shell so that retries in the same shell get the latest PATH variable
 refreshPathVariable();
@@ -180,11 +181,16 @@ ci.command('cancel', 'Cancel CI workflows and builds');
 
 program
   .command('load-xcode')
+  .option('--only-sdk', 'Only load the macOS SDK and not the full Xcode', false)
   .description(
-    'Loads required versions of Xcode and the macOS SDK and symlinks them (may require sudo)',
+    'Loads required versions of Xcode or macOS SDKs and symlinks them (may require sudo)',
   )
-  .action(() => {
-    loadXcode();
+  .action(({ onlySdk }) => {
+    if (onlySdk) {
+      ensureSDK();
+    } else {
+      loadXcode();
+    }
   });
 
 program

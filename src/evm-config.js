@@ -173,6 +173,15 @@ function validateConfig(config) {
   }
 }
 
+function setEnvVar(name, key, value) {
+  const config = loadConfigFileRaw(name);
+
+  config.env = config.env || {};
+  config.env[key] = value;
+
+  save(name, config);
+}
+
 function sanitizeConfig(name, config, overwrite = false) {
   const changes = [];
 
@@ -332,5 +341,6 @@ module.exports = {
   sanitizeConfigWithName,
   save,
   setCurrent,
+  setEnvVar,
   validateConfig,
 };

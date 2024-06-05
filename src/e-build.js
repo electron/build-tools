@@ -12,6 +12,7 @@ const goma = require('./utils/goma');
 const { ensureDir } = require('./utils/paths');
 const reclient = require('./utils/reclient');
 const { loadXcode } = require('./utils/load-xcode');
+const { ensureSDK } = require('./utils/sdk');
 
 function runGNGen(config) {
   depot.ensure();
@@ -102,7 +103,11 @@ program
       }
 
       if (process.platform === 'darwin') {
-        loadXcode({ target, quiet: true });
+        if (process.env.CI) {
+          ensureSDK();
+        } else {
+          loadXcode({ target, quiet: true });
+        }
       }
 
       if (options.gen) {
