@@ -138,7 +138,11 @@ program
   .option('--msan', `When building, enable clang's memory sanitizer`, false)
   .option('--lsan', `When building, enable clang's leak sanitizer`, false)
   .option('--mas', 'Build for the macOS App Store', false)
-  .option('--use-sdk', 'Use macOS SDKs instead of downloading full XCode versions.')
+  .option(
+    '--use-sdk',
+    'Use macOS SDKs instead of downloading full XCode versions when necessary',
+    false,
+  )
   .addOption(archOption)
   .option('--bootstrap', 'Run `e sync` and `e build` after creating the build config.')
   .addOption(
