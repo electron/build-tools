@@ -111,14 +111,20 @@ function checkForUpdates() {
     const headCmd = 'rev-parse --verify HEAD';
     const headBefore = git(headCmd);
 
+    const getCurrentCheckout = () => {
+      const branch = git('branch --show-current');
+      const sha = git('rev-parse --short HEAD');
+      return branch === '' ? sha : branch;
+    };
+
     const originUrl = git('remote get-url origin');
     const mainExists = !!git(`ls-remote --heads ${originUrl} main`);
     const desiredBranch = mainExists ? 'main' : 'master';
 
-    const currentBranch = git('branch --show-current');
-    if (currentBranch !== desiredBranch) {
+    const current = getCurrentCheckout();
+    if (current !== desiredBranch) {
       fatal(
-        `build-tools is checked out on ${currentBranch} and not '${desiredBranch}' - please switch and try again.`,
+        `build-tools is checked out on ${current} and not '${desiredBranch}' - please switch and try again.`,
       );
     }
 
