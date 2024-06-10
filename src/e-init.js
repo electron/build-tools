@@ -29,7 +29,7 @@ function createConfig(options) {
   const gn_args = [`import("//electron/build/args/${options.import}.gn")`];
 
   if (options.reclient !== 'none') {
-    gn_args.push('use_remoteexec = true');
+    gn_args.push('use_remoteexec=true');
   }
 
   if (options.asan) gn_args.push('is_asan=true');
@@ -41,7 +41,7 @@ function createConfig(options) {
     if (process.platform !== 'darwin') {
       fatal('macOS App Store builds are only supported on macOS');
     }
-    gn_args.push('is_mas_build = true');
+    gn_args.push('is_mas_build=true');
   }
 
   if (options.targetCpu) gn_args.push(`target_cpu="${options.targetCpu}"`);
