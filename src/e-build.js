@@ -13,11 +13,24 @@ const { ensureDir } = require('./utils/paths');
 const reclient = require('./utils/reclient');
 const { loadXcode } = require('./utils/load-xcode');
 
+function getGNArgs(config) {
+  const configArgs = config.gen.args;
+
+  // GN_EXTRA_ARGS is a list of GN args to append to the default args.
+  const { GN_EXTRA_ARGS } = process.env;
+  if (process.env.CI && GN_EXTRA_ARGS) {
+    const envArgs = GN_EXTRA_ARGS.split(' ').map(s => s.trim());
+    return [...configArgs, ...envArgs].join(os.EOL);
+  }
+
+  return configArgs.join(os.EOL);
+}
+
 function runGNGen(config) {
   depot.ensure();
   const gnBasename = os.platform() === 'win32' ? 'gn.bat' : 'gn';
   const gnPath = path.resolve(depot.path, gnBasename);
-  const gnArgs = config.gen.args.join(os.EOL);
+  const gnArgs = getGNArgs(config);
   const argsFile = path.resolve(evmConfig.outDir(config), 'args.gn');
   ensureDir(evmConfig.outDir(config));
   fs.writeFileSync(argsFile, gnArgs, { encoding: 'utf8' });
@@ -33,7 +46,9 @@ function ensureGNGen(config) {
   if (!fs.existsSync(argsFile)) return runGNGen(config);
   const contents = fs.readFileSync(argsFile, 'utf8');
   // If the current args do not match the args file, re-run gen
-  if (contents.trim() !== config.gen.args.join(os.EOL).trim()) return runGNGen(config);
+  if (contents.trim() !== getGNArgs(config)) {
+    return runGNGen(config);
+  }
 }
 
 function runNinja(config, target, useRemote, ninjaArgs) {
