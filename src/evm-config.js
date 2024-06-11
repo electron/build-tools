@@ -213,6 +213,16 @@ function sanitizeConfig(name, config, overwrite = false) {
     changes.push(`defined ${color.config('preserveXcode')} to default value of 5`);
   }
 
+  if (config.goma) {
+    delete config.goma;
+    changes.push(`removed deprecated ${color.config('goma')} property`);
+  }
+
+  if (config.gomaSource) {
+    delete config.gomaSource;
+    changes.push(`removed deprecated ${color.config('gomaSource')} property`);
+  }
+
   const remoteExecGnArg = 'use_remoteexec = true';
   const hasRemoteExecGN = !(
     !config.gen ||
