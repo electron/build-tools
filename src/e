@@ -28,9 +28,7 @@ function maybeCheckForUpdates() {
   }
 
   // Skip auto-update check if we checked out a specific commit.
-  const sha = cp.execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-  const { BUILD_TOOLS_SHA } = process.env;
-  if (BUILD_TOOLS_SHA === sha) {
+  if (process.env.BUILD_TOOLS_SHA) {
     console.error(
       `${color.info} build-tools checked out at a specific commit - skipping update check`,
     );
