@@ -5,6 +5,7 @@ const tar = require('tar');
 
 const { color, fatal } = require('./logging');
 const { deleteDir } = require('./paths');
+const evmConfig = require('../evm-config');
 
 const reclientDir = path.resolve(__dirname, '..', '..', 'third_party', 'reclient');
 const reclientTagFile = path.resolve(reclientDir, '.tag');
@@ -14,7 +15,29 @@ const reclientHelperPath = path.resolve(
 );
 const rbeServiceAddress = 'rbe.notgoma.com:443';
 
-const CREDENTIAL_HELPER_TAG = 'v0.2.2';
+const CREDENTIAL_HELPER_TAG = 'v0.3.0';
+
+function getTargetPlatform() {
+  let targetPlatform = null;
+
+  const arch = process.arch === 'arm64' ? 'arm64' : 'amd64';
+  switch (process.platform) {
+    case 'win32': {
+      targetPlatform = `windows-${arch}`;
+      break;
+    }
+    case 'darwin': {
+      targetPlatform = `darwin-${arch}`;
+      break;
+    }
+    case 'linux': {
+      targetPlatform = `linux-${arch}`;
+      break;
+    }
+  }
+
+  return targetPlatform;
+}
 
 function downloadAndPrepareReclient(config, force = false) {
   if (config.reclient === 'none' && !force) return;
@@ -29,23 +52,8 @@ function downloadAndPrepareReclient(config, force = false) {
 
   // Reclient itself comes down with a "gclient sync"
   // run.  We just need to ensure we have the cred helper
-  let targetPlatform = null;
-  switch (process.platform) {
-    case 'win32': {
-      targetPlatform = `windows-${process.arch === 'arm64' ? 'arm64' : 'amd64'}`;
-      break;
-    }
-    case 'darwin': {
-      targetPlatform = `darwin-${process.arch === 'arm64' ? 'arm64' : 'amd64'}`;
-      break;
-    }
-    case 'linux': {
-      targetPlatform = `linux-${process.arch === 'arm64' ? 'arm64' : 'amd64'}`;
-      break;
-    }
-  }
+  const targetPlatform = getTargetPlatform();
 
-  // Not supported
   if (!targetPlatform) return;
 
   if (!fs.existsSync(path.dirname(reclientDir))) {
@@ -68,9 +76,7 @@ function downloadAndPrepareReclient(config, force = false) {
   const { status } = childProcess.spawnSync(
     process.execPath,
     [path.resolve(__dirname, '..', 'download.js'), downloadURL, tmpDownload],
-    {
-      stdio: 'inherit',
-    },
+    { stdio: 'inherit' },
   );
   if (status !== 0) {
     deleteDir(tmpDownload);
@@ -95,9 +101,7 @@ function downloadAndPrepareReclient(config, force = false) {
 }
 
 function reclientEnv(config) {
-  if (config && config.reclient === 'none') {
-    return {};
-  }
+  if (config?.reclient === 'none') return {};
 
   return {
     RBE_service: config.reclientServiceAddress || rbeServiceAddress,
@@ -106,17 +110,46 @@ function reclientEnv(config) {
   };
 }
 
-function ensureHelperAuth(config) {
-  const result = childProcess.spawnSync(reclientHelperPath, ['status'], {
-    stdio: 'pipe',
+function isAuthenticated() {
+  const { stdout } = childProcess.spawnSync(reclientHelperPath, ['status'], {
+    cwd: reclientDir,
+    stdio: ['ignore'],
   });
-  if (result.status !== 0) {
-    console.error(result.stdout.toString());
+
+  const match = stdout
+    .toString()
+    .trim()
+    .match(/Authentication Status:\s*(.*)/);
+
+  return match ? match[1].trim() === 'Authenticated' : false;
+}
+
+function auth() {
+  if (getTargetPlatform() === null) {
+    fatal('Unsupported platform for reclient');
+  }
+
+  if (isAuthenticated()) return;
+
+  const { status } = childProcess.spawnSync(reclientHelperPath, ['login'], {
+    stdio: 'inherit',
+  });
+
+  if (status !== 0) {
+    if (process.env.CODESPACES) {
+      console.warn(
+        'Failed to authenticate with Reclient - updating config to disable remote execution',
+      );
+      evmConfig.overwriteValue({ key: 'reclient', value: 'none' });
+      return;
+    }
+
     console.error(
-      `${color.err} You do not have valid auth for Reclient, please run ${color.cmd(
+      `${color.err} Failed to authenticate with Reclient - please run ${color.cmd(
         'e d rbe login',
-      )}`,
+      )} or update your config to set ${color.cmd('reclient')} to 'none'`,
     );
+
     process.exit(result.status || 1);
   }
 }
@@ -130,5 +163,5 @@ module.exports = {
   downloadAndPrepare: downloadAndPrepareReclient,
   helperPath: getHelperPath,
   serviceAddress: rbeServiceAddress,
-  auth: ensureHelperAuth,
+  auth,
 };
