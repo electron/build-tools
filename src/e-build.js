@@ -11,10 +11,14 @@ const depot = require('./utils/depot-tools');
 const { ensureDir } = require('./utils/paths');
 const reclient = require('./utils/reclient');
 const { loadXcode } = require('./utils/load-xcode');
-const { ensureSDK } = require('./utils/sdk');
+const { ensureSDK, ensureSDKAndSymlink } = require('./utils/sdk');
 
 function getGNArgs(config) {
   const configArgs = config.gen.args;
+
+  if (process.env.CI || config.useSdk) {
+    configArgs.push(`mac_sdk_path = "${ensureSDKAndSymlink(config)}"`);
+  }
 
   // GN_EXTRA_ARGS is a list of GN args to append to the default args.
   const { GN_EXTRA_ARGS } = process.env;

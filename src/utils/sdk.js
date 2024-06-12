@@ -89,9 +89,26 @@ function expectedSDKVersion() {
   return version;
 }
 
+function ensureSDKAndSymlink(config) {
+  const localPath = ensureSDK();
+
+  const outDir = evmConfig.outDir(config);
+
+  const outRelative = path.join('xcode_links', 'electron', path.basename(localPath));
+  const xcodeLink = path.resolve(outDir, outRelative);
+  if (!fs.existsSync(xcodeLink)) {
+    fs.mkdirSync(path.dirname(xcodeLink), {
+      recursive: true,
+    });
+    fs.symlinkSync(localPath, xcodeLink);
+  }
+
+  return `//out/${path.basename(outDir)}/${outRelative}`;
+}
+
 function ensureSDK() {
   const expected = expectedSDKVersion();
-  const eventualVersionedPath = path.resolve(SDKDir, `MacOSX-${expected}.sdk`);
+  const eventualVersionedPath = path.resolve(SDKDir, `MacOSX${expected}.sdk`);
 
   const shouldEnsureSDK = !fs.existsSync(eventualVersionedPath) || getSDKVersion() !== expected;
 
@@ -171,7 +188,7 @@ function ensureSDK() {
 
   console.log(`${color.info} Now using SDK version ${color.path(getSDKVersion())}`);
 
-  return true;
+  return eventualVersionedPath;
 }
 
 // Hash MacOSX.sdk directory zip with sha256.
@@ -186,4 +203,5 @@ function hashFile(file) {
 
 module.exports = {
   ensureSDK,
+  ensureSDKAndSymlink,
 };
