@@ -199,7 +199,7 @@ program
 
       // ensure xcode is loaded
       if (process.platform === 'darwin') {
-        if (process.env.CI || options.useSdk) {
+        if (options.useSdk) {
           ensureSDK();
         } else {
           loadXcode({ target, quiet: true });

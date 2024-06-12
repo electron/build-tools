@@ -16,7 +16,7 @@ const { ensureSDK, ensureSDKAndSymlink } = require('./utils/sdk');
 function getGNArgs(config) {
   const configArgs = config.gen.args;
 
-  if (process.env.CI || config.useSdk) {
+  if (config.useSdk) {
     configArgs.push(`mac_sdk_path = "${ensureSDKAndSymlink(config)}"`);
   }
 
@@ -112,7 +112,7 @@ program
       }
 
       if (process.platform === 'darwin') {
-        if (process.env.CI || options.useSdk) {
+        if (options.useSdk) {
           ensureSDK();
         } else {
           loadXcode({ target, quiet: true });
