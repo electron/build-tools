@@ -6,7 +6,6 @@ const yml = require('js-yaml');
 const { URI } = require('vscode-uri');
 const { color, fatal } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
-const goma = require('./utils/goma');
 
 const preferredFormat = process.env.EVM_FORMAT || 'json'; // yaml yml json
 const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
@@ -194,11 +193,6 @@ function sanitizeConfig(name, config, overwrite = false) {
     changes.push(`added missing property ${color.config('$schema')}`);
   }
 
-  if (!['none', 'cluster', 'cache-only'].includes(config.goma)) {
-    config.goma = 'cache-only';
-    changes.push(`added missing property ${color.config('goma: cache-only')}`);
-  }
-
   if (config.origin) {
     config.remotes = {
       electron: {
@@ -223,30 +217,19 @@ function sanitizeConfig(name, config, overwrite = false) {
     changes.push(`fixed invalid property ${color.config('reclient: none')}`);
   }
 
-  if (config.reclient !== 'none' && config.goma !== 'none') {
-    config.goma = 'none';
-    changes.push(`disabled ${color.config('goma')} as ${color.config('reclient')} is enabled`);
-  }
-
   if (!('preserveXcode' in config)) {
     config.preserveXcode = 5;
     changes.push(`defined ${color.config('preserveXcode')} to default value of 5`);
   }
 
-  const gomaGnArg = `import("${goma.gnFilePath}")`;
-  const hasGomaImport = !(
-    !config.gen ||
-    !config.gen.args ||
-    !config.gen.args.find(arg => arg.includes(goma.gnFilePath))
-  );
-  if (config.goma !== 'none' && !hasGomaImport) {
-    config.gen = config.gen || {};
-    config.gen.args = config.gen.args || [];
-    config.gen.args.push(gomaGnArg);
-    changes.push(`added ${color.cmd(gomaGnArg)} needed by goma`);
-  } else if (config.goma === 'none' && hasGomaImport) {
-    config.gen.args = config.gen.args.filter(arg => !arg.includes(goma.gnFilePath));
-    changes.push(`removed gn arg ${color.cmd(gomaGnArg)} as goma is disabled`);
+  if (config.goma) {
+    delete config.goma;
+    changes.push(`removed deprecated ${color.config('goma')} property`);
+  }
+
+  if (config.gomaSource) {
+    delete config.gomaSource;
+    changes.push(`removed deprecated ${color.config('gomaSource')} property`);
   }
 
   const remoteExecGnArg = 'use_remoteexec = true';

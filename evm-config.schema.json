@@ -31,24 +31,6 @@
       "type": "string",
       "minLength": 1
     },
-    "goma": {
-      "$comment": "Deprecated, use reclient instead",
-      "description": "Goma mode to use",
-      "type": "string",
-      "enum": [
-        "cache-only",
-        "cluster",
-        "none"
-      ],
-      "default": "cache-only"
-    },
-    "gomaSource": {
-      "description": "Goma client is from a non-default source",
-      "type": "string",
-      "enum": [
-        "msft"
-      ]
-    },
     "reclient": {
       "description": "Whether to use the Electron RBE infrastructure",
       "type": "string",

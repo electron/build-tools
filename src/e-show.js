@@ -9,7 +9,6 @@ const program = require('commander');
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
-const goma = require('./utils/goma');
 
 function gitStatus(config) {
   const exec = 'git';
@@ -163,35 +162,6 @@ program
       } else {
         console.log(evmConfig.current().gen.out);
       }
-    } catch (e) {
-      fatal(e);
-    }
-  });
-
-program
-  .command('stats')
-  .description('Show build statistics')
-  .action(() => {
-    try {
-      const config = evmConfig.current();
-      const options = {
-        env: { ...process.env, ...config.env, ...goma.env(config) },
-        stdio: 'inherit',
-        cwd: goma.dir,
-      };
-      depot.execFileSync(config, 'python3', ['goma_ctl.py', 'stat'], options);
-    } catch (e) {
-      fatal(e);
-    }
-  });
-
-const gomaUrl = 'http://localhost:8088/';
-program
-  .command('goma')
-  .description(`Watch Goma at work at ${gomaUrl}`)
-  .action(async () => {
-    try {
-      await open(gomaUrl);
     } catch (e) {
       fatal(e);
     }

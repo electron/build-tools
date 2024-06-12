@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const childProcess = require('child_process');
+const cp = require('child_process');
 const fs = require('fs');
 const program = require('commander');
 const path = require('path');
@@ -8,7 +8,6 @@ const path = require('path');
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
-const goma = require('./utils/goma');
 const { refreshPathVariable } = require('./utils/refresh-path');
 const { loadXcode } = require('./utils/load-xcode');
 const { ensureSDK } = require('./utils/sdk');
@@ -24,10 +23,19 @@ function maybeCheckForUpdates() {
   // should not get a FOO that includes "Checking for build-tools updates".
   const disableAutoUpdatesFile = path.resolve(__dirname, '..', '.disable-auto-updates');
   if (fs.existsSync(disableAutoUpdatesFile)) {
-    console.error(`${color.info} Auto-updates disabled, skipping check for updates`);
+    console.error(`${color.info} Auto-updates disabled - skipping update check`);
     return;
   }
-  // don't check if we already checked recently
+
+  // Skip auto-update check if we checked out a specific commit.
+  if (process.env.BUILD_TOOLS_SHA) {
+    console.error(
+      `${color.info} build-tools checked out at a specific commit - skipping update check`,
+    );
+    return;
+  }
+
+  // Don't check if we already checked recently
   const intervalHours = 4;
   const updateCheckTSFile = path.resolve(__dirname, '..', '.update');
   const lastCheckEpochMsec = fs.existsSync(updateCheckTSFile)
@@ -43,16 +51,16 @@ function maybeCheckForUpdates() {
   // NB: send updater's stdout to stderr so its log messages are visible
   // but don't pollute stdout. For example, calling `FOO="$(e show exec)"`
   // should not get a FOO that includes "Checking for build-tools updates".
-  childProcess.spawnSync(process.execPath, ['e-auto-update.js'], {
+  cp.spawnSync(process.execPath, ['e-auto-update.js'], {
     cwd: __dirname,
     stdio: [0, 2, 2],
   });
 
-  // update the last-checked-at timestamp
+  // Update the last-checked-at timestamp.
   fs.writeFileSync(updateCheckTSFile, `${Date.now()}`);
 
-  // re-run the current invocation with the updated build-tools
-  const result = childProcess.spawnSync(
+  // Re-run the current invocation with the updated build-tools.
+  const result = cp.spawnSync(
     process.execPath,
     process.argv[0] === process.execPath ? process.argv.slice(1) : process.argv,
     {
@@ -90,7 +98,7 @@ program
       const exec = evmConfig.execOf(evmConfig.current());
       const opts = { stdio: 'inherit' };
       console.log(color.childExec(exec, args, opts));
-      childProcess.execFileSync(exec, args, opts);
+      cp.execFileSync(exec, args, opts);
     } catch (e) {
       fatal(e);
     }
@@ -116,7 +124,7 @@ program
         stdio: 'inherit',
       };
       console.log(color.childExec(exec, args, opts));
-      childProcess.execFileSync(exec, args, opts);
+      cp.execFileSync(exec, args, opts);
     } catch (e) {
       fatal(e);
     }
@@ -191,18 +199,6 @@ program
     } else {
       loadXcode();
     }
-  });
-
-program
-  .command('update-goma')
-  .description('Ensure a fresh copy of Goma is installed')
-  .action(() => {
-    const args = process.argv.slice(3);
-    const config = {};
-    if (args.length > 0 && args[0] === 'msftGoma') {
-      config.gomaSource = 'msft';
-    }
-    console.log(`goma checksum: ${goma.downloadAndPrepare(config)}`);
   });
 
 program

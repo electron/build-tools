@@ -97,7 +97,6 @@ function depotOpts(config, opts = {}) {
     ...config.env,
     ...opts.env,
     // Circular reference so we have to delay load
-    ...require('./goma').env(config),
     ...require('./reclient').env(config),
   };
 
