@@ -202,7 +202,7 @@ program
         if (options.useSdk) {
           ensureSDK();
         } else {
-          loadXcode({ target, quiet: true });
+          loadXcode();
         }
       }
 
