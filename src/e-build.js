@@ -8,7 +8,6 @@ const program = require('commander');
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
-const goma = require('./utils/goma');
 const { ensureDir } = require('./utils/paths');
 const reclient = require('./utils/reclient');
 const { loadXcode } = require('./utils/load-xcode');
@@ -52,19 +51,7 @@ function ensureGNGen(config) {
 }
 
 function runNinja(config, target, useRemote, ninjaArgs) {
-  if (useRemote && config.goma !== 'none') {
-    goma.downloadAndPrepare(config);
-
-    // maybe authenticate with Goma
-    if (config.goma === 'cluster') {
-      goma.auth(config);
-    }
-
-    goma.ensure(config);
-    if (!ninjaArgs.includes('-j') && !ninjaArgs.find(arg => /^-j[0-9]+$/.test(arg.trim()))) {
-      ninjaArgs.push('-j', 200);
-    }
-  } else if (useRemote && config.reclient !== 'none') {
+  if (useRemote && config.reclient !== 'none') {
     reclient.downloadAndPrepare(config);
     reclient.auth(config);
 
@@ -88,9 +75,7 @@ function runNinja(config, target, useRemote, ninjaArgs) {
   const opts = {
     cwd: evmConfig.outDir(config),
   };
-  if (!useRemote && config.goma !== 'none') {
-    opts.env = { GOMA_DISABLED: true };
-  } else if (!useRemote && config.reclient !== 'none') {
+  if (!useRemote && config.reclient !== 'none') {
     opts.env = { RBE_remote_disabled: true };
   }
   depot.execFileSync(config, exec, args, opts);

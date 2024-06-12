@@ -6,7 +6,6 @@ const os = require('os');
 const evmConfig = require('./evm-config');
 const { fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
-const goma = require('./utils/goma');
 const reclient = require('./utils/reclient');
 
 program
@@ -33,13 +32,6 @@ program
     }
 
     let cwd;
-    if (['goma_ctl', 'goma_auth'].includes(args[0])) {
-      goma.downloadAndPrepare(evmConfig.current());
-      cwd = goma.dir;
-      args[0] = `${args[0]}.py`;
-      args.unshift('python3');
-    }
-
     if (args[0] === 'rbe') {
       reclient.downloadAndPrepare(evmConfig.current(), true);
       args[0] = reclient.helperPath(evmConfig.current());
@@ -64,13 +56,6 @@ program
       if (status !== null) errorMsg += `\n Exit Code: "${status}"`;
       if (error) errorMsg += `\n ${error}`;
       fatal(errorMsg, status);
-    }
-
-    if (
-      ['python', 'python3'].includes(args[0]) &&
-      args.slice(1, 3).join(' ') === 'goma_auth.py logout'
-    ) {
-      goma.clearGomaLoginTime();
     }
 
     process.exit(0);
