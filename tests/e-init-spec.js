@@ -209,4 +209,23 @@ describe('e-init', () => {
       expect(result.stdout).not.toEqual(output);
     }
   });
+
+  it('only loads SDK on macOS when --only-sdk is passed', () => {
+    if (process.platform === 'darwin') {
+      const root = path.resolve(sandbox.tmpdir, 'main');
+      const result = sandbox
+        .eInitRunner()
+        .root(root)
+        .import('debug')
+        .name('name')
+        .onlySdk()
+        .run();
+
+      expect(result.exitCode).toStrictEqual(0);
+      const badOutput = expect.stringContaining('TEST: loadXcode called');
+      const goodOutput = expect.stringContaining('TEST: ensureSDK called');
+      expect(result.stdout).toEqual(goodOutput);
+      expect(result.stdout).not.toEqual(badOutput);
+    }
+  });
 });

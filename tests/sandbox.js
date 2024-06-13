@@ -90,6 +90,10 @@ function eInitRunner(execOptions) {
       args.push('--out', val);
       return o;
     },
+    onlySdk: () => {
+      args.push('--only-sdk');
+      return o;
+    },
     root: val => {
       args.push('--root', val);
       return o;

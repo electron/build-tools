@@ -107,6 +107,12 @@ function ensureSDKAndSymlink(config) {
 }
 
 function ensureSDK() {
+  // For testing purposes
+  if (process.env.__JEST__) {
+    console.log('TEST: ensureSDK called');
+    return;
+  }
+
   const expected = expectedSDKVersion();
   const eventualVersionedPath = path.resolve(SDKDir, `MacOSX${expected}.sdk`);
 

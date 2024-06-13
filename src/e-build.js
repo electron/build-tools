@@ -16,7 +16,7 @@ const { ensureSDK, ensureSDKAndSymlink } = require('./utils/sdk');
 function getGNArgs(config) {
   const configArgs = config.gen.args;
 
-  if (config.useSdk) {
+  if (config.onlySdk) {
     configArgs.push(`mac_sdk_path = "${ensureSDKAndSymlink(config)}"`);
   }
 
@@ -93,11 +93,6 @@ program
   .option('--gen', 'Force a re-run of `gn gen` before building', false)
   .option('-t|--target [target]', 'Forces a specific ninja target')
   .option('--no-remote', 'Build without remote execution (entirely locally)')
-  .option(
-    '--use-sdk',
-    'Use macOS SDKs instead of downloading full XCode versions when necessary',
-    false,
-  )
   .allowUnknownOption()
   .action((target, ninjaArgs, options) => {
     try {
@@ -112,7 +107,7 @@ program
       }
 
       if (process.platform === 'darwin') {
-        if (options.useSdk) {
+        if (config.onlySdk) {
           ensureSDK();
         } else {
           loadXcode({ target, quiet: true });

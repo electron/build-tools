@@ -13,6 +13,7 @@ const { resolvePath, ensureDir } = require('./utils/paths');
 const depot = require('./utils/depot-tools');
 const { checkGlobalGitConfig } = require('./utils/git');
 const { loadXcode } = require('./utils/load-xcode');
+const { ensureSDK } = require('./utils/sdk');
 
 // https://gn.googlesource.com/gn/+/main/docs/reference.md?pli=1#var_target_cpu
 const archOption = new Option(
@@ -68,6 +69,7 @@ function createConfig(options) {
       out: options.out,
     },
     preserveXcode: 5,
+    onlySdk: options.onlySdk,
     env: {
       CHROMIUM_BUILDTOOLS_PATH: path.resolve(root, 'src', 'buildtools'),
       GIT_CACHE_PATH: process.env.GIT_CACHE_PATH
@@ -138,7 +140,7 @@ program
   .option('--lsan', `When building, enable clang's leak sanitizer`, false)
   .option('--mas', 'Build for the macOS App Store', false)
   .option(
-    '--use-sdk',
+    '--only-sdk',
     'Use macOS SDKs instead of downloading full XCode versions when necessary',
     false,
   )
@@ -199,7 +201,7 @@ program
 
       // ensure xcode is loaded
       if (process.platform === 'darwin') {
-        if (options.useSdk) {
+        if (options.onlySdk) {
           ensureSDK();
         } else {
           loadXcode();
