@@ -91,7 +91,6 @@ function depotOpts(config, opts = {}) {
     PYTHONDONTWRITEBYTECODE: '1', // depot needs it
     DEPOT_TOOLS_METRICS: '0', // disable depot metrics
     // Circular reference so we have to delay load
-    DEVELOPER_DIR: require('./xcode').XcodePath, // use build-tools version of Xcode
     ...process.env,
     ...platformOpts(),
     ...config.env,
@@ -99,6 +98,11 @@ function depotOpts(config, opts = {}) {
     // Circular reference so we have to delay load
     ...require('./reclient').env(config),
   };
+
+  if (!config.onlySdk) {
+    // use build-tools version of Xcode
+    opts.env.DEVELOPER_DIR = require('./xcode').XcodePath;
+  }
 
   // put depot tools at the front of the path
   const key = pathKey();
