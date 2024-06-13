@@ -33,9 +33,10 @@ const SDKs = {
 };
 
 const fallbackSDK = () => {
-  return Object.keys(SDKs)
+  const semverFallback = Object.keys(SDKs)
     .map(v => semver.valid(semver.coerce(v)))
     .sort(semver.rcompare)[0];
+  return semverFallback.substring(0, semverFallback.length - 2);
 };
 
 function getSDKVersion() {
