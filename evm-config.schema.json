@@ -26,6 +26,11 @@
       "default": 5,
       "minimum": 1
     },
+    "onlySdk": {
+      "description": "Use macOS SDKs instead of downloading full XCode versions when necessary",
+      "type": "boolean",
+      "default": false
+    },
     "extends": {
       "description": "Name of base config to extend",
       "type": "string",
