@@ -16,7 +16,7 @@ const { ensureSDK, ensureSDKAndSymlink } = require('./utils/sdk');
 function getGNArgs(config) {
   const configArgs = config.gen.args;
 
-  if (config.onlySdk) {
+  if (config.onlySdk && process.platform === 'darwin') {
     configArgs.push(`mac_sdk_path = "${ensureSDKAndSymlink(config)}"`);
   }
 
