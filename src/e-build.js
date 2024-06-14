@@ -90,7 +90,7 @@ program
   .arguments('[target] [ninjaArgs...]')
   .description('Build Electron and other targets.')
   .option('--list-targets', 'Show all supported build targets', false)
-  .option('--gen', 'Force a re-run of `gn gen` before building', false)
+  .option('--only-gen', 'Only run `gn gen`', false)
   .option('-t|--target [target]', 'Forces a specific ninja target')
   .option('--no-remote', 'Build without remote execution (entirely locally)')
   .allowUnknownOption()
@@ -114,8 +114,9 @@ program
         }
       }
 
-      if (options.gen) {
+      if (options.onlyGen) {
         runGNGen(config);
+        return;
       }
 
       if (options.target) {
