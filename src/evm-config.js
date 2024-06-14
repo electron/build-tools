@@ -312,6 +312,7 @@ function remove(name) {
 module.exports = {
   buildTargets,
   current: () => sanitizeConfigWithName(currentName()),
+  maybeCurrent: () => (getCurrentFileName() ? sanitizeConfigWithName(currentName()) : {}),
   currentName,
   execOf,
   fetchByName: name => sanitizeConfigWithName(name),

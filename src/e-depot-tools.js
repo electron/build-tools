@@ -41,7 +41,7 @@ program
       args.shift();
     }
 
-    const { status, error } = depot.spawnSync(evmConfig.current(), args[0], args.slice(1), {
+    const { status, error } = depot.spawnSync(evmConfig.maybeCurrent(), args[0], args.slice(1), {
       cwd,
       stdio: 'inherit',
       env: {
