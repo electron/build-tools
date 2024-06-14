@@ -58,20 +58,22 @@ function platformOpts() {
 
   switch (os.platform()) {
     case 'win32':
-      opts = {
-        DEPOT_TOOLS_WIN_TOOLCHAIN: '1',
-        DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL: 'https://dev-cdn.electronjs.org/windows-toolchains/_',
-        GYP_MSVS_HASH_9ff60e43ba91947baca460d0ca3b1b980c3a2c23:
-          '6d205e765a23d3cbe0fcc8d1191ae406d8bf9c04',
-        GYP_MSVS_HASH_a687d8e2e4114d9015eb550e1b156af21381faac:
-          'b1bdbc45421e4e0ff0584c4dbe583e93b046a411',
-        GYP_MSVS_HASH_20d5f2553f: 'e146e01913',
-        GYP_MSVS_HASH_3bda71a11e: 'e146e01913',
-        GYP_MSVS_HASH_e41785f09f: 'e146e01913',
-        GYP_MSVS_HASH_1023ce2e82: '3a908a0f94',
-        GYP_MSVS_HASH_27370823e7: '28622d16b1',
-        GYP_MSVS_HASH_7393122652: '3ba76c5c20',
-      };
+      if (process.env.ELECTRON_DEPOT_TOOLS_WIN_TOOLCHAIN === '0') {
+        opts = {
+          DEPOT_TOOLS_WIN_TOOLCHAIN: '1',
+          DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL: 'https://dev-cdn.electronjs.org/windows-toolchains/_',
+          GYP_MSVS_HASH_9ff60e43ba91947baca460d0ca3b1b980c3a2c23:
+            '6d205e765a23d3cbe0fcc8d1191ae406d8bf9c04',
+          GYP_MSVS_HASH_a687d8e2e4114d9015eb550e1b156af21381faac:
+            'b1bdbc45421e4e0ff0584c4dbe583e93b046a411',
+          GYP_MSVS_HASH_20d5f2553f: 'e146e01913',
+          GYP_MSVS_HASH_3bda71a11e: 'e146e01913',
+          GYP_MSVS_HASH_e41785f09f: 'e146e01913',
+          GYP_MSVS_HASH_1023ce2e82: '3a908a0f94',
+          GYP_MSVS_HASH_27370823e7: '28622d16b1',
+          GYP_MSVS_HASH_7393122652: '3ba76c5c20',
+        };
+      }
   }
 
   return opts;
