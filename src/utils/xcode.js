@@ -103,43 +103,16 @@ function removeUnusedXcodes() {
 }
 
 function extractXcodeVersion(config) {
-  const legacyMatch = /xcode: "?(\d+.\d+.\d+?)"?/.exec(config);
-  if (legacyMatch) return legacyMatch[1];
-
-  const modernMatch = /description: "xcode version"\n[\S\s]+default: (\d+.\d+.\d+?)\n/gm.exec(
-    config,
-  );
-  if (modernMatch) return modernMatch[1];
-
-  const chromiumMatch = /Xcode (\d+\.\d+(\.\d+)?)/.exec(config);
-  if (chromiumMatch) return chromiumMatch[1];
-
-  return null;
+  const match = /binaries from Xcode (\d+\.\d+(\.\d+)?)/.exec(config);
+  return match ? match[1] : null;
 }
 
-function expectedXcodeVersion(target) {
-  const { root, defaultTarget } = evmConfig.current();
+function expectedXcodeVersion() {
+  const { root } = evmConfig.current();
 
-  let version;
-
-  // First check CI config.yml
-  if (!version) {
-    const configYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config.yml');
-    version = fs.existsSync(configYaml) && extractXcodeVersion(fs.readFileSync(configYaml, 'utf8'));
-  }
-
-  // Second check base.yml
-  if (!version) {
-    const baseYaml = path.resolve(root, 'src', 'electron', '.circleci', 'config', 'base.yml');
-    version = fs.existsSync(baseYaml) && extractXcodeVersion(fs.readFileSync(baseYaml, 'utf8'));
-  }
-
-  // Finally check build/mac_toolchain.py if we're building Chromium.
-  if ([target, defaultTarget].includes('chrome')) {
-    const macToolchainPy = path.resolve(root, 'src', 'build', 'mac_toolchain.py');
-    version =
-      fs.existsSync(macToolchainPy) && extractXcodeVersion(fs.readFileSync(macToolchainPy, 'utf8'));
-  }
+  // The current Xcode version and associated SDK can be found in build/mac_toolchain.py.
+  const macToolchainPy = path.resolve(root, 'src', 'build', 'mac_toolchain.py');
+  let version = extractXcodeVersion(fs.readFileSync(macToolchainPy, 'utf8'));
 
   const coerced = semver.coerce(version);
   if (!semver.valid(coerced)) {
@@ -196,8 +169,8 @@ function fixBadVersioned103() {
   }
 }
 
-function ensureXcode(target) {
-  const expected = expectedXcodeVersion(target);
+function ensureXcode() {
+  const expected = expectedXcodeVersion();
   fixBadVersioned103();
 
   const shouldEnsureXcode = !fs.existsSync(XcodePath) || getXcodeVersion() !== expected;

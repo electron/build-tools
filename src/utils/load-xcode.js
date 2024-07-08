@@ -23,7 +23,7 @@ function loadXcode(options = {}) {
     return;
   }
 
-  if (Xcode.ensureXcode(target) === false) {
+  if (Xcode.ensureXcode() === false) {
     return;
   }
 
