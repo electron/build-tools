@@ -189,11 +189,11 @@ function ensureSDK() {
     }
 
     evmConfig.setEnvVar(evmConfig.currentName(), 'SDKROOT', eventualVersionedPath);
+
+    console.log(`${color.info} Now using SDK version ${color.path(getSDKVersion())}`);
   }
 
   deleteDir(SDKZip);
-
-  console.log(`${color.info} Now using SDK version ${color.path(getSDKVersion())}`);
 
   return eventualVersionedPath;
 }
