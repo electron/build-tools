@@ -31,6 +31,12 @@
       "type": "boolean",
       "default": false
     },
+    "execName": {
+      "description": "Name of the built executable to run",
+      "type": "string",
+      "default": "Electron",
+      "minLength": 1
+    },
     "extends": {
       "description": "Name of base config to extend",
       "type": "string",

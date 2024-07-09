@@ -1,6 +1,7 @@
 root: /path/to/chromium/
 reclient: remote_exec
 defaultTarget: chrome
+execName: Chromium
 gen:
   args:
     - use_remoteexec = true
