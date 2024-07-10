@@ -53,8 +53,13 @@ function getSDKVersion() {
   return json.MinimalDisplayName;
 }
 
-function extractSDKVersion(config) {
-  const match = /macOS \d+(?:\.\d+)? SDK\n\# \((\d+\.\d+)/.exec(config);
+function extractSDKVersion(toolchainFile) {
+  if (!fs.existsSync(toolchainFile)) {
+    return null;
+  }
+
+  const contents = fs.readFileSync(toolchainFile, 'utf8');
+  const match = /macOS \d+(?:\.\d+)? SDK\n\# \((\d+\.\d+)/.exec(contents);
   return match ? match[1] : null;
 }
 
@@ -63,18 +68,7 @@ function expectedSDKVersion() {
 
   // The current Xcode version and associated SDK can be found in build/mac_toolchain.py.
   const macToolchainPy = path.resolve(root, 'src', 'build', 'mac_toolchain.py');
-
-  if (!fs.existsSync(macToolchainPy)) {
-    console.warn(
-      color.warn,
-      `Failed to find ${color.path(macToolchainPy)} - falling back to default of`,
-      fallbackSDK(),
-    );
-    return fallbackSDK();
-  }
-
-  const config = fs.readFileSync(macToolchainPy, 'utf8');
-  const version = extractSDKVersion(config);
+  const version = extractSDKVersion(macToolchainPy);
 
   if (isNaN(Number(version)) || !SDKs[version]) {
     console.warn(
