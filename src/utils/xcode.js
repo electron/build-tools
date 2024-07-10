@@ -102,8 +102,13 @@ function removeUnusedXcodes() {
   }
 }
 
-function extractXcodeVersion(config) {
-  const match = /binaries from Xcode (\d+\.\d+(\.\d+)?)/.exec(config);
+function extractXcodeVersion(toolchainFile) {
+  if (!fs.existsSync(toolchainFile)) {
+    return null;
+  }
+
+  const contents = fs.readFileSync(toolchainFile, 'utf8');
+  const match = /binaries from Xcode (\d+\.\d+(\.\d+)?)/.exec(contents);
   return match ? match[1] : null;
 }
 
@@ -112,27 +117,12 @@ function expectedXcodeVersion() {
 
   // The current Xcode version and associated SDK can be found in build/mac_toolchain.py.
   const macToolchainPy = path.resolve(root, 'src', 'build', 'mac_toolchain.py');
-  let version = extractXcodeVersion(fs.readFileSync(macToolchainPy, 'utf8'));
+  let version = semver.coerce(extractXcodeVersion(macToolchainPy));
 
-  const coerced = semver.coerce(version);
-  if (!semver.valid(coerced)) {
+  if (isNaN(Number(version)) || !XcodeVersions[version]) {
     console.warn(
       color.warn,
-      `failed to automatically identify the required version of Xcode - falling back
-to default of`,
-      fallbackXcode(),
-    );
-    return fallbackXcode();
-  } else {
-    version = coerced.version;
-  }
-
-  if (!XcodeVersions[version]) {
-    console.warn(
-      color.warn,
-      `automatically detected an unknown version of Xcode ${color.path(
-        version,
-      )} - falling back to default of`,
+      `failed to automatically identify the required version of Xcode - falling back to default of`,
       fallbackXcode(),
     );
     return fallbackXcode();
