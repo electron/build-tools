@@ -30,16 +30,16 @@
     "debug": "^4.3.1",
     "got": "^11.8.5",
     "inquirer": "^8.2.4",
-    "js-yaml": "^3.13.1",
     "node-gyp": "^10.0.1",
     "open": "^6.4.0",
     "path-key": "^3.1.0",
     "progress": "^2.0.3",
     "readline-sync": "^1.4.10",
-    "tar": "^6.2.1",
     "semver": "^7.6.0",
+    "tar": "^6.2.1",
     "vscode-uri": "^3.0.7",
-    "which": "^2.0.2"
+    "which": "^2.0.2",
+    "yaml": "^2.4.5"
   },
   "devDependencies": {
     "@electron/lint-roller": "^1.5.0",

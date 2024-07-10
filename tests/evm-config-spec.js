@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const yml = require('js-yaml');
+const YAML = require('yaml');
 
 const { sanitizeConfig, validateConfig } = require('../src/evm-config');
 
@@ -40,7 +40,7 @@ describe('example configs', () => {
 
     for (const file of files) {
       const configContents = fs.readFileSync(path.resolve(exampleConfigsPath, file), 'utf8');
-      const validationErrors = validateConfig(yml.safeLoad(configContents));
+      const validationErrors = validateConfig(YAML.parse(configContents));
       expect(validationErrors).toBeFalsy();
     }
   });
