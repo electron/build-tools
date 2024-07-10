@@ -2,7 +2,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const Ajv = require('ajv');
-const yml = require('js-yaml');
+const YAML = require('yaml');
 const { URI } = require('vscode-uri');
 const { color, fatal } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
@@ -78,7 +78,7 @@ function save(name, o) {
   ensureDir(configRoot);
   const filename = pathOf(name);
   const isJSON = path.extname(filename) === '.json';
-  const txt = (isJSON ? JSON.stringify(o, null, 2) : yml.safeDump(o)) + '\n';
+  const txt = (isJSON ? JSON.stringify(o, null, 2) : YAML.stringify(o)) + '\n';
   fs.writeFileSync(filename, txt);
 }
 
@@ -156,8 +156,8 @@ function loadConfigFileRaw(name) {
     fatal(`Build config ${color.config(name)} not found.`);
   }
 
-  const configContents = fs.readFileSync(configPath);
-  return maybeExtendConfig(yml.safeLoad(configContents));
+  const configContents = fs.readFileSync(configPath, { encoding: 'utf8' });
+  return maybeExtendConfig(YAML.parse(configContents));
 }
 
 function validateConfig(config) {
