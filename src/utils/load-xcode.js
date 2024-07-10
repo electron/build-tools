@@ -18,7 +18,7 @@ function loadXcode(options = {}) {
   }
 
   // For testing purposes
-  if (process.env.__JEST__) {
+  if (process.env.__VITEST__) {
     console.log('TEST: loadXcode called');
     return;
   }

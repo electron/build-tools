@@ -1,7 +1,9 @@
-const os = require('os');
-const path = require('path');
-const pathKey = require('path-key');
-const createSandbox = require('./sandbox');
+import os from 'os';
+import path from 'path';
+import pathKey from 'path-key';
+import createSandbox from './sandbox';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('e-show', () => {
   let sandbox;

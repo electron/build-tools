@@ -1,9 +1,11 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
-const { validateConfig } = require('../src/evm-config');
+import { validateConfig } from '../src/evm-config';
 
-const createSandbox = require('./sandbox');
+import createSandbox from './sandbox';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('e-init', () => {
   let sandbox;

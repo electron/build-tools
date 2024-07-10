@@ -103,7 +103,7 @@ function ensureSDKAndSymlink(config) {
 
 function ensureSDK() {
   // For testing purposes
-  if (process.env.__JEST__) {
+  if (process.env.__VITEST__) {
     console.log('TEST: ensureSDK called');
     return;
   }

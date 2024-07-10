@@ -1,5 +1,7 @@
-const path = require('path');
-const createSandbox = require('./sandbox');
+import path from 'path';
+import createSandbox from './sandbox';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('e-remove', () => {
   let sandbox;
