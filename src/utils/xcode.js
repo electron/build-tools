@@ -117,7 +117,7 @@ function expectedXcodeVersion() {
 
   // The current Xcode version and associated SDK can be found in build/mac_toolchain.py.
   const macToolchainPy = path.resolve(root, 'src', 'build', 'mac_toolchain.py');
-  let version = semver.coerce(extractXcodeVersion(macToolchainPy));
+  const version = semver.coerce(extractXcodeVersion(macToolchainPy));
 
   if (isNaN(Number(version)) || !XcodeVersions[version]) {
     console.warn(
