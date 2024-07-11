@@ -14,7 +14,7 @@ const reclientHelperPath = path.resolve(
 );
 const rbeServiceAddress = 'rbe.notgoma.com:443';
 
-const CREDENTIAL_HELPER_TAG = 'v0.2.2';
+const CREDENTIAL_HELPER_TAG = 'v0.4.0';
 
 function downloadAndPrepareReclient(config, force = false) {
   if (config.reclient === 'none' && !force) return;
