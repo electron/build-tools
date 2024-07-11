@@ -12,7 +12,6 @@ const { color, fatal } = require('./utils/logging');
 const { resolvePath, ensureDir } = require('./utils/paths');
 const depot = require('./utils/depot-tools');
 const { checkGlobalGitConfig } = require('./utils/git');
-const { loadXcode } = require('./utils/load-xcode');
 const { ensureSDK } = require('./utils/sdk');
 
 // https://gn.googlesource.com/gn/+/main/docs/reference.md?pli=1#var_target_cpu
@@ -68,8 +67,6 @@ function createConfig(options) {
       args: gn_args,
       out: options.out,
     },
-    preserveXcode: 5,
-    onlySdk: options.onlySdk,
     env: {
       CHROMIUM_BUILDTOOLS_PATH: path.resolve(root, 'src', 'buildtools'),
       GIT_CACHE_PATH: process.env.GIT_CACHE_PATH
@@ -139,11 +136,6 @@ program
   .option('--msan', `When building, enable clang's memory sanitizer`, false)
   .option('--lsan', `When building, enable clang's leak sanitizer`, false)
   .option('--mas', 'Build for the macOS App Store', false)
-  .option(
-    '--only-sdk',
-    'Use macOS SDKs instead of downloading full XCode versions when necessary',
-    false,
-  )
   .addOption(archOption)
   .option('--bootstrap', 'Run `e sync` and `e build` after creating the build config.')
   .addOption(
@@ -182,6 +174,11 @@ program
         } else {
           loadXcode();
         }
+      }
+
+      // ensure macOS SDKs are loaded
+      if (process.platform === 'darwin') {
+        ensureSDK();
       }
 
       const config = createConfig(options);

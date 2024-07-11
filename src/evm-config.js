@@ -215,9 +215,9 @@ function sanitizeConfig(name, config, overwrite = false) {
     changes.push(`fixed invalid property ${color.config('reclient: none')}`);
   }
 
-  if (!('preserveXcode' in config)) {
+  if ('preserveXcode' in config) {
     config.preserveXcode = 5;
-    changes.push(`defined ${color.config('preserveXcode')} to default value of 5`);
+    changes.push(`removed ${color.config('preserveXcode')} property`);
   }
 
   if (config.goma) {

@@ -99,11 +99,6 @@ function depotOpts(config, opts = {}) {
     ...require('./reclient').env(config),
   };
 
-  if (!config.onlySdk) {
-    // use build-tools version of Xcode
-    opts.env.DEVELOPER_DIR = require('./xcode').XcodePath;
-  }
-
   // put depot tools at the front of the path
   const key = pathKey();
   const paths = [DEPOT_TOOLS_DIR];

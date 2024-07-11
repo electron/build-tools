@@ -12,17 +12,6 @@
       "type": "string",
       "default": "electron"
     },
-    "preserveXcode": {
-      "description": "Preserve the N most recent Xcode versions",
-      "type": "integer",
-      "default": 5,
-      "minimum": 1
-    },
-    "onlySdk": {
-      "description": "Use macOS SDKs instead of downloading full XCode versions when necessary",
-      "type": "boolean",
-      "default": false
-    },
     "execName": {
       "description": "Name of the built executable to run",
       "type": "string",

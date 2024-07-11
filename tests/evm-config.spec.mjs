@@ -16,7 +16,6 @@ const validConfig = {
     },
   },
   reclient: 'none',
-  preserveXcode: 5,
   gen: {
     args: [],
     out: 'Testing',
