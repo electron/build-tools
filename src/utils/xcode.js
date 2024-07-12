@@ -117,9 +117,9 @@ function expectedXcodeVersion() {
 
   // The current Xcode version and associated SDK can be found in build/mac_toolchain.py.
   const macToolchainPy = path.resolve(root, 'src', 'build', 'mac_toolchain.py');
-  const version = semver.coerce(extractXcodeVersion(macToolchainPy));
+  const coerced = semver.coerce(extractXcodeVersion(macToolchainPy));
 
-  if (isNaN(Number(version)) || !XcodeVersions[version]) {
+  if (!coerced || !XcodeVersions[coerced.version]) {
     console.warn(
       color.warn,
       `failed to automatically identify the required version of Xcode - falling back to default of`,
@@ -135,16 +135,16 @@ function expectedXcodeVersion() {
     .trim();
   const isVenturaOrHigher = semver.coerce(productVersion).major >= 13;
 
-  if (isVenturaOrHigher && !semver.gt(version, '14.0.0')) {
+  if (isVenturaOrHigher && !semver.gt(coerced.version, '14.0.0')) {
     console.warn(
       color.warn,
-      `Xcode ${version} is not supported on macOS Ventura - falling back to default of`,
+      `Xcode ${coerced.version} is not supported on macOS Ventura - falling back to default of`,
       fallbackXcode(),
     );
     return fallbackXcode();
   }
 
-  return version;
+  return coerced.version;
 }
 
 function fixBadVersioned103() {
