@@ -10,9 +10,8 @@ const { current } = require('../evm-config');
 const { getGitHubAuthToken } = require('../utils/github-auth');
 const { fatal } = require('../utils/logging');
 
-const { CIRCLE_TOKEN, APPVEYOR_CLOUD_TOKEN } = process.env;
+const { APPVEYOR_CLOUD_TOKEN } = process.env;
 
-const CIRCLECI_APP_ID = 18001;
 const APPVEYOR_BOT_ID = 40616121;
 
 const colorForStatus = status => {
@@ -39,14 +38,6 @@ const colorForStatus = status => {
   }
 };
 
-const getCircleStatusString = check => {
-  return check.status === 'completed'
-    ? check.conclusion === 'success'
-      ? chalk.green('success')
-      : chalk.redBright('failed')
-    : chalk.yellow('running');
-};
-
 const getAppveyorStatusString = check => {
   switch (check.state) {
     case 'success':
@@ -71,13 +62,6 @@ const appveyorArchMap = {
   },
 };
 
-const circleCIArchMap = {
-  macOS: 'build-mac',
-  Linux: 'build-linux',
-  Lint: 'lint',
-  'docs-only': 'docs-only',
-};
-
 const formatLink = (name, url) => `\x1B]8;;${url}\x1B\\${name}\x1B]8;;\x1B\\`;
 
 const getWorkflowID = url => url.pathname.replace('/workflow-run/', '');
@@ -96,49 +80,6 @@ const getType = prs => {
 };
 
 const getArch = url => url.pathname.match(/(electron-[a-zA-Z0-9]*-testing)/)[0];
-
-const printChecks = (checks, link) => {
-  let result = '';
-  for (const [name, check] of Object.entries(checks)) {
-    if (!check) {
-      result += `  ⦿ ${name} - ${chalk.blue('Missing')}\n`;
-      continue;
-    }
-
-    const status = getCircleStatusString(check);
-    const url = new URL(check.details_url);
-
-    if (link) {
-      result += `  ⦿ ${chalk.bold(name)} - ${formatLink(status, url)} - ${getWorkflowID(url)}\n`;
-    } else {
-      result += ` ⦿ ${chalk.bold(name)} - ${status} - ${url}\n`;
-    }
-
-    if (check.jobs) {
-      const failed = [];
-      const succeeded = check.jobs.filter(j => {
-        const passed = j.status === 'success';
-        if (!passed) failed.push(j);
-        return passed;
-      });
-
-      if (succeeded.length) {
-        const names = succeeded.map(s => s.name);
-        result +=
-          succeeded.length === check.jobs.length
-            ? '     ⦿ all jobs succeeded\n'
-            : `     ⦿ ${colorForStatus('success')} ${names.join(', ')}\n`;
-      }
-      for (const job of failed) {
-        const { id, name, status } = job;
-        result += `     ⦿ ${colorForStatus(status)} - ${name} - ${id}\n`;
-      }
-    }
-    result += '\n';
-  }
-
-  return result;
-};
 
 const printStatuses = (statuses, link) => {
   let result = '';
@@ -197,11 +138,7 @@ program
   .description('Show information about CI job statuses')
   .option('-r|--ref <ref>', 'The ref to check CI job status for')
   .option('-n|--no-link', 'Do not show smart linking for CI status information')
-  .option('-s|--show-jobs', 'Whether to also list the jobs for each workflow', () => {
-    if (!CIRCLE_TOKEN) {
-      fatal('process.env.CIRCLE_TOKEN is required to run this command');
-    }
-  })
+  .option('-s|--show-jobs', 'Whether to also list the jobs for each workflow')
   .action(async options => {
     const electronDir = path.resolve(current().root, 'src', 'electron');
     const currentRef = execFileSync('git', ['branch', '--show-current'], { cwd: electronDir })
@@ -222,13 +159,6 @@ program
         ref,
       });
 
-      const checks = {};
-      for (const [name, arch] of Object.entries(circleCIArchMap)) {
-        checks[name] = check_runs.find(
-          ({ app, name }) => app.id === CIRCLECI_APP_ID && name === arch,
-        );
-      }
-
       const { data } = await octokit.repos.listCommitStatusesForRef({
         repo: 'electron',
         owner: 'electron',
@@ -247,21 +177,6 @@ program
       }
 
       if (options.showJobs) {
-        // Fetch jobs for CircleCI Workflows
-        for (const [name, check] of Object.entries(checks)) {
-          if (!check) continue;
-          const url = new URL(check.details_url);
-          const workflowID = getWorkflowID(url);
-          const { items: jobs } = await got(
-            `https://circleci.com/api/v2/workflow/${workflowID}/job`,
-            {
-              username: CIRCLE_TOKEN,
-              password: '',
-            },
-          ).json();
-          checks[name].jobs = jobs;
-        }
-
         // Fetch jobs for Appveyor Workflows.
         for (const [name, check] of Object.entries(statuses)) {
           if (!check) continue;
@@ -281,8 +196,6 @@ program
       console.log(`${chalk.bold('Electron CI Status')}
   ${chalk.bold('Ref')}: ${chalk.cyan(ref)}
 
-  ${chalk.bold(chalk.bgMagenta(chalk.white('Circle CI')))}
-${printChecks(checks, !!options.link)}
   ${chalk.bold(chalk.bgBlue(chalk.white('Appveyor')))}
 ${printStatuses(statuses, !!options.link)}`);
     } catch (e) {
