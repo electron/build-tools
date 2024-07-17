@@ -1,19 +1,15 @@
-const { spawnSync, execFileSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const { existsSync } = require('fs');
 const path = require('path');
 const process = require('process');
 
 const { color, fatal } = require('./logging');
+const { spawnSync } = require('../utils/depot-tools');
 const evmConfig = require('../evm-config');
 
 const execFileSyncWithLog = (cmd, args, opts) => {
   console.log(color.childExec(cmd, args, opts));
   return execFileSync(cmd, args, opts);
-};
-
-const spawnSyncWithLog = (cmd, args, opts) => {
-  console.log(color.childExec(cmd, args, opts));
-  return spawnSync(cmd, args, opts);
 };
 
 const isReclientConfigured = () => {
@@ -48,9 +44,10 @@ function configureReclient() {
       fatal('Failed to clone EngFlow reclient configs');
     }
 
+    // Pinning to prevent unexpected breakage.
     const ENGFLOW_CONFIG_SHA =
       process.env.ENGFLOW_CONFIG_SHA || '955335c30a752e9ef7bff375baab5e0819b6c00d';
-    spawnSyncWithLog('git', ['checkout', ENGFLOW_CONFIG_SHA], {
+    spawnSync(evmConfig.current(), 'git', ['checkout', ENGFLOW_CONFIG_SHA], {
       cwd: engflowConfigsDir,
       stdio: 'ignore',
     });
@@ -62,17 +59,23 @@ function configureReclient() {
       'tools',
       'engflow_reclient_configs.patch',
     );
-    const { status: patchStatus } = spawnSyncWithLog('git', ['apply', reclientConfigPatchPath], {
-      cwd: engflowConfigsDir,
-      stdio: 'inherit',
-    });
+    const { status: patchStatus } = spawnSync(
+      evmConfig.current(),
+      'git',
+      ['apply', reclientConfigPatchPath],
+      {
+        cwd: engflowConfigsDir,
+        stdio: 'inherit',
+      },
+    );
 
     if (patchStatus !== 0) {
       fatal('Failed to apply EngFlow reclient configs patch');
     }
 
     const configureConfigScript = path.join(engflowConfigsDir, 'configure_reclient.py');
-    const { status: configureStatus } = spawnSyncWithLog(
+    const { status: configureStatus } = spawnSync(
+      evmConfig.current(),
       'python3',
       [configureConfigScript, '--src_dir=src', '--force'],
       {
