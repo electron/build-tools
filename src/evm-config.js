@@ -2,6 +2,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const Ajv = require('ajv');
+const _ = require('lodash');
 const YAML = require('yaml');
 const { URI } = require('vscode-uri');
 const { color, fatal } = require('./utils/logging');
