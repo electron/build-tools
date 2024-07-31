@@ -3,7 +3,7 @@ const path = require('path');
 
 const YAML = require('yaml');
 
-const { sanitizeConfig, validateConfig } = require('../src/evm-config');
+const { sanitizeConfig, validateConfig, fetchByName } = require('../src/evm-config');
 
 const validConfig = {
   $schema: 'file:///Users/user_name/.electron_build_tools/evm-config.schema.json',
@@ -32,17 +32,48 @@ const invalidConfig = {
 };
 
 describe('example configs', () => {
-  it('should validate', () => {
-    const exampleConfigsPath = path.resolve(__dirname, '..', 'example-configs');
+  beforeAll(() => {
+    process.env.EVM_CONFIG = path.resolve(__dirname, '..', 'example-configs');
+  });
 
-    const files = fs.readdirSync(exampleConfigsPath, { encoding: 'utf8' });
+  afterAll(() => {
+    process.env.EVM_CONFIG = path.resolve(__dirname, '..', 'configs');
+  });
+
+  it('should validate', () => {
+    const files = fs.readdirSync(process.env.EVM_CONFIG, { encoding: 'utf8' });
     expect(files.length).not.toBe(0);
 
     for (const file of files) {
-      const configContents = fs.readFileSync(path.resolve(exampleConfigsPath, file), 'utf8');
+      const configContents = fs.readFileSync(path.resolve(process.env.EVM_CONFIG, file), 'utf8');
       const validationErrors = validateConfig(YAML.parse(configContents));
       expect(validationErrors).toBeFalsy();
     }
+  });
+
+  it('should be able to extend a config', () => {
+    const config = fetchByName('testing');
+
+    expect(config).toEqual(
+      expect.objectContaining({
+        $schema: expect.any(String),
+        root: expect.any(String),
+        remotes: {
+          electron: {
+            origin: expect.any(String),
+          },
+        },
+        configValidationLevel: 'strict',
+        reclient: 'remote_exec',
+        onlySdk: true,
+        preserveXcode: expect.any(Number),
+        gen: {
+          out: 'Testing',
+          args: expect.any(Array),
+        },
+        env: expect.any(Object),
+      }),
+    );
   });
 });
 

@@ -2,7 +2,6 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const Ajv = require('ajv');
-const _ = require('lodash');
 const YAML = require('yaml');
 const { URI } = require('vscode-uri');
 const { color, fatal } = require('./utils/logging');
@@ -52,6 +51,19 @@ function buildPath(name, suffix) {
 function buildPathCandidates(name) {
   const suffixes = ['json', 'yml', 'yaml'];
   return suffixes.map(suffix => buildPath(name, suffix));
+}
+
+function mergeConfigs(target, source) {
+  for (const key in source) {
+    if (Array.isArray(target[key]) && Array.isArray(source[key])) {
+      target[key] = target[key].concat(source[key]);
+    } else if (typeof target[key] === 'object' && typeof source[key] === 'object') {
+      target[key] = mergeConfigs(target[key], source[key]);
+    } else {
+      target[key] = source[key];
+    }
+  }
+  return target;
 }
 
 // get the existing filename if it exists; otherwise the preferred name
@@ -141,11 +153,7 @@ function maybeExtendConfig(config) {
   if (config.extends) {
     const deeperConfig = maybeExtendConfig(loadConfigFileRaw(config.extends));
     delete config.extends;
-    return _.mergeWith(config, deeperConfig, (objValue, srcValue) => {
-      if (Array.isArray(objValue)) {
-        return objValue.concat(srcValue);
-      }
-    });
+    return mergeConfigs(config, deeperConfig);
   }
   return config;
 }
