@@ -10,7 +10,6 @@ const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const { ensureDir } = require('./utils/paths');
 const reclient = require('./utils/reclient');
-const { loadXcode } = require('./utils/load-xcode');
 const { ensureSDK, ensureSDKAndSymlink } = require('./utils/sdk');
 
 function getGNArgs(config) {
@@ -107,11 +106,7 @@ program
       }
 
       if (process.platform === 'darwin') {
-        if (config.onlySdk) {
-          ensureSDK();
-        } else {
-          loadXcode({ target, quiet: true });
-        }
+        ensureSDK();
       }
 
       if (options.onlyGen) {
