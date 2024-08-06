@@ -1,6 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-const createSandbox = require('./sandbox');
+import fs from 'fs';
+import path from 'path';
+import createSandbox from './sandbox';
+
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 describe('full-test', () => {
   const branch = 'main';

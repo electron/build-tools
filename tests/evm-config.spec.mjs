@@ -1,9 +1,11 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
-const YAML = require('yaml');
+import YAML from 'yaml';
 
-const { sanitizeConfig, validateConfig } = require('../src/evm-config');
+import { sanitizeConfig, validateConfig } from '../src/evm-config';
+
+import { describe, expect, it, vi } from 'vitest';
 
 const validConfig = {
   $schema: 'file:///Users/user_name/.electron_build_tools/evm-config.schema.json',
@@ -64,7 +66,7 @@ describe('invalid configs', () => {
 
 describe('configValidationLevel', () => {
   it('should default to strict', () => {
-    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const config = sanitizeConfig('foobar', validConfig);
     expect(config.configValidationLevel).toEqual('strict');
     expect(spy).not.toHaveBeenCalled();
@@ -72,8 +74,8 @@ describe('configValidationLevel', () => {
   });
 
   it('should log warnings for invalid config if set to warn', () => {
-    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
-    const processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {});
     const config = sanitizeConfig('foobar', {
       ...invalidConfig,
       configValidationLevel: 'warn',
@@ -86,8 +88,8 @@ describe('configValidationLevel', () => {
   });
 
   it('should log errors and exit for invalid config if set to strict', () => {
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    const processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {});
     const config = sanitizeConfig('foobar', {
       ...invalidConfig,
       configValidationLevel: 'strict',
@@ -100,9 +102,9 @@ describe('configValidationLevel', () => {
   });
 
   it('should be silent on invalid config if set to none', () => {
-    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    const processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {});
     const config = sanitizeConfig('foobar', {
       ...invalidConfig,
       configValidationLevel: 'none',

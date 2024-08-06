@@ -2,7 +2,7 @@
   "name": "build-tools",
   "version": "0.2.0",
   "engines": {
-    "node": ">= 14.0.0"
+    "node": ">= 18.0.0"
   },
   "main": "null",
   "private": true,
@@ -11,8 +11,8 @@
     "lint:js": "prettier --check \"src/**/*.js\" \"tests/*.js\" \"src/e\"",
     "lint": "npm run lint:js && npm run lint:markdown",
     "prettier:write": "prettier --write \"src/**/*.js\" \"tests/*.js\" \"src/e\"",
-    "test": "nyc --reporter=lcov --reporter=text-summary jest --config=jest.fast.json -i",
-    "test:all": "nyc --reporter=lcov --reporter=text-summary jest --config=jest.slow.json -i"
+    "test": "nyc --reporter=lcov --reporter=text-summary vitest run --reporter=verbose --exclude tests/bootstrap.spec.mjs",
+    "test:all": "nyc --reporter=lcov --reporter=text-summary vitest run --reporter=verbose"
   },
   "repository": "https://github.com/electron/build-tools",
   "author": "Electron Authors",
@@ -44,10 +44,10 @@
   "devDependencies": {
     "@electron/lint-roller": "^1.5.0",
     "husky": "^4.2.0",
-    "jest": "^27.5.1",
     "lint-staged": "^10.0.2",
-    "nyc": "^14.1.1",
-    "prettier": "^1.19.1"
+    "nyc": "^17.0.0",
+    "prettier": "^1.19.1",
+    "vitest": "^2.0.1"
   },
   "lint-staged": {
     "*.js": [

@@ -12,7 +12,7 @@ const pathKey = require('path-key')();
 // execFileSync() wrapper that adds exec'ed scripts to code coverage.
 // Returns { exitCode:number, stderr:string, stdout:string }
 function runSync(args, options) {
-  // jest doesn't directly support coverage of exec'ed scripts,
+  // vitest doesn't directly support coverage of exec'ed scripts,
   // but this workaround of invoking nyc in spawn gets the job done.
   // https://github.com/facebook/jest/issues/3190#issuecomment-354758036
   const spawnCmd = os.platform() === 'win32' ? 'nyc.cmd' : 'nyc';
@@ -241,8 +241,8 @@ function createSandbox() {
       NODE_ENV: process.env.NODE_ENV,
       // have `e` use our test sandbox's build-tools config dir
       EVM_CONFIG: evm_config_dir,
-      // we want to detect jest
-      __JEST__: 1,
+      // we want to detect vitest
+      __VITEST__: 1,
       [pathKey]: process.env[pathKey],
     },
   };
