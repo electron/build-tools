@@ -1,0 +1,185 @@
+diff --git a/chromium-browser-clang/rewrapper_mac.cfg b/chromium-browser-clang/rewrapper_mac.cfg
+index b7aae59..1d4743d 100644
+--- a/chromium-browser-clang/rewrapper_mac.cfg
++++ b/chromium-browser-clang/rewrapper_mac.cfg
+@@ -14,6 +14,5 @@
+ 
+ # This config is merged with Chromium config. See README.md.
+ 
+-inputs={src_dir}/buildtools/reclient_cfgs/chromium-browser-clang/clang_remote_wrapper
+-toolchain_inputs={linux_clang_base_path}/bin/clang
++toolchain_inputs={linux_clang_base_path}/bin/clang,{src_dir}/buildtools/reclient_cfgs/chromium-browser-clang/clang_remote_wrapper
+ remote_wrapper={src_dir}/buildtools/reclient_cfgs/chromium-browser-clang/clang_remote_wrapper
+diff --git a/chromium-browser-clang/rewrapper_windows.cfg b/chromium-browser-clang/rewrapper_windows.cfg
+index 543b68b..539f37a 100644
+--- a/chromium-browser-clang/rewrapper_windows.cfg
++++ b/chromium-browser-clang/rewrapper_windows.cfg
+@@ -15,6 +15,5 @@
+ # This config is merged with Chromium config. See README.md.
+ 
+ server_address=pipe://reproxy.pipe
+-inputs={src_dir}/buildtools/reclient_cfgs/chromium-browser-clang/clang_remote_wrapper
+-toolchain_inputs={linux_clang_base_path}/bin/clang
++toolchain_inputs={linux_clang_base_path}/bin/clang,{src_dir}/buildtools/reclient_cfgs/chromium-browser-clang/clang_remote_wrapper
+ remote_wrapper={src_dir}/buildtools/reclient_cfgs/chromium-browser-clang/clang_remote_wrapper
+diff --git a/configure_reclient.py b/configure_reclient.py
+index 5948be9..f66637c 100755
+--- a/configure_reclient.py
++++ b/configure_reclient.py
+@@ -21,6 +21,7 @@ import os
+ import re
+ import runpy
+ import shutil
++import stat
+ import string
+ import subprocess
+ import sys
+@@ -109,6 +110,8 @@ class ReclientConfigurator:
+             self.download_linux_clang_toolchain()
+             self.generate_clang_remote_wrapper()
+ 
++        self.generate_python_remote_wrapper()
++
+         # Reproxy config includes auth and network-related parameters.
+         self.generate_reproxy_cfg()
+         # Rewrapper configs describe how different tools should be run remotely.
+@@ -199,6 +202,32 @@ class ReclientConfigurator:
+             (f'{Paths.src_dir}/buildtools/reclient_cfgs/chromium-browser-clang/'
+              'clang_remote_wrapper'), clang_remote_wrapper)
+ 
++        FileUtils.chmod_x((f'{Paths.src_dir}/buildtools/reclient_cfgs/chromium-browser-clang/'
++             'clang_remote_wrapper'))
++
++    @staticmethod
++    def generate_python_remote_wrapper():
++        # Load python remote wrapper template.
++        template_file = (f'{Paths.script_dir}/python/'
++                         'python_remote_wrapper.template')
++        python_remote_wrapper_template = FileUtils.read_text_file(template_file)
++
++        # Variables to set in the template.
++        template_vars = {
++        }
++
++        # Substitute variables into the template.
++        python_remote_wrapper = ShellTemplate(
++            python_remote_wrapper_template).substitute(template_vars)
++
++        # Write the python remote wrapper.
++        FileUtils.write_text_file(
++            (f'{Paths.src_dir}/buildtools/reclient_cfgs/python/'
++             'python_remote_wrapper'), python_remote_wrapper)
++
++        FileUtils.chmod_x((f'{Paths.src_dir}/buildtools/reclient_cfgs/python/'
++             'python_remote_wrapper'))
++
+     def generate_reproxy_cfg(self):
+         # Load Chromium config template and remove everything starting with $
+         # symbol on each line.
+@@ -268,6 +297,15 @@ class ReclientConfigurator:
+             f'{Paths.reclient_cfgs_dir}/{tool}/rewrapper_{host_os}.cfg',
+             rewrapper_cfg, source_cfg_paths)
+ 
++        # Write "large" configs to the expected location.
++        ReclientCfg.write_to_file(
++            f'{Paths.reclient_cfgs_dir}/{tool}/rewrapper_{host_os}_large.cfg',
++            rewrapper_cfg, source_cfg_paths)
++
++        # Write "large" configs to the expected location.
++        ReclientCfg.write_to_file(
++            f'{Paths.reclient_cfgs_dir}/{tool}/rewrapper_{host_os}_large.cfg',
++            rewrapper_cfg, source_cfg_paths)
+ 
+ class Paths:
+     script_dir = ''
+@@ -536,6 +574,11 @@ class FileUtils:
+ 
+         shutil.move(filepath_new, filepath)
+ 
++    @classmethod
++    def chmod_x(cls, filepath):
++        st = os.stat(filepath)
++        os.chmod(filepath, st.st_mode | stat.S_IEXEC)
++
+     @classmethod
+     def create_generated_header(cls, source_files):
+         if not isinstance(source_files, (list, tuple)):
+diff --git a/python/python_remote_wrapper.template b/python/python_remote_wrapper.template
+new file mode 100644
+index 0000000..54817e4
+--- /dev/null
++++ b/python/python_remote_wrapper.template
+@@ -0,0 +1,29 @@
++#!/bin/bash
++# Copyright (c) 2023 Contributors to the reclient-configs project. All rights reserved.
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#    http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
++# AUTOGENERATED FILE - DO NOT EDIT
++# Generated by:
++# {configurator_dir}/configure_reclient.py
++# To edit update:
++# {configurator_dir}/python/python_remote_wrapper.template
++# And rerun configurator.
++
++# WARNING: This file is a part of reclient action inputs. Any modification will
++# invalidate remote cache.
++
++set -e
++
++# Launch
++"$1" "${@:2}"
+diff --git a/python/rewrapper_linux.cfg b/python/rewrapper_linux.cfg
+index 951bc66..e0c74da 100644
+--- a/python/rewrapper_linux.cfg
++++ b/python/rewrapper_linux.cfg
+@@ -13,3 +13,6 @@
+ # limitations under the License.
+ 
+ # This config is merged with Chromium config. See README.md.
++
++toolchain_inputs=buildtools/reclient_cfgs/python/python_remote_wrapper
++remote_wrapper={src_dir}/buildtools/reclient_cfgs/python/python_remote_wrapper
+\ No newline at end of file
+diff --git a/python/rewrapper_mac.cfg b/python/rewrapper_mac.cfg
+index 951bc66..e0c74da 100644
+--- a/python/rewrapper_mac.cfg
++++ b/python/rewrapper_mac.cfg
+@@ -13,3 +13,6 @@
+ # limitations under the License.
+ 
+ # This config is merged with Chromium config. See README.md.
++
++toolchain_inputs=buildtools/reclient_cfgs/python/python_remote_wrapper
++remote_wrapper={src_dir}/buildtools/reclient_cfgs/python/python_remote_wrapper
+\ No newline at end of file
+diff --git a/python/rewrapper_windows.cfg b/python/rewrapper_windows.cfg
+index 7ff8060..b5cc55f 100644
+--- a/python/rewrapper_windows.cfg
++++ b/python/rewrapper_windows.cfg
+@@ -15,3 +15,5 @@
+ # This config is merged with Chromium config. See README.md.
+ 
+ server_address=pipe://reproxy.pipe
++toolchain_inputs={src_dir}/buildtools/reclient_cfgs/python/python_remote_wrapper
++remote_wrapper={src_dir}/buildtools/reclient_cfgs/python/python_remote_wrapper
+diff --git a/reproxy.cfg b/reproxy.cfg
+index 4325d36..2390a73 100644
+--- a/reproxy.cfg
++++ b/reproxy.cfg
+@@ -17,3 +17,4 @@
+ # Unset Chromium variables.
+ service=
+ automatic_auth=
++compression_threshold=
+

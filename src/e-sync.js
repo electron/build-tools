@@ -8,6 +8,7 @@ const evmConfig = require('./evm-config');
 const { fatal } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
 const depot = require('./utils/depot-tools');
+const { configureReclient } = require('./utils/setup-reclient-chromium');
 
 function setRemotes(cwd, repo) {
   // Confirm that cwd is the git root
@@ -54,6 +55,10 @@ function runGClientSync(syncArgs, syncOpts) {
 
   depot.ensure();
 
+  if (config.defaultTarget === 'chrome') {
+    configureReclient();
+  }
+
   const exec = 'gclient';
   const args = ['sync', '--with_branch_heads', '--with_tags', '-vv', ...syncArgs];
   const opts = {
@@ -74,7 +79,6 @@ function runGClientSync(syncArgs, syncOpts) {
   // Only set remotes if we're building an Electron target.
   if (config.defaultTarget !== evmConfig.buildTargets().chromium) {
     const electronPath = path.resolve(srcdir, 'electron');
-
     setRemotes(electronPath, config.remotes.electron);
   }
 }
