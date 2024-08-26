@@ -245,6 +245,24 @@ target create "/Users/yourname/electron-gn/src/out/Testing/Electron.app/Contents
 (lldb)
 ```
 
+### `e d`
+
+`e d` runs [Depot Tools][depot-tools] commands.  Some useful commands:
+
+```sh
+# run gclient sync directly
+e d gclient sync
+
+# login to reclient
+e d rbe login
+
+# check reclient status
+e d rbe status
+
+# get the list of all build args 
+e d gn args --list -C out/Testing
+```
+
 ### `e test`
 
 `e test` starts the local Electron build's test runner. Any extra args are passed
