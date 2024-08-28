@@ -14,7 +14,7 @@ const reclientHelperPath = path.resolve(
 );
 const rbeServiceAddress = 'rbe.notgoma.com:443';
 
-const CREDENTIAL_HELPER_TAG = 'v0.4.2';
+const CREDENTIAL_HELPER_TAG = 'v0.4.3';
 
 function downloadAndPrepareReclient(config, force = false) {
   if (config.reclient === 'none' && !force) return;
@@ -99,11 +99,20 @@ function reclientEnv(config) {
     return {};
   }
 
-  return {
+  let reclientEnv = {
     RBE_service: config.reclientServiceAddress || rbeServiceAddress,
     RBE_experimental_credentials_helper: getHelperPath(config),
     RBE_experimental_credentials_helper_args: 'print',
   };
+
+  const result = childProcess.spawnSync(reclientHelperPath, ['flags'], {
+    stdio: 'pipe',
+  });
+  if (result.status === 0) {
+    const extraArgs = JSON.parse(result.stdout.toString());
+    reclientEnv = Object.assign(reclientEnv, extraArgs);
+  }
+  return reclientEnv;
 }
 
 function ensureHelperAuth(config) {
