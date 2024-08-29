@@ -108,10 +108,17 @@ function reclientEnv(config) {
   const result = childProcess.spawnSync(reclientHelperPath, ['flags'], {
     stdio: 'pipe',
   });
+
   if (result.status === 0) {
-    const extraArgs = JSON.parse(result.stdout.toString());
-    reclientEnv = Object.assign(reclientEnv, extraArgs);
+    try {
+      const extraArgs = JSON.parse(result.stdout.toString());
+      reclientEnv = Object.assign(reclientEnv, extraArgs);
+    } catch (e) {
+      console.error(result.stdout.toString());
+      fatal('Failure to run reclient credential helper');
+    }
   }
+
   return reclientEnv;
 }
 
