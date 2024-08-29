@@ -16,8 +16,11 @@ const rbeServiceAddress = 'rbe.notgoma.com:443';
 
 const CREDENTIAL_HELPER_TAG = 'v0.4.3';
 
-function downloadAndPrepareReclient(config, force = false) {
-  if (config.reclient === 'none' && !force) return;
+let usingRemote = true;
+
+function downloadAndPrepareReclient(config) {
+  if (config.reclient === 'none') return;
+
   // If a custom reclient credentials helper is specified, expect
   // that it exists in the specified location
   if (config.reclientHelperPath) {
@@ -95,7 +98,7 @@ function downloadAndPrepareReclient(config, force = false) {
 }
 
 function reclientEnv(config) {
-  if (config && config.reclient === 'none') {
+  if (config?.reclient === 'none' || !usingRemote) {
     return {};
   }
 
@@ -147,4 +150,5 @@ module.exports = {
   helperPath: getHelperPath,
   serviceAddress: rbeServiceAddress,
   auth: ensureHelperAuth,
+  usingRemote,
 };

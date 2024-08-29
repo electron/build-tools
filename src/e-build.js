@@ -55,9 +55,8 @@ function ensureGNGen(config) {
   }
 }
 
-function runNinja(config, target, useRemote, ninjaArgs) {
-  if (useRemote && config.reclient !== 'none') {
-    reclient.downloadAndPrepare(config);
+function runNinja(config, target, ninjaArgs) {
+  if (reclient.usingRemote && config.reclient !== 'none') {
     reclient.auth(config);
 
     // Autoninja sets this absurdly high, we take it down a notch
@@ -80,7 +79,7 @@ function runNinja(config, target, useRemote, ninjaArgs) {
   const opts = {
     cwd: evmConfig.outDir(config),
   };
-  if (!useRemote && config.reclient !== 'none') {
+  if (!reclient.usingRemote && config.reclient !== 'none') {
     opts.env = { RBE_remote_disabled: true };
   }
   depot.execFileSync(config, exec, args, opts);
@@ -98,6 +97,10 @@ program
     try {
       const config = evmConfig.current();
       const targets = evmConfig.buildTargets();
+
+      reclient.usingRemote = options.remote;
+
+      reclient.downloadAndPrepare(config);
 
       if (options.listTargets) {
         Object.keys(targets)
@@ -137,7 +140,7 @@ program
       }
 
       try {
-        runNinja(config, target, options.remote, ninjaArgs);
+        runNinja(config, target, ninjaArgs);
       } catch (ex) {
         if (target === targets['node:headers']) {
           // Older versions of electron use a different target for node headers so try that if the new one fails.
@@ -145,7 +148,7 @@ program
           console.info(
             `${color.info} Error building ${target}; trying older ${olderTarget} target`,
           );
-          runNinja(config, olderTarget, options.remote, ninjaArgs);
+          runNinja(config, olderTarget, ninjaArgs);
         } else {
           throw ex;
         }
