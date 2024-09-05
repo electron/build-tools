@@ -207,7 +207,7 @@ Some of the build targets you may want to build include:
 | electron:node_headers  | Builds the node headers `.tar.gz` file          |
 | electron:electron_symbols  | Generate the breakpad symbols in release builds     |
 
-To build a specific target, run `e build --target [target]`. Running `e build` with no
+To build a specific ninja target, run `e build --target [target]`. Running `e build` with no
 target will build `electron` by default.
 
 Any extra args are passed along to [ninja][ninja], so for example
