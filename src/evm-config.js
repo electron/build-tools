@@ -2,14 +2,12 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const Ajv = require('ajv');
-const _ = require('lodash');
 const YAML = require('yaml');
 const { URI } = require('vscode-uri');
 const { color, fatal } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
 
-const preferredFormat = process.env.EVM_FORMAT || 'json'; // yaml yml json
-const configRoot = process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
+const configRoot = () => process.env.EVM_CONFIG || path.resolve(__dirname, '..', 'configs');
 const schema = require('../evm-config.schema.json');
 const ajv = require('ajv-formats')(new Ajv());
 
@@ -24,7 +22,7 @@ const resetShouldWarn = () => {
 // export EVM_CURRENT_FILE="$(mktemp --tmpdir evm-current.XXXXXXXX.txt)"
 const currentFiles = [
   process.env.EVM_CURRENT_FILE,
-  path.resolve(configRoot, 'evm-current.txt'),
+  path.resolve(configRoot(), 'evm-current.txt'),
 ].filter(Boolean);
 
 const getDefaultTarget = () => {
@@ -46,7 +44,7 @@ const buildTargets = () => ({
 });
 
 function buildPath(name, suffix) {
-  return path.resolve(configRoot, `evm.${name}.${suffix}`);
+  return path.resolve(configRoot(), `evm.${name}.${suffix}`);
 }
 
 function buildPathCandidates(name) {
@@ -54,9 +52,23 @@ function buildPathCandidates(name) {
   return suffixes.map(suffix => buildPath(name, suffix));
 }
 
+function mergeConfigs(target, source) {
+  for (const key in source) {
+    if (Array.isArray(target[key]) && Array.isArray(source[key])) {
+      target[key] = target[key].concat(source[key]);
+    } else if (typeof target[key] === 'object' && typeof source[key] === 'object') {
+      target[key] = mergeConfigs(target[key], source[key]);
+    } else {
+      target[key] = source[key];
+    }
+  }
+  return target;
+}
+
 // get the existing filename if it exists; otherwise the preferred name
 function pathOf(name) {
   const files = buildPathCandidates(name).filter(file => fs.existsSync(file));
+  const preferredFormat = process.env.EVM_FORMAT || 'json'; // yaml yml json
   return files[0] || buildPath(name, preferredFormat);
 }
 
@@ -76,7 +88,7 @@ function testConfigExists(name) {
 }
 
 function save(name, o) {
-  ensureDir(configRoot);
+  ensureDir(configRoot());
   const filename = pathOf(name);
   const isJSON = path.extname(filename) === '.json';
   const txt = (isJSON ? JSON.stringify(o, null, 2) : YAML.stringify(o)) + '\n';
@@ -93,9 +105,9 @@ function setCurrent(name) {
 }
 
 function names() {
-  if (!fs.existsSync(configRoot)) return [];
+  if (!fs.existsSync(configRoot())) return [];
   return fs
-    .readdirSync(configRoot)
+    .readdirSync(configRoot())
     .map(filename => filenameToConfigName(filename))
     .filter(name => name)
     .sort();
@@ -141,11 +153,7 @@ function maybeExtendConfig(config) {
   if (config.extends) {
     const deeperConfig = maybeExtendConfig(loadConfigFileRaw(config.extends));
     delete config.extends;
-    return _.mergeWith(config, deeperConfig, (objValue, srcValue) => {
-      if (Array.isArray(objValue)) {
-        return objValue.concat(srcValue);
-      }
-    });
+    return mergeConfigs(config, deeperConfig);
   }
   return config;
 }
