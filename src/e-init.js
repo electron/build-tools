@@ -67,6 +67,7 @@ function createConfig(options) {
       args: gn_args,
       out: options.out,
     },
+    preserveSDK: 5,
     env: {
       CHROMIUM_BUILDTOOLS_PATH: path.resolve(root, 'src', 'buildtools'),
       GIT_CACHE_PATH: process.env.GIT_CACHE_PATH
@@ -165,15 +166,6 @@ program
       // Check global git settings that need to be enabled on Windows.
       if (os.platform() === 'win32') {
         checkGlobalGitConfig();
-      }
-
-      // ensure xcode is loaded
-      if (process.platform === 'darwin') {
-        if (options.onlySdk) {
-          ensureSDK();
-        } else {
-          loadXcode();
-        }
       }
 
       // ensure macOS SDKs are loaded

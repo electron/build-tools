@@ -12,6 +12,12 @@
       "type": "string",
       "default": "electron"
     },
+    "preserveSDK": {
+      "description": "Preserve the N most recent Xcode SDK versions",
+      "type": "integer",
+      "default": 5,
+      "minimum": 1
+    },
     "execName": {
       "description": "Name of the built executable to run",
       "type": "string",

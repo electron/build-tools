@@ -15,6 +15,7 @@ const validConfig = {
       origin: 'git@github.com:electron/electron.git',
     },
   },
+  preserveSDK: 5,
   reclient: 'none',
   gen: {
     args: [],
@@ -65,8 +66,7 @@ describe('example configs', () => {
       },
       configValidationLevel: 'strict',
       reclient: 'remote_exec',
-      onlySdk: expect.any(Boolean),
-      preserveXcode: expect.any(Number),
+      preserveSDK: expect.any(Number),
       gen: {
         out: 'Testing',
         args: expect.any(Array),
