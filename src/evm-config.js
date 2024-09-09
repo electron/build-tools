@@ -216,7 +216,7 @@ function sanitizeConfig(name, config, overwrite = false) {
   }
 
   if ('preserveXcode' in config) {
-    config.preserveXcode = 5;
+    delete config.preserveXcode;
     changes.push(`removed ${color.config('preserveXcode')} property`);
   }
 
