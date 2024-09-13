@@ -199,19 +199,24 @@ Some of the build targets you may want to build include:
 
 | Target        | Description                                              |
 |:--------------|:---------------------------------------------------------|
-| breakpad      | Builds the breakpad `dump_syms` binary                   |
-| chromedriver  | Builds the `chromedriver` binary                         |
-| electron      | Builds the Electron binary **(Default)**                 |
-| electron:dist | Builds the Electron binary and generates a dist zip file |
-| mksnapshot    | Builds the `mksnapshot` binary                           |
-| electron:node_headers  | Builds the node headers `.tar.gz` file          |
-| electron:electron_symbols  | Generate the breakpad symbols in release builds     |
+| third_party/breakpad:dump_syms      | Builds the breakpad `dump_syms` binary                   |
+| electron:electron_chromedriver_zip  | Builds the `chromedriver` binary                         |
+| electron                            | Builds the Electron binary **(Default)**                 |
+| electron:electron_dist_zip          | Builds the Electron binary and generates a dist zip file |
+| electron:electron_mksnapshot_zip    | Builds the `mksnapshot` binary                           |
+| electron:node_headers               | Builds the node headers `.tar.gz` file                   |
+| electron:electron_symbols           | Generate the breakpad symbols in release builds          |
 
-To build a specific ninja target, run `e build --target [target]`. Running `e build` with no
-target will build `electron` by default.
+To build a specific ninja target, run `e build --target [target]`:
+
+```sh
+$ e build --target electron:node_headers
+```
+
+Running `e build` with no target will build `electron` by default.
 
 Any extra args are passed along to [ninja][ninja], so for example
-`e build -v` runs a verbose build.
+`e build -v` runs a verbose build of `electron`.
 
 To see an exhaustive list of all possible build targets, you can run `e d gn ls out/[TYPE]`,
 where `[TYPE]` is e.g. `Testing` or `Release` depending on your build type. This will log a long

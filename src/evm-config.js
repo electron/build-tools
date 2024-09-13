@@ -32,17 +32,6 @@ const getDefaultTarget = () => {
   return result || 'electron';
 };
 
-const buildTargets = () => ({
-  breakpad: 'third_party/breakpad:dump_syms',
-  chromedriver: 'electron:electron_chromedriver_zip',
-  electron: 'electron',
-  chromium: 'chrome',
-  'electron:dist': 'electron:electron_dist_zip',
-  mksnapshot: 'electron:electron_mksnapshot_zip',
-  'node:headers': 'electron:node_headers',
-  default: getDefaultTarget(),
-});
-
 function buildPath(name, suffix) {
   return path.resolve(configRoot(), `evm.${name}.${suffix}`);
 }
@@ -319,7 +308,7 @@ function remove(name) {
 }
 
 module.exports = {
-  buildTargets,
+  getDefaultTarget,
   current: () => sanitizeConfigWithName(currentName()),
   maybeCurrent: () => (getCurrentFileName() ? sanitizeConfigWithName(currentName()) : {}),
   currentName,
