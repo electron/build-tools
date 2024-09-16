@@ -195,20 +195,58 @@ $ e build --help
 ```
 
 Once you have the source, the next step is to build it with `e build [target]`.
-These build targets are supported:
+Some of the build targets you may want to build include:
 
 | Target        | Description                                              |
 |:--------------|:---------------------------------------------------------|
-| breakpad      | Builds the breakpad `dump_syms` binary                   |
-| chromedriver  | Builds the `chromedriver` binary                         |
-| electron      | Builds the Electron binary **(Default)**                 |
-| electron:dist | Builds the Electron binary and generates a dist zip file |
-| mksnapshot    | Builds the `mksnapshot` binary                           |
-| node:headers  | Builds the node headers `.tar.gz` file                   |
+| third_party/breakpad:dump_syms      | Builds the breakpad `dump_syms` binary                   |
+| electron:electron_chromedriver_zip  | Builds the `chromedriver` binary                         |
+| electron                            | Builds the Electron binary **(Default)**                 |
+| electron:electron_dist_zip          | Builds the Electron binary and generates a dist zip file |
+| electron:electron_mksnapshot_zip    | Builds the `mksnapshot` binary                           |
+| electron:node_headers               | Builds the node headers `.tar.gz` file                   |
+| electron:electron_symbols           | Generate the breakpad symbols in release builds          |
 
-As with syncing, `e build [target]` is usually all you need. Any extra
-args are passed along to [ninja][ninja], so for example `e build -v`
-runs a verbose build.
+To build a specific ninja target, run `e build --target [target]`:
+
+```sh
+$ e build --target electron:node_headers
+```
+
+Running `e build` with no target will build `electron` by default.
+
+Any extra args are passed along to [ninja][ninja], so for example
+`e build -v` runs a verbose build of `electron`.
+
+To see an exhaustive list of all possible build targets, you can run `e d gn ls out/[TYPE]`,
+where `[TYPE]` is e.g. `Testing` or `Release` depending on your build type. This will log a long
+list of targets to the console and also allow you to build some of Chromium's targets.
+
+For example, running `e d gn ls out/Testing | grep "//ui/views/"` produces something like:
+
+```console
+//ui/views/controls/webview:test_support
+//ui/views/controls/webview:webview
+//ui/views/debug:views_debug
+//ui/views/examples:copy_content_resources
+//ui/views/examples:views_examples
+//ui/views/examples:views_examples_lib
+//ui/views/examples:views_examples_proc
+//ui/views/examples:views_examples_resources_grd
+//ui/views/examples:views_examples_resources_grd_grit
+//ui/views/examples:views_examples_resources_pak
+//ui/views/examples:views_examples_unittests
+//ui/views/examples:views_examples_unittests__runner
+//ui/views/examples:views_examples_with_content
+//ui/views/examples:views_examples_with_content_lib
+//ui/views/resources:resources
+//ui/views/resources:resources_grd
+//ui/views/resources:resources_grd_grit
+//ui/views/window/vector_icons:vector_icons
+//ui/views/window/vector_icons:window_control_vector_icons
+```
+
+You could then run `e build --target ui/views/examples:views_examples_with_content` to produce Chrome's `//ui/views` example executable and run it with `./out/Testing/views_examples_with_content`.
 
 ## Using Electron
 

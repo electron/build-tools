@@ -86,34 +86,25 @@ function runNinja(config, target, ninjaArgs) {
 }
 
 program
-  .arguments('[target] [ninjaArgs...]')
+  .arguments('[ninjaArgs...]')
   .description('Build Electron and other targets.')
-  .option('--list-targets', 'Show all supported build targets', false)
   .option('--only-gen', 'Only run `gn gen`', false)
-  .option('-t|--target [target]', 'Forces a specific ninja target')
+  .option('-t|--target [target]', 'Build a specific ninja target')
   .option('--no-remote', 'Build without remote execution (entirely locally)')
   .allowUnknownOption()
-  .action((target, ninjaArgs, options) => {
+  .action((ninjaArgs, options) => {
     try {
       const config = evmConfig.current();
-      const targets = evmConfig.buildTargets();
 
       reclient.usingRemote = options.remote;
 
       reclient.downloadAndPrepare(config);
 
-      if (options.listTargets) {
-        Object.keys(targets)
-          .sort()
-          .forEach(target => console.log(`${target} --> ${color.config(targets[target])}`));
-        return;
-      }
-
       if (process.platform === 'darwin') {
         if (config.onlySdk) {
           ensureSDK();
         } else {
-          loadXcode({ target, quiet: true });
+          loadXcode({ quiet: true });
         }
       }
 
@@ -122,37 +113,8 @@ program
         return;
       }
 
-      if (options.target) {
-        // User forced a target, so any arguments are ninjaArgs
-        if (target) {
-          ninjaArgs.unshift(target);
-        }
-        target = options.target;
-      } else if (Object.keys(targets).includes(target)) {
-        target = targets[target];
-      } else {
-        // No forced target and no target matched, so use the
-        // default target and assume any arguments are ninjaArgs
-        if (target) {
-          ninjaArgs.unshift(target);
-        }
-        target = targets['default'];
-      }
-
-      try {
-        runNinja(config, target, ninjaArgs);
-      } catch (ex) {
-        if (target === targets['node:headers']) {
-          // Older versions of electron use a different target for node headers so try that if the new one fails.
-          const olderTarget = 'third_party/electron_node:headers';
-          console.info(
-            `${color.info} Error building ${target}; trying older ${olderTarget} target`,
-          );
-          runNinja(config, olderTarget, ninjaArgs);
-        } else {
-          throw ex;
-        }
-      }
+      const buildTarget = options.target || evmConfig.getDefaultTarget();
+      runNinja(config, buildTarget, ninjaArgs);
     } catch (e) {
       fatal(e);
     }
