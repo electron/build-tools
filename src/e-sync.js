@@ -77,7 +77,7 @@ function runGClientSync(syncArgs, syncOpts) {
   }
 
   // Only set remotes if we're building an Electron target.
-  if (config.defaultTarget !== evmConfig.buildTargets().chromium) {
+  if (config.defaultTarget !== 'chrome') {
     const electronPath = path.resolve(srcdir, 'electron');
     setRemotes(electronPath, config.remotes.electron);
   }
