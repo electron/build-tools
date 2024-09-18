@@ -8,7 +8,7 @@ const { Octokit } = require('@octokit/rest');
 
 const { getCveForBugNr } = require('./utils/crbug');
 const { getGitHubAuthToken } = require('./utils/github-auth');
-const { fatal } = require('./utils/logging');
+const { fatal, color } = require('./utils/logging');
 
 const gerritSources = [
   'chromium-review.googlesource.com',
@@ -63,13 +63,25 @@ async function getGerritPatchDetailsFromURL(gerritUrl, security) {
     `/changes/${encodeURIComponent(changeId)}/revisions/current/patch`,
     gerritUrl,
   );
+
   const patch = await fetchBase64(patchUrl.toString());
 
   const [, commitId] = /^From ([0-9a-f]+)/.exec(patch);
 
   const bugNumber =
     /^(?:Bug|Fixed)[:=] ?(.+)$/im.exec(patch)?.[1] || /^Bug= ?chromium:(.+)$/m.exec(patch)?.[1];
-  const cve = security ? await getCveForBugNr(bugNumber.replace('chromium:', '')) : '';
+
+  let cve = '';
+  if (security) {
+    try {
+      cve = await getCveForBugNr(bugNumber.replace('chromium:', ''));
+    } catch (err) {
+      d(err);
+      console.error(
+        `${color.warn} Failed to fetch CVE for ${bugNumber} - you'll need to find it manually`,
+      );
+    }
+  }
 
   const patchDirName =
     {
@@ -139,6 +151,7 @@ program
         patchUrlStr,
         security,
       );
+
       const patchName = `cherry-pick-${shortCommit}.patch`;
       const commitMessage = /Subject: \[PATCH\] (.+?)^---$/ms.exec(patch)[1];
       const patchPath = `patches/${patchDirName}`;

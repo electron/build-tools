@@ -78,14 +78,14 @@ function parseCveFromIssue(issue) {
 
 async function getCveForBugNr(bugNr) {
   if (Number.isNaN(bugNr)) {
-    fatal(`Invalid Chromium bug number ${bugNr}`);
+    throw new Error(`Invalid Chromium bug number ${bugNr}`);
   }
 
   try {
     const issue = await getBugInfo(bugNr);
     return parseCveFromIssue(issue);
   } catch (error) {
-    fatal(error);
+    throw new Error(`Failed to fetch CVE for ${bugNr} - ${error}`);
   }
 }
 
