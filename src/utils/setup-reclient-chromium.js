@@ -46,7 +46,7 @@ function configureReclient() {
 
     // Pinning to prevent unexpected breakage.
     const ENGFLOW_CONFIG_SHA =
-      process.env.ENGFLOW_CONFIG_SHA || '955335c30a752e9ef7bff375baab5e0819b6c00d';
+      process.env.ENGFLOW_CONFIG_SHA || '7851c9387a770d6381f4634cb293293d2b30c502';
     spawnSync(evmConfig.current(), 'git', ['checkout', ENGFLOW_CONFIG_SHA], {
       cwd: engflowConfigsDir,
       stdio: 'ignore',
