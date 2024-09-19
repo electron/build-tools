@@ -10,15 +10,7 @@
     "defaultTarget": {
       "description": "Default build target",
       "type": "string",
-      "enum": [
-        "breakpad",
-        "chromedriver",
-        "electron",
-        "electron:dist",
-        "mksnapshot",
-        "node:headers",
-        "chrome"
-      ]
+      "default": "electron"
     },
     "preserveXcode": {
       "description": "Preserve the N most recent Xcode versions",

@@ -41,7 +41,7 @@ program
   .option('--nan', 'Run nan spec runner', false)
   .option(
     '--no-remote',
-    'Build test runner components (e.g. node:headers) without remote execution',
+    'Build test runner components (e.g. electron:node_headers) without remote execution',
   )
   .addOption(
     new program.Option(
