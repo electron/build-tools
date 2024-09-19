@@ -14,6 +14,10 @@ const SDKZip = path.resolve(SDKDir, 'MacOSX.sdk.zip');
 const XcodeBaseURL = 'https://dev-cdn.electronjs.org/xcode/';
 
 const SDKs = {
+  '15.0': {
+    fileName: 'MacOSX-15.0.sdk.zip',
+    sha256: 'b6e0a5a21af5fc9789b947d81b9bc8258009234f4f2caf2f15c6817b72a9168e',
+  },
   '14.0': {
     fileName: 'MacOSX-14.0.sdk.zip',
     sha256: '63c0e69c60c3e0f25b42726fc3a0f0f2902b5cac304d78456c33e13f9dd6d081',
