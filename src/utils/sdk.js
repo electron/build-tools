@@ -16,7 +16,7 @@ const XcodeBaseURL = 'https://dev-cdn.electronjs.org/xcode/';
 const SDKs = {
   '15.0': {
     fileName: 'MacOSX-15.0.sdk.zip',
-    sha256: 'b6e0a5a21af5fc9789b947d81b9bc8258009234f4f2caf2f15c6817b72a9168e',
+    sha256: '03d6d8d9a06aebee886cf136168ccbdb8579b80f7193376a36075ddde06abd88',
   },
   '14.0': {
     fileName: 'MacOSX-14.0.sdk.zip',
