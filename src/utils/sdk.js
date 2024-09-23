@@ -57,14 +57,20 @@ function getSDKVersion() {
   return json.MinimalDisplayName;
 }
 
+// Extract the SDK version from the toolchain file and normalize it.
 function extractSDKVersion(toolchainFile) {
   if (!fs.existsSync(toolchainFile)) {
     return null;
   }
 
   const contents = fs.readFileSync(toolchainFile, 'utf8');
-  const match = /macOS \d+(?:\.\d+)? SDK\n\# \((\d+\.\d+)/.exec(contents);
-  return match ? match[1] : null;
+  const match = /macOS\s(\d+(\.\d+)?)\sSDK\n\#/.exec(contents);
+
+  if (!match) {
+    return null;
+  }
+
+  return match[1].includes('.') ? match[1] : `${match[1]}.0`;
 }
 
 function expectedSDKVersion() {
