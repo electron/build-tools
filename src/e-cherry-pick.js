@@ -4,11 +4,20 @@ const d = require('debug')('build-tools:cherry-pick');
 const program = require('commander');
 const https = require('https');
 const got = require('got');
+const cp = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
 const { Octokit } = require('@octokit/rest');
 
 const { getCveForBugNr } = require('./utils/crbug');
 const { getGitHubAuthToken } = require('./utils/github-auth');
 const { fatal, color } = require('./utils/logging');
+
+const ELECTRON_REPO_DATA = {
+  owner: 'electron',
+  repo: 'electron',
+};
 
 const gerritSources = [
   'chromium-review.googlesource.com',
@@ -131,16 +140,20 @@ program
       patchUrlStr = targetBranch;
       targetBranch = tmp;
     }
+
     const octokit = new Octokit({
       auth: await getGitHubAuthToken(['repo']),
     });
+
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'electron-tmp'));
+    const electronPath = path.join(tmp, 'electron');
+
+    let error = null;
     try {
       const {
         data: { permissions },
-      } = await octokit.repos.get({
-        owner: 'electron',
-        repo: 'electron',
-      });
+      } = await octokit.repos.get(...ELECTRON_REPO_DATA);
+
       if (!permissions?.push) {
         fatal(
           'The supplied $GITHUB_TOKEN does not have write access to electron/electron - exiting',
@@ -157,90 +170,63 @@ program
       const patchPath = `patches/${patchDirName}`;
       const targetBranches = [targetBranch, ...additionalBranches];
 
-      for (const target of targetBranches) {
-        const branchName = `cherry-pick/${target}/${patchDirName}/${shortCommit}`;
-        d(`fetching electron base branch info for ${target}`);
-        const {
-          data: {
-            commit: {
-              sha: targetSha,
-              commit: {
-                tree: { sha: targetBaseTreeSha },
-              },
-            },
-          },
-        } = await octokit.repos.getBranch({
-          owner: 'electron',
-          repo: 'electron',
-          branch: target,
-        });
+      d(`Cloning electron/electron to ${tmp}`);
+      cp.execSync('git clone https://github.com/electron/electron', { cwd: tmp });
 
-        d(`fetching base patch list`);
-        const { data: patchListData } = await octokit.repos
-          .getContent({
-            owner: 'electron',
-            repo: 'electron',
-            path: `${patchPath}/.patches`,
-            ref: targetSha,
-          })
-          .catch(() => {
-            console.log(
-              `NOTE: No patches existing for ${patchDirName} in ${target}, added a dir under patches/ but you'll need to manually edit patches/config.json`,
-            );
-            return {
-              data: null,
-            };
-          });
-        const patchList = patchListData
-          ? Buffer.from(patchListData.content, 'base64').toString('utf8')
-          : '';
+      for (const target of targetBranches) {
+        console.log(`${color.info} Cherry-picking ${shortCommit} into ${target}`);
+
+        const branchName = `cherry-pick/${target}/${patchDirName}/${shortCommit}`;
+
+        // Check out the target branch and create a new branch for the cherry-pick.
+        d(`Checking out new branch from ${target}: ${branchName}`);
+        cp.execSync(`git checkout ${target}`, { cwd: electronPath, stdio: 'ignore' });
+        cp.execSync(`git checkout -b ${branchName}`, { cwd: electronPath, stdio: 'ignore' });
+
+        // Ensure the patches directory exists.
+        if (!fs.existsSync(`${electronPath}/${patchPath}`)) {
+          console.warn(
+            `${color.warn} No patches existing for ${patchDirName} in ${target} added a dir under patches/ but you'll need to manually edit patches/config.json`,
+          );
+          fs.mkdirSync(`${electronPath}/${patchPath}`);
+        }
+
+        // Check whether the patch already exists in the target branch.
+        if (fs.existsSync(`${electronPath}/${patchPath}/${patchName}`)) {
+          console.info(
+            `${color.info} Patch ${patchName} already exists in ${patchDirName} in ${target} - aborting cherry-pick`,
+          );
+          continue;
+        }
+
+        // Write the patch to the patches directory and update the .patches file.
+        const patchList = fs.readFileSync(`${electronPath}/${patchPath}/.patches`, 'utf8');
         const newPatchList = patchList + `${patchName}\n`;
 
-        d(`creating tree base_tree=${targetBaseTreeSha}`);
-        const { data: tree } = await octokit.git.createTree({
-          owner: 'electron',
-          repo: 'electron',
-          base_tree: targetBaseTreeSha,
-          tree: [
-            {
-              path: `${patchPath}/.patches`,
-              mode: '100644',
-              type: 'blob',
-              content: newPatchList,
-            },
-            {
-              path: `${patchPath}/${patchName}`,
-              mode: '100644',
-              type: 'blob',
-              content: patch,
-            },
-          ],
+        d(`Writing patch to ${patchPath}/${patchName} and updating .patches`);
+        fs.writeFileSync(`${electronPath}/${patchPath}/${patchName}`, patch);
+        fs.writeFileSync(`${electronPath}/${patchPath}/.patches`, newPatchList);
+
+        d(`Committing changes`);
+        const commitMsg = `chore: cherry-pick ${shortCommit} from ${patchDirName}`;
+        cp.execSync(`git add ${patchPath}`, { cwd: electronPath });
+        cp.execSync(`git commit -m "${commitMsg}"`, {
+          cwd: electronPath,
+          stdio: 'ignore',
         });
 
-        d(`creating commit tree=${tree.sha} parent=${targetSha}`);
-        const { data: commit } = await octokit.git.createCommit({
-          owner: 'electron',
-          repo: 'electron',
-          tree: tree.sha,
-          parents: [targetSha],
-          message: `chore: cherry-pick ${shortCommit} from ${patchDirName}`,
+        // Push the changes to the remote.
+        cp.execSync(`git push origin ${branchName}`, {
+          cwd: electronPath,
+          stdio: 'ignore',
         });
 
-        d(`creating ref`);
-        await octokit.git.createRef({
-          owner: 'electron',
-          repo: 'electron',
-          ref: `refs/heads/${branchName}`,
-          sha: commit.sha,
-        });
-
-        d(`creating pr`);
+        d(`Creating PR for ${branchName}`);
         const { data: pr } = await octokit.pulls.create({
-          owner: 'electron',
-          repo: 'electron',
+          ...ELECTRON_REPO_DATA,
           head: `electron:${branchName}`,
           base: target,
-          title: `chore: cherry-pick ${shortCommit} from ${patchDirName}`,
+          title: commitMsg,
           body: `${commitMessage}\n\nNotes: ${
             bugNumber
               ? security
@@ -251,10 +237,9 @@ program
           maintainer_can_modify: true,
         });
 
-        d(`labelling pr`);
+        d(`Labeling PR to ${target}`);
         await octokit.issues.update({
-          owner: 'electron',
-          repo: 'electron',
+          ...ELECTRON_REPO_DATA,
           issue_number: pr.number,
           labels: [
             target,
@@ -264,11 +249,22 @@ program
           ],
         });
 
-        console.log(`Created cherry-pick PR to ${target}: ${pr.html_url}`);
+        console.log(`${color.success} Created cherry-pick PR to ${target}: ${pr.html_url}`);
+
+        // Clean up the working tree between cherry-picks.
+        d(`Cleaning up working tree between cherry-picks`);
+        cp.execSync('git clean -fdx', { cwd: electronPath });
       }
     } catch (err) {
-      console.error('Failed to cherry-pick');
-      fatal(err);
+      error = err;
+    } finally {
+      d(`Removing temporary electron directory at ${tmp}`);
+      fs.rmSync(tmp, { recursive: true });
+
+      if (error) {
+        console.error(`${color.err} Failed to cherry-pick`);
+        fatal(error);
+      }
     }
   })
   .parse(process.argv);
