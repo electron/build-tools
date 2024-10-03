@@ -77,6 +77,12 @@ program
       return;
     }
 
+    const ensureMergeRefLocal = spawnSync(config, 'git', ['fetch', 'origin', pr.base.ref], gitOpts);
+    if (ensureMergeRefLocal.status !== 0) {
+      fatal('Failed to fetch latest upstream');
+      return;
+    }
+
     const manualBpBranch = `manual-bp/${user.login}/pr/${prNumber}/branch/${targetBranch}`;
     spawnSync(config, 'git', ['branch', '-D', manualBpBranch], gitOpts);
     const backportBranchResult = spawnSync(
