@@ -104,6 +104,8 @@ function reclientEnv(config) {
 
   let reclientEnv = {
     RBE_service: config.reclientServiceAddress || rbeServiceAddress,
+    RBE_credentials_helper: getHelperPath(config),
+    RBE_credentials_helper_args: 'print',
     RBE_experimental_credentials_helper: getHelperPath(config),
     RBE_experimental_credentials_helper_args: 'print',
   };
