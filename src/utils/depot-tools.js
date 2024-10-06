@@ -129,10 +129,12 @@ function depotSpawnSync(config, cmd, args, opts_in) {
   if (os.platform() === 'win32' && ['python', 'python3'].includes(cmd)) {
     cmd = `${cmd}.bat`;
   }
-  if (opts_in.msg) {
-    console.log(opts_in.msg);
-  } else {
-    console.log(color.childExec(cmd, args, opts));
+  if (!process.env.ELECTRON_DEPOT_TOOLS_DISABLE_LOG) {
+    if (opts_in.msg) {
+      console.log(opts_in.msg);
+    } else {
+      console.log(color.childExec(cmd, args, opts));
+    }
   }
   return childProcess.spawnSync(cmd, args, opts);
 }
