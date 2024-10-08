@@ -109,6 +109,12 @@ You can get Xcode from the app store: ${chalk.cyan(
   )}
 Or directly from Apple Developer: ${chalk.cyan('https://developer.apple.com/xcode')}
 
+If you have Xcode downloaded and are still seeing this make sure you have:
+  1. Opened Xcode at least once and gotten to the "Create new project" screen
+  2. Switched to your installed Xcode with ${chalk.green(
+    'sudo xcode-select -s /Applications/Xcode.app',
+  )}
+
 You can validate your install with "${chalk.green(
     '/usr/bin/xcodebuild -version',
   )}" once you are ready or just run this command again`);
