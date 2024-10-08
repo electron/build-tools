@@ -175,6 +175,15 @@ program
         checkGlobalGitConfig();
       }
 
+      // ensure xcode is loaded
+      if (process.platform === 'darwin') {
+        if (options.onlySdk) {
+          ensureSDK();
+        } else {
+          loadXcode();
+        }
+      }
+
       const config = createConfig(options);
 
       // make sure the config name is new
@@ -198,15 +207,6 @@ program
       const e = path.resolve(__dirname, 'e');
       const opts = { stdio: 'inherit' };
       childProcess.execFileSync(process.execPath, [e, 'use', name], opts);
-
-      // ensure xcode is loaded
-      if (process.platform === 'darwin') {
-        if (options.onlySdk) {
-          ensureSDK();
-        } else {
-          loadXcode();
-        }
-      }
 
       ensureRoot(config, !!options.force);
 

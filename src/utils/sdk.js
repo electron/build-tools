@@ -1,4 +1,5 @@
 const cp = require('child_process');
+const chalk = require('chalk');
 const fs = require('fs');
 const path = require('path');
 const semver = require('semver');
@@ -94,6 +95,31 @@ function expectedSDKVersion() {
   return version;
 }
 
+function ensureViableXCode() {
+  const xcodeBuildExec = '/usr/bin/xcodebuild';
+  if (fs.existsSync(xcodeBuildExec)) {
+    const result = cp.spawnSync(xcodeBuildExec, ['-version']);
+    if (result.status === 0) return;
+  }
+
+  fatal(`Xcode appears to be missing, you may have Command Line Tools installed but not a full Xcode. Please install Xcode now...
+
+You can get Xcode from the app store: ${chalk.cyan(
+    'https://apps.apple.com/us/app/xcode/id497799835',
+  )}
+Or directly from Apple Developer: ${chalk.cyan('https://developer.apple.com/xcode')}
+
+If you have Xcode downloaded and are still seeing this make sure you have:
+  1. Opened Xcode at least once and gotten to the "Create new project" screen
+  2. Switched to your installed Xcode with ${chalk.green(
+    'sudo xcode-select -s /Applications/Xcode.app',
+  )}
+
+You can validate your install with "${chalk.green(
+    '/usr/bin/xcodebuild -version',
+  )}" once you are ready or just run this command again`);
+}
+
 function ensureSDKAndSymlink(config) {
   const localPath = ensureSDK();
 
@@ -117,6 +143,8 @@ function ensureSDK() {
     console.log('TEST: ensureSDK called');
     return;
   }
+
+  ensureViableXCode();
 
   const expected = expectedSDKVersion();
   const eventualVersionedPath = path.resolve(SDKDir, `MacOSX${expected}.sdk`);
