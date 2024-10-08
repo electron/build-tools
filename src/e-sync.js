@@ -9,6 +9,7 @@ const { fatal } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
 const depot = require('./utils/depot-tools');
 const { configureReclient } = require('./utils/setup-reclient-chromium');
+const { ensureSDK } = require('./utils/sdk');
 
 function setRemotes(cwd, repo) {
   // Confirm that cwd is the git root
@@ -54,6 +55,12 @@ function runGClientSync(syncArgs, syncOpts) {
   }
 
   depot.ensure();
+
+  if (process.platform === 'darwin') {
+    if (config.onlySdk) {
+      ensureSDK();
+    }
+  }
 
   if (config.defaultTarget === 'chrome') {
     configureReclient();
