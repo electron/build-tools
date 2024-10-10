@@ -74,6 +74,14 @@ function removeUnusedSDKs() {
   }
 }
 
+// Potentially remove unused Xcode versions.
+function maybeRemoveOldXcodes() {
+  const XcodeDir = path.resolve(__dirname, '..', '..', 'third_party', 'Xcode');
+  if (fs.existsSync(XcodeDir)) {
+    deleteDir(XcodeDir);
+  }
+}
+
 // Extract the SDK version from the toolchain file and normalize it.
 function extractSDKVersion(toolchainFile) {
   if (!fs.existsSync(toolchainFile)) {
@@ -244,6 +252,7 @@ function ensureSDK() {
   deleteDir(SDKZip);
 
   removeUnusedSDKs();
+  maybeRemoveOldXcodes();
 
   return eventualVersionedPath;
 }
