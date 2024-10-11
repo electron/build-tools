@@ -58,6 +58,30 @@ function getSDKVersion() {
   return json.MinimalDisplayName;
 }
 
+function removeUnusedSDKs() {
+  const recent = fs
+    .readdirSync(SDKDir)
+    .map(sdk => {
+      const sdkPath = path.join(SDKDir, sdk);
+      const { atime } = fs.statSync(sdkPath);
+      return { name: sdkPath, atime };
+    })
+    .sort((a, b) => b.atime - a.atime);
+
+  const { preserveSDK } = evmConfig.current();
+  for (const { name } of recent.slice(preserveSDK)) {
+    deleteDir(name);
+  }
+}
+
+// Potentially remove unused Xcode versions.
+function maybeRemoveOldXcodes() {
+  const XcodeDir = path.resolve(__dirname, '..', '..', 'third_party', 'Xcode');
+  if (fs.existsSync(XcodeDir)) {
+    deleteDir(XcodeDir);
+  }
+}
+
 // Extract the SDK version from the toolchain file and normalize it.
 function extractSDKVersion(toolchainFile) {
   if (!fs.existsSync(toolchainFile)) {
@@ -226,6 +250,9 @@ function ensureSDK() {
   }
 
   deleteDir(SDKZip);
+
+  removeUnusedSDKs();
+  maybeRemoveOldXcodes();
 
   return eventualVersionedPath;
 }

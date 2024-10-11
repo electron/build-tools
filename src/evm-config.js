@@ -215,9 +215,19 @@ function sanitizeConfig(name, config, overwrite = false) {
     changes.push(`fixed invalid property ${color.config('reclient: none')}`);
   }
 
-  if (!('preserveXcode' in config)) {
-    config.preserveXcode = 5;
-    changes.push(`defined ${color.config('preserveXcode')} to default value of 5`);
+  if (!('preserveSDK' in config)) {
+    config.preserveSDK = config.preserveXcode ?? 5;
+    changes.push(`added ${color.config('preserveSDK')} property`);
+  }
+
+  if (config.preserveXcode) {
+    delete config.preserveXcode;
+    changes.push(`removed ${color.config('preserveXcode')} property`);
+  }
+
+  if (config.onlySdk) {
+    delete config.onlySdk;
+    changes.push(`removed ${color.config('onlySdk')} property`);
   }
 
   if (config.goma) {
