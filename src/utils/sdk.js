@@ -119,11 +119,21 @@ function expectedSDKVersion() {
   return version;
 }
 
+// Ensure that the user has a version of Xcode installed and usable.
 function ensureViableXCode() {
   const xcodeBuildExec = '/usr/bin/xcodebuild';
   if (fs.existsSync(xcodeBuildExec)) {
     const result = cp.spawnSync(xcodeBuildExec, ['-version']);
-    if (result.status === 0) return;
+    if (result.status === 0) {
+      const match = result.stdout
+        .toString()
+        .trim()
+        .match(/Xcode (\d+\.\d+)/);
+      if (match && !semver.satisfies(semver.coerce(match[1]), '>14')) {
+        fatal(`Xcode version ${version} is not supported, please upgrade to Xcode 15 or newer`);
+      }
+      return;
+    }
   }
 
   fatal(`Xcode appears to be missing, you may have Command Line Tools installed but not a full Xcode. Please install Xcode now...
