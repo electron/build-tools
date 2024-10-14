@@ -129,10 +129,13 @@ function ensureViableXCode() {
         .toString()
         .trim()
         .match(/Xcode (\d+\.\d+)/);
-      if (match && !semver.satisfies(semver.coerce(match[1]), '>14')) {
-        fatal(`Xcode version ${version} is not supported, please upgrade to Xcode 15 or newer`);
+      if (match) {
+        if (!semver.satisfies(semver.coerce(match[1]), '>14')) {
+          fatal(`Xcode version ${match[1]} is not supported, please upgrade to Xcode 15 or newer`);
+        } else {
+          return;
+        }
       }
-      return;
     }
   }
 
