@@ -39,7 +39,7 @@ const SDKs = {
 
 const fallbackSDK = () => {
   const semverFallback = Object.keys(SDKs)
-    .map(v => semver.valid(semver.coerce(v)))
+    .map((v) => semver.valid(semver.coerce(v)))
     .sort(semver.rcompare)[0];
   return semverFallback.substring(0, semverFallback.length - 2);
 };
@@ -61,7 +61,7 @@ function getSDKVersion() {
 function removeUnusedSDKs() {
   const recent = fs
     .readdirSync(SDKDir)
-    .map(sdk => {
+    .map((sdk) => {
       const sdkPath = path.join(SDKDir, sdk);
       const { atime } = fs.statSync(sdkPath);
       return { name: sdkPath, atime };
@@ -273,11 +273,7 @@ function ensureSDK() {
 // Hash MacOSX.sdk directory zip with sha256.
 function hashFile(file) {
   console.log(`Calculating hash for ${color.path(file)}`);
-  return cp
-    .spawnSync('shasum', ['-a', '256', file])
-    .stdout.toString()
-    .split(' ')[0]
-    .trim();
+  return cp.spawnSync('shasum', ['-a', '256', file]).stdout.toString().split(' ')[0].trim();
 }
 
 module.exports = {

@@ -146,7 +146,7 @@ program
     guessPRTarget(current()),
   )
   .option('-b, --backport <pull_request>', 'Pull request being backported')
-  .action(async options => {
+  .action(async (options) => {
     if (!options.source) {
       fatal(`'source' is required to create a PR`);
     } else if (!options.target) {

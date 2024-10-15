@@ -54,7 +54,7 @@ async function getPullURLsFromGitHub(sha1) {
     if (response.statusCode !== 200) {
       fatal(`Could not open PR: ${opts.url} got ${response.headers.status}`);
     }
-    ret.push(...(response.body || []).map(pull => pull.html_url).filter(url => !!url));
+    ret.push(...(response.body || []).map((pull) => pull.html_url).filter((url) => !!url));
   } catch (error) {
     console.log(color.err, error);
   }
@@ -65,7 +65,7 @@ async function getPullURLsFromGitHub(sha1) {
 // get the pull request URLs for a git object or pull number
 async function getPullURLs(ref) {
   const { pullNumber, sha1 } = getCommitInfo(ref);
-  const makeURL = num => `https://github.com/electron/electron/pull/${num}`;
+  const makeURL = (num) => `https://github.com/electron/electron/pull/${num}`;
 
   if (pullNumber) {
     return [makeURL(pullNumber)];

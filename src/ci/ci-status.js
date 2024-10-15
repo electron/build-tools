@@ -14,7 +14,7 @@ const { APPVEYOR_CLOUD_TOKEN } = process.env;
 
 const APPVEYOR_BOT_ID = 40616121;
 
-const colorForStatus = status => {
+const colorForStatus = (status) => {
   switch (status) {
     case 'success':
       return chalk.green(status);
@@ -38,7 +38,7 @@ const colorForStatus = status => {
   }
 };
 
-const getAppveyorStatusString = check => {
+const getAppveyorStatusString = (check) => {
   switch (check.state) {
     case 'success':
       return chalk.green('success');
@@ -64,13 +64,13 @@ const appveyorArchMap = {
 
 const formatLink = (name, url) => `\x1B]8;;${url}\x1B\\${name}\x1B]8;;\x1B\\`;
 
-const getWorkflowID = url => url.pathname.replace('/workflow-run/', '');
+const getWorkflowID = (url) => url.pathname.replace('/workflow-run/', '');
 const getBuildID = ({ pathname }) => {
   const index = pathname.lastIndexOf('/builds/') + 8;
   return pathname.substring(index, pathname.length);
 };
 
-const getType = prs => {
+const getType = (prs) => {
   // If there are no PRs, we're on a PR fork branch.
   if (prs.length === 0) return 'branch';
 
@@ -79,7 +79,7 @@ const getType = prs => {
   return isMain ? 'main' : 'branch';
 };
 
-const getArch = url => url.pathname.match(/(electron-[a-zA-Z0-9]*-testing)/)[0];
+const getArch = (url) => url.pathname.match(/(electron-[a-zA-Z0-9]*-testing)/)[0];
 
 const printStatuses = (statuses, link) => {
   let result = '';
@@ -100,14 +100,14 @@ const printStatuses = (statuses, link) => {
 
     if (check.jobs) {
       const failed = [];
-      const succeeded = check.jobs.filter(j => {
+      const succeeded = check.jobs.filter((j) => {
         const passed = j.status === 'success';
         if (!passed) failed.push(j);
         return passed;
       });
 
       if (succeeded.length) {
-        const names = succeeded.map(s => s.name);
+        const names = succeeded.map((s) => s.name);
         result +=
           succeeded.length === check.jobs.length
             ? '     ⦿ all jobs succeeded\n'
@@ -124,7 +124,7 @@ const printStatuses = (statuses, link) => {
   return result;
 };
 
-const parseRef = ref => {
+const parseRef = (ref) => {
   const pullPattern = /^#?\d{1,7}$/;
   if (pullPattern.test(ref)) {
     const pullNum = ref.startsWith('#') ? ref.substring(1) : ref;
@@ -139,7 +139,7 @@ program
   .option('-r|--ref <ref>', 'The ref to check CI job status for')
   .option('-n|--no-link', 'Do not show smart linking for CI status information')
   .option('-s|--show-jobs', 'Whether to also list the jobs for each workflow')
-  .action(async options => {
+  .action(async (options) => {
     const electronDir = path.resolve(current().root, 'src', 'electron');
     const currentRef = execFileSync('git', ['branch', '--show-current'], { cwd: electronDir })
       .toString()
