@@ -30,10 +30,10 @@ const gerritSources = [
 function fetchBase64(url) {
   return new Promise((resolve, reject) => {
     https
-      .request(url, res => {
+      .request(url, (res) => {
         let data = '';
         res.setEncoding('ascii');
-        res.on('data', chunk => {
+        res.on('data', (chunk) => {
           data += chunk;
         });
         res.on('end', () => {

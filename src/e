@@ -92,7 +92,7 @@ program
   .alias('run')
   .description('Run the Electron executable')
   .allowUnknownOption()
-  .action(args => {
+  .action((args) => {
     try {
       const exec = evmConfig.execOf(evmConfig.current());
       const opts = { stdio: 'inherit' };
@@ -115,7 +115,7 @@ program
   .command('node [args...]')
   .description('Run the Electron build as if it were a Node.js executable')
   .allowUnknownOption()
-  .action(args => {
+  .action((args) => {
     try {
       const exec = evmConfig.execOf(evmConfig.current());
       const opts = {
@@ -141,7 +141,7 @@ program.command('debug', 'Run the Electron build with a debugger (gdb or lldb)')
 program
   .command('use <name>')
   .description('Use build config <name> when running other `e` commands')
-  .action(name => {
+  .action((name) => {
     try {
       evmConfig.setCurrent(name);
       console.log(`Now using config ${color.config(name)}`);
@@ -155,7 +155,7 @@ program
   .command('remove <name>')
   .alias('rm')
   .description('Remove build config <name> from list')
-  .action(name => {
+  .action((name) => {
     try {
       evmConfig.remove(name);
       console.log(`Removed config ${color.config(name)}`);
@@ -196,7 +196,7 @@ program
 program
   .command('sanitize-config [name]')
   .description('Update and overwrite an existing config to conform to latest build-tools updates')
-  .action(name => {
+  .action((name) => {
     try {
       const configName = name || evmConfig.currentName();
       evmConfig.sanitizeConfigWithName(configName, true);

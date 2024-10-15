@@ -33,9 +33,9 @@ async function getGitHubAuthToken(scopes = []) {
     if (regexMatch) {
       const tokenScopes = regexMatch[1]
         .split(',')
-        .map(item => item.trim().replace(/^'(.*)'$/, '$1'));
+        .map((item) => item.trim().replace(/^'(.*)'$/, '$1'));
 
-      if (scopes.every(scope => tokenScopes.includes(scope))) {
+      if (scopes.every((scope) => tokenScopes.includes(scope))) {
         return runGhCliCommand(['auth', 'token']).trim();
       } else {
         console.info(

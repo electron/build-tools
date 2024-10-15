@@ -104,7 +104,7 @@ function ensureRoot(config, force) {
 
   ensureDir(root);
 
-  const hasOtherFiles = fs.readdirSync(root).some(file => file !== '.gclient');
+  const hasOtherFiles = fs.readdirSync(root).some((file) => file !== '.gclient');
   if (hasOtherFiles && !force) {
     fatal(`Root ${color.path(root)} is not empty. Please choose a different root directory.`);
   }
