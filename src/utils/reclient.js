@@ -125,7 +125,6 @@ function reclientEnv(config) {
     try {
       const extraArgs = JSON.parse(result.stdout.toString());
       reclientEnv = Object.assign(reclientEnv, extraArgs);
-      // Temp fix until reclient helper can be fixed
     } catch (e) {
       console.error(result.stdout.toString());
       fatal('Failure to run reclient credential helper');
