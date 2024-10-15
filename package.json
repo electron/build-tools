@@ -11,6 +11,7 @@
     "lint:js": "prettier --check \"src/**/*.js\" \"tests/*.js\" \"src/e\"",
     "lint": "npm run lint:js && npm run lint:markdown",
     "prettier:write": "prettier --write \"src/**/*.js\" \"tests/*.js\" \"src/e\"",
+    "prepare": "husky",
     "test": "nyc --reporter=lcov --reporter=text-summary vitest run --reporter=verbose --exclude tests/bootstrap.spec.mjs",
     "test:all": "nyc --reporter=lcov --reporter=text-summary vitest run --reporter=verbose"
   },
@@ -41,12 +42,12 @@
     "yaml": "^2.4.5"
   },
   "devDependencies": {
-    "@electron/lint-roller": "^1.5.0",
-    "husky": "^4.2.0",
-    "lint-staged": "^10.0.2",
-    "nyc": "^17.0.0",
-    "prettier": "^1.19.1",
-    "vitest": "^2.0.1"
+    "@electron/lint-roller": "^1.13.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "nyc": "^17.1.0",
+    "prettier": "^3.3.3",
+    "vitest": "^2.1.3"
   },
   "lint-staged": {
     "*.js": [
@@ -55,11 +56,6 @@
     "e": [
       "prettier --write"
     ]
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

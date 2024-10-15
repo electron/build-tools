@@ -9,7 +9,7 @@ const { archOption, ArchTypes, BuildTypes } = require('./common');
 
 const { APPVEYOR_CLOUD_TOKEN } = process.env;
 
-const cancelAppveyorBuild = async id => {
+const cancelAppveyorBuild = async (id) => {
   const { statusCode } = await got
     .delete(`https://ci.appveyor.com/api/builds/electron-bot/${ArchTypes[arch]}/${id}`, {
       headers: {

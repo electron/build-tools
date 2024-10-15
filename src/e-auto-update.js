@@ -43,10 +43,7 @@ program
     }
   });
 
-program
-  .command('check')
-  .description('check for updates and apply them')
-  .action(checkForUpdates);
+program.command('check').description('check for updates and apply them').action(checkForUpdates);
 
 function checkForUpdates() {
   try {
@@ -56,23 +53,12 @@ function checkForUpdates() {
     const globalNodeModulesPaths = [];
 
     try {
-      globalNodeModulesPaths.push(
-        cp
-          .execSync('npm root -g')
-          .toString('utf8')
-          .trim(),
-      );
+      globalNodeModulesPaths.push(cp.execSync('npm root -g').toString('utf8').trim());
     } catch {}
 
     try {
       globalNodeModulesPaths.push(
-        path.join(
-          cp
-            .execSync('npx yarn global dir')
-            .toString('utf8')
-            .trim(),
-          'node_modules',
-        ),
+        path.join(cp.execSync('npx yarn global dir').toString('utf8').trim(), 'node_modules'),
       );
     } catch {}
 
@@ -102,11 +88,7 @@ function checkForUpdates() {
     }
 
     const execOpts = { cwd: path.resolve(__dirname, '..') };
-    const git = args =>
-      cp
-        .execSync(`git ${args}`, execOpts)
-        .toString('utf8')
-        .trim();
+    const git = (args) => cp.execSync(`git ${args}`, execOpts).toString('utf8').trim();
 
     const headCmd = 'rev-parse --verify HEAD';
     const headBefore = git(headCmd);

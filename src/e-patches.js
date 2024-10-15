@@ -40,7 +40,7 @@ program
         console.log(
           `Supported targets: ${[...Object.keys(targets), 'all']
             .sort()
-            .map(a => color.cmd(a))
+            .map((a) => color.cmd(a))
             .join(', ')}`,
         );
         console.log(`See ${color.path(patchesConfig)}`);
@@ -70,7 +70,7 @@ program
         console.log(
           `${color.err} Supported targets: ${[...Object.keys(targets), 'all']
             .sort()
-            .map(a => color.cmd(a))
+            .map((a) => color.cmd(a))
             .join(', ')}`,
         );
         fatal(`See ${color.path(patchesConfig)}`);

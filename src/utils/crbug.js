@@ -13,7 +13,7 @@ async function getXsrfToken(osid) {
       Cookie: `OSID=${osid}`,
       'Content-Type': 'application/json',
     },
-  }).then(r => r.text());
+  }).then((r) => r.text());
 
   const DATA_START = 'var buganizerSessionJspb = ';
   const DATA_END = '; var defrostedResourcesJspb';
@@ -43,8 +43,8 @@ async function getBugInfo(bugNr) {
     },
     method: 'GET',
   })
-    .then(r => r.text())
-    .then(rawJSON => {
+    .then((r) => r.text())
+    .then((rawJSON) => {
       // This API call can sometimes return errant invalid characters at the start of the response.
       let cleaned;
       if (rawJSON.indexOf('[') > -1) {
@@ -70,7 +70,7 @@ function parseCveFromIssue(issue) {
 
   const issueData = issue[0][1];
   const issueMetaData = issueData[issueData.length - 1];
-  const cveData = issueMetaData[2][14].find(d => d[0] === CVE_ID);
+  const cveData = issueMetaData[2][14].find((d) => d[0] === CVE_ID);
   const cve = cveData[cveData.length - 2];
 
   return /\d{4}-\d{4,7}/.test(cve) ? `CVE-${cve}` : null;

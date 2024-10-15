@@ -1,10 +1,10 @@
 const chalk = require('chalk');
 
 const color = {
-  cmd: str => `"${chalk.cyan(str)}"`,
-  config: str => `${chalk.blueBright(str)}`,
-  git: str => `${chalk.greenBright(str)}`,
-  path: str => `${chalk.magentaBright(str)}`,
+  cmd: (str) => `"${chalk.cyan(str)}"`,
+  config: (str) => `${chalk.blueBright(str)}`,
+  git: (str) => `${chalk.greenBright(str)}`,
+  path: (str) => `${chalk.magentaBright(str)}`,
   childExec: (cmd, args, opts) => {
     args = args || [];
     const cmdstr = [cmd, ...args].join(' ');
