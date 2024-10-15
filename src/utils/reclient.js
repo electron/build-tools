@@ -14,7 +14,7 @@ const reclientHelperPath = path.resolve(
 );
 const rbeServiceAddress = 'rbe.notgoma.com:443';
 
-const CREDENTIAL_HELPER_TAG = 'v0.4.3';
+const CREDENTIAL_HELPER_TAG = 'v0.4.4';
 
 let usingRemote = true;
 
@@ -125,9 +125,6 @@ function reclientEnv(config) {
     try {
       const extraArgs = JSON.parse(result.stdout.toString());
       reclientEnv = Object.assign(reclientEnv, extraArgs);
-      // Temp fix until reclient helper can be fixed
-      delete reclientEnv.RBE_exec_strategy;
-      delete reclientEnv.RBE_remote_update_cache;
     } catch (e) {
       console.error(result.stdout.toString());
       fatal('Failure to run reclient credential helper');
