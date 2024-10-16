@@ -1,10 +1,8 @@
 const fs = require('fs');
 const got = require('got');
 const stream = require('stream');
-const { promisify } = require('util');
+const { pipeline } = require('stream/promises');
 const ProgressBar = require('progress');
-
-const pipeline = promisify(stream.pipeline);
 
 const { fatal } = require('./utils/logging');
 
