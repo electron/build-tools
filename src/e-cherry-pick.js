@@ -152,7 +152,7 @@ program
     try {
       const {
         data: { permissions },
-      } = await octokit.repos.get(...ELECTRON_REPO_DATA);
+      } = await octokit.repos.get(ELECTRON_REPO_DATA);
 
       if (!permissions?.push) {
         fatal(
