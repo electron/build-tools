@@ -57,9 +57,7 @@ function runGClientSync(syncArgs, syncOpts) {
   depot.ensure();
 
   if (process.platform === 'darwin') {
-    if (config.onlySdk) {
-      ensureSDK();
-    }
+    ensureSDK();
   }
 
   if (config.defaultTarget === 'chrome') {
