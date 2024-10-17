@@ -2,8 +2,6 @@
 
 const d = require('debug')('build-tools:cherry-pick');
 const program = require('commander');
-const https = require('https');
-const got = require('got');
 const cp = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -26,24 +24,6 @@ const gerritSources = [
   'pdfium-review.googlesource.com',
   'dawn-review.googlesource.com',
 ];
-
-function fetchBase64(url) {
-  return new Promise((resolve, reject) => {
-    https
-      .request(url, res => {
-        let data = '';
-        res.setEncoding('ascii');
-        res.on('data', chunk => {
-          data += chunk;
-        });
-        res.on('end', () => {
-          resolve(Buffer.from(data, 'base64').toString('utf8'));
-        });
-        res.on('error', reject);
-      })
-      .end();
-  });
-}
 
 async function getPatchDetailsFromURL(urlStr, security) {
   const parsedUrl = new URL(urlStr);
@@ -73,7 +53,9 @@ async function getGerritPatchDetailsFromURL(gerritUrl, security) {
     gerritUrl,
   );
 
-  const patch = await fetchBase64(patchUrl.toString());
+  const patch = await fetch(patchUrl)
+    .then(resp => resp.text())
+    .then(text => Buffer.from(text, 'base64').toString('utf8'));
 
   const [, commitId] = /^From ([0-9a-f]+)/.exec(patch);
 
@@ -118,9 +100,9 @@ async function getGitHubPatchDetailsFromURL(gitHubUrl, security) {
     fatal('Could not find commit sha in url');
   }
 
-  const response = await got.get(`https://github.com/nodejs/node/commit/${commitSha}.patch`);
+  const response = await fetch(`https://github.com/nodejs/node/commit/${commitSha}.patch`);
   const shortCommit = commitSha.slice(0, 7);
-  const patch = response.body;
+  const patch = await response.text();
 
   return {
     patchDirName: 'node',
