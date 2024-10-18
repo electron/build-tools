@@ -14,10 +14,7 @@ const { ensureSDK } = require('./utils/sdk');
 function setRemotes(cwd, repo) {
   // Confirm that cwd is the git root
   const gitRoot = path.normalize(
-    cp
-      .execSync('git rev-parse --show-toplevel', { cwd })
-      .toString()
-      .trim(),
+    cp.execSync('git rev-parse --show-toplevel', { cwd }).toString().trim(),
   );
 
   if (gitRoot !== cwd) {
@@ -27,11 +24,7 @@ function setRemotes(cwd, repo) {
   for (const remote in repo) {
     // First check that the fork remote exists.
     if (remote === 'fork') {
-      const remotes = cp
-        .execSync('git remote', { cwd })
-        .toString()
-        .trim()
-        .split('\n');
+      const remotes = cp.execSync('git remote', { cwd }).toString().trim().split('\n');
 
       // If we've not added the fork remote, add it instead of updating the url.
       if (!remotes.includes('fork')) {

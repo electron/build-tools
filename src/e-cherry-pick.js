@@ -54,8 +54,8 @@ async function getGerritPatchDetailsFromURL(gerritUrl, security) {
   );
 
   const patch = await fetch(patchUrl)
-    .then(resp => resp.text())
-    .then(text => Buffer.from(text, 'base64').toString('utf8'));
+    .then((resp) => resp.text())
+    .then((text) => Buffer.from(text, 'base64').toString('utf8'));
 
   const [, commitId] = /^From ([0-9a-f]+)/.exec(patch);
 

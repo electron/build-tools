@@ -38,7 +38,7 @@ function buildPath(name, suffix) {
 
 function buildPathCandidates(name) {
   const suffixes = ['json', 'yml', 'yaml'];
-  return suffixes.map(suffix => buildPath(name, suffix));
+  return suffixes.map((suffix) => buildPath(name, suffix));
 }
 
 function mergeConfigs(target, source) {
@@ -56,7 +56,7 @@ function mergeConfigs(target, source) {
 
 // get the existing filename if it exists; otherwise the preferred name
 function pathOf(name) {
-  const files = buildPathCandidates(name).filter(file => fs.existsSync(file));
+  const files = buildPathCandidates(name).filter((file) => fs.existsSync(file));
   const preferredFormat = process.env.EVM_FORMAT || 'json'; // yaml yml json
   return files[0] || buildPath(name, preferredFormat);
 }
@@ -70,7 +70,7 @@ function testConfigExists(name) {
   if (!fs.existsSync(pathOf(name))) {
     fatal(
       `Build config ${color.config(name)} not found. (Tried ${buildPathCandidates(name)
-        .map(f => color.path(f))
+        .map((f) => color.path(f))
         .join(', ')})`,
     );
   }
@@ -87,7 +87,7 @@ function save(name, o) {
 function setCurrent(name) {
   testConfigExists(name);
   try {
-    currentFiles.forEach(filename => fs.writeFileSync(filename, `${name}\n`));
+    currentFiles.forEach((filename) => fs.writeFileSync(filename, `${name}\n`));
   } catch (e) {
     fatal(`Unable to set config ${color.config(name)}: `, e);
   }
@@ -97,8 +97,8 @@ function names() {
   if (!fs.existsSync(configRoot())) return [];
   return fs
     .readdirSync(configRoot())
-    .map(filename => filenameToConfigName(filename))
-    .filter(name => name)
+    .map((filename) => filenameToConfigName(filename))
+    .filter((name) => name)
     .sort();
 }
 
@@ -244,7 +244,7 @@ function sanitizeConfig(name, config, overwrite = false) {
   const hasRemoteExecGN = !(
     !config.gen ||
     !config.gen.args ||
-    !config.gen.args.find(arg => /^use_remoteexec ?= ?true$/.test(arg))
+    !config.gen.args.find((arg) => /^use_remoteexec ?= ?true$/.test(arg))
   );
   if (config.reclient !== 'none' && !hasRemoteExecGN) {
     config.gen = config.gen || {};
@@ -252,7 +252,7 @@ function sanitizeConfig(name, config, overwrite = false) {
     config.gen.args.push(remoteExecGnArg);
     changes.push(`added gn arg ${color.cmd(remoteExecGnArg)} needed by remoteexec`);
   } else if (config.reclient === 'none' && hasRemoteExecGN) {
-    config.gen.args = config.gen.args.filter(arg => !/^use_remoteexec ?= ?true$/.test(arg));
+    config.gen.args = config.gen.args.filter((arg) => !/^use_remoteexec ?= ?true$/.test(arg));
     changes.push(`removed gn arg ${color.cmd(remoteExecGnArg)} as remoteexec is disabled`);
   }
 
@@ -270,7 +270,7 @@ function sanitizeConfig(name, config, overwrite = false) {
     } else if (shouldWarn) {
       shouldWarn = false;
       console.warn(`${color.warn} We've made these temporary changes to your configuration:`);
-      console.warn(changes.map(change => ` * ${change}`).join('\n'));
+      console.warn(changes.map((change) => ` * ${change}`).join('\n'));
       console.warn(`Run ${color.cmd('e sanitize-config')} to make these changes permanent.`);
     }
   }
@@ -323,7 +323,7 @@ module.exports = {
   maybeCurrent: () => (getCurrentFileName() ? sanitizeConfigWithName(currentName()) : {}),
   currentName,
   execOf,
-  fetchByName: name => sanitizeConfigWithName(name),
+  fetchByName: (name) => sanitizeConfigWithName(name),
   names,
   outDir,
   pathOf,

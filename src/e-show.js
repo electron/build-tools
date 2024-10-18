@@ -29,8 +29,8 @@ function gitStatus(config) {
     } catch {}
   }
   return outs
-    .map(out => out.trim())
-    .filter(out => out)
+    .map((out) => out.trim())
+    .filter((out) => out)
     .join(' ');
 }
 
@@ -42,7 +42,7 @@ program
   .option('-n, --no-name', "Don't show config name")
   .option('-g, --git', 'Human-readable git status (tag, branch, commit)', false)
   .option('-f, --filepath', 'Config filepath', false)
-  .action(options => {
+  .action((options) => {
     try {
       const name = evmConfig.currentName();
       const parts = [];
@@ -74,8 +74,8 @@ program
       } else {
         names
           .sort()
-          .map(name => `${name === current ? '*' : ' '} ${color.config(name)}`)
-          .forEach(name => console.log(name));
+          .map((name) => `${name === current ? '*' : ' '} ${color.config(name)}`)
+          .forEach((name) => console.log(name));
       }
     } catch (e) {
       fatal(e);
@@ -91,7 +91,7 @@ program
   .command('env')
   .description('Show environment variables set when building Electron')
   .option('--json', 'Output as JSON')
-  .action(options => {
+  .action((options) => {
     try {
       const { env } = depot.opts(evmConfig.current());
 
@@ -141,7 +141,7 @@ program
 program
   .command('src [name]')
   .description('Show path of the named (default:electron) src directory e.g. "/$root/src/electron"')
-  .action(name => {
+  .action((name) => {
     try {
       const { root } = evmConfig.current();
       name = name || 'electron';
@@ -155,7 +155,7 @@ program
   .command('out')
   .description('Show outdir name, e.g. "Testing"')
   .option('--path', 'Output absolute path to outdir')
-  .action(options => {
+  .action((options) => {
     try {
       if (options.path) {
         console.log(color.path(evmConfig.outDir(evmConfig.current())));

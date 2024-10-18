@@ -37,13 +37,13 @@ try {
     { exec: 'lldb', runner: run_lldb },
   ];
 
-  const choice = choices.find(choice => commandExistsSync(choice.exec));
+  const choice = choices.find((choice) => commandExistsSync(choice.exec));
   if (choice) {
     choice.runner(evmConfig.current());
   } else {
     fatal(
       `No debugger found in PATH! Looked for [${choices
-        .map(choice => `'${choice.exec}'`)
+        .map((choice) => `'${choice.exec}'`)
         .join(', ')}]`,
     );
   }
