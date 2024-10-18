@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const cp = require('child_process');
-const got = require('got');
 const path = require('path');
 const program = require('commander');
 
@@ -41,20 +40,21 @@ function getCommitInfo(object) {
 async function getPullURLsFromGitHub(sha1) {
   const ret = [];
 
+  const url = `https://api.github.com/repos/electron/electron/commits/${sha1}/pulls`;
   const opts = {
-    url: `https://api.github.com/repos/electron/electron/commits/${sha1}/pulls`,
-    responseType: 'json',
     headers: {
       // https://developer.github.com/changes/2019-04-11-pulls-branches-for-commit/
       Accept: 'application/vnd.github.groot-preview+json',
     },
   };
+
   try {
-    const response = await got(opts); // find the commit's PRs
-    if (response.statusCode !== 200) {
-      fatal(`Could not open PR: ${opts.url} got ${response.headers.status}`);
+    const response = await fetch(url, opts); // find the commit's PRs
+    if (!response.ok) {
+      fatal(`Could not open PR: ${url} got ${response.status}`);
     }
-    ret.push(...(response.body || []).map((pull) => pull.html_url).filter((url) => !!url));
+    const data = await response.json();
+    ret.push(...(data || []).map((pull) => pull.html_url).filter((url) => !!url));
   } catch (error) {
     console.log(color.err, error);
   }

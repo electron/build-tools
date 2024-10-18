@@ -5,7 +5,6 @@ const path = require('path');
 const querystring = require('querystring');
 const semver = require('semver');
 
-const got = require('got');
 const open = require('open');
 const program = require('commander');
 
@@ -36,18 +35,19 @@ async function getPullRequestInfo(pullNumber) {
   let notes = null;
   let title = null;
 
+  const url = `https://api.github.com/repos/electron/electron/pulls/${pullNumber}`;
   const opts = {
-    url: `https://api.github.com/repos/electron/electron/pulls/${pullNumber}`,
     responseType: 'json',
     throwHttpErrors: false,
   };
   try {
-    const response = await got(opts);
-    if (response.statusCode !== 200) {
-      fatal(`Could not find PR: ${opts.url} got ${response.headers.status}`);
+    const response = await fetch(url, opts);
+    if (!response.ok) {
+      fatal(`Could not find PR: ${url} got ${response.status}`);
     }
-    notes = findNoteInPRBody(response.body.body);
-    title = response.body.title;
+    const data = await response.json();
+    notes = findNoteInPRBody(data.body);
+    title = data.title;
   } catch (error) {
     console.log(color.err, error);
   }
