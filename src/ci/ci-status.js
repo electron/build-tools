@@ -4,7 +4,6 @@ const { Octokit } = require('@octokit/rest');
 const { default: chalk } = require('chalk');
 const { execFileSync } = require('child_process');
 const { program } = require('commander');
-const got = require('got');
 const path = require('path');
 const { current } = require('../evm-config');
 const { getGitHubAuthToken } = require('../utils/github-auth');
@@ -185,10 +184,15 @@ program
           const arch = getArch(url);
           const {
             build: { jobs },
-          } = await got(`https://ci.appveyor.com/api/projects/electron-bot/${arch}/builds/${id}`, {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${APPVEYOR_CLOUD_TOKEN}`,
-          }).json();
+          } = await fetch(
+            `https://ci.appveyor.com/api/projects/electron-bot/${arch}/builds/${id}`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${APPVEYOR_CLOUD_TOKEN}`,
+              },
+            },
+          ).then((resp) => resp.json());
           statuses[name].jobs = jobs;
         }
       }

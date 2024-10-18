@@ -2,25 +2,23 @@
 
 const { default: chalk } = require('chalk');
 const { program, InvalidArgumentError } = require('commander');
-const got = require('got');
 
 const { archOption, ArchTypes, BuildTypes } = require('./common');
 const { fatal } = require('../utils/logging');
 const { APPVEYOR_CLOUD_TOKEN } = process.env;
 
 const rerunAppveyorBuild = async (id, options) => {
-  const data = await got
-    .put(`https://ci.appveyor.com/api/builds`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${APPVEYOR_CLOUD_TOKEN}`,
-      },
-      json: {
-        buildId: id,
-        reRunIncomplete: options.fromFailed,
-      },
-    })
-    .json();
+  const data = await fetch(`https://ci.appveyor.com/api/builds`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${APPVEYOR_CLOUD_TOKEN}`,
+    },
+    body: JSON.stringify({
+      buildId: id,
+      reRunIncomplete: options.fromFailed,
+    }),
+  }).then((resp) => resp.json());
   console.log(`${chalk.bgMagenta(chalk.white('Build Rerun'))}
 
 ⦿ ${chalk.white(
