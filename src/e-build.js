@@ -16,7 +16,10 @@ function getGNArgs(config) {
   const configArgs = config.gen.args;
 
   if (process.platform === 'darwin') {
-    configArgs.push(`mac_sdk_path = "${ensureSDKAndSymlink(config)}"`);
+    const sdkArg = `mac_sdk_path = "${ensureSDKAndSymlink(config)}"`;
+    if (!configArgs.includes(sdkArg)) {
+      configArgs.push(sdkArg);
+    }
   }
 
   // GN_EXTRA_ARGS is a list of GN args to append to the default args.
