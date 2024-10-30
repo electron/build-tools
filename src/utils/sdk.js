@@ -84,16 +84,9 @@ function maybeRemoveOldXcodes() {
 
 // Extract the SDK version from the toolchain file and normalize it.
 function extractSDKVersion(toolchainFile) {
-  if (!fs.existsSync(toolchainFile)) {
-    return null;
-  }
-
   const contents = fs.readFileSync(toolchainFile, 'utf8');
   const match = /macOS\s(\d+(\.\d+)?)\sSDK\n\#/.exec(contents);
-
-  if (!match) {
-    return null;
-  }
+  if (!match) return null;
 
   return match[1].includes('.') ? match[1] : `${match[1]}.0`;
 }
@@ -103,14 +96,22 @@ function expectedSDKVersion() {
 
   // The current Xcode version and associated SDK can be found in build/mac_toolchain.py.
   const macToolchainPy = path.resolve(root, 'src', 'build', 'mac_toolchain.py');
-  const version = extractSDKVersion(macToolchainPy);
+  if (!fs.existsSync(macToolchainPy)) {
+    console.warn(
+      color.warn,
+      `Could not find ${color.path(macToolchainPy)} - falling back to default of`,
+      fallbackSDK(),
+    );
+    return fallbackSDK();
+  }
 
+  const version = extractSDKVersion(macToolchainPy);
   if (isNaN(Number(version)) || !SDKs[version]) {
     console.warn(
       color.warn,
       `Automatically detected an unknown macOS SDK ${color.path(
-        version,
-      )} - falling back to default of`,
+        version ? `${version} ` : '',
+      )}- falling back to default of`,
       fallbackSDK(),
     );
     return fallbackSDK();
