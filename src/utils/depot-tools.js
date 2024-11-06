@@ -57,7 +57,7 @@ function platformOpts() {
   let opts = {};
 
   const winToolchainOverride = process.env.ELECTRON_DEPOT_TOOLS_WIN_TOOLCHAIN;
-  if (os.platform() === 'win32' || winToolchainOverride === '1') {
+  if ((os.platform() === 'win32' && winToolchainOverride !== '0') || winToolchainOverride === '1') {
     opts = {
       DEPOT_TOOLS_WIN_TOOLCHAIN: '1',
       DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL: 'https://dev-cdn.electronjs.org/windows-toolchains/_',
