@@ -100,6 +100,15 @@ program
 
       reclient.usingRemote = options.remote;
 
+      const winToolchainOverride = process.env.ELECTRON_DEPOT_TOOLS_WIN_TOOLCHAIN;
+      if (os.platform() === 'win32' && winToolchainOverride === '0') {
+        config.reclient = 'none';
+        reclient.usingRemote = false;
+        console.warn(
+          `${color.warn} Build without remote execution when defined ${color.config('ELECTRON_DEPOT_TOOLS_WIN_TOOLCHAIN=0')} in environment variables.`,
+        );
+      }
+
       reclient.downloadAndPrepare(config);
 
       if (process.platform === 'darwin') {
