@@ -203,6 +203,11 @@ program
     'Architecture to download dist for. Defaults to current arch.',
     process.arch,
   )
+  .option(
+    '-o, --output <output_directory>',
+    'Specify the output directory for downloaded artifacts. ' +
+      'Defaults to ~/.electron_build_tools/artifacts/pr_{number}_{platform}_{arch}',
+  )
   .action(async (pullRequestNumber, options) => {
     if (!pullRequestNumber) {
       fatal(`Pull request number is required to download a PR`);
@@ -227,7 +232,7 @@ program
 
     let workflowRuns;
     try {
-      const { data } = await octokit.rest.actions.listWorkflowRunsForRepo({
+      const { data } = await octokit.actions.listWorkflowRunsForRepo({
         owner: 'electron',
         repo: 'electron',
         branch: pullRequest.head.ref,
@@ -270,24 +275,38 @@ program
       return;
     }
 
-    const prDir = path.resolve(
-      __dirname,
-      '..',
-      'artifacts',
-      `pr_${pullRequest.number}_${options.platform}_${options.arch}`,
-    );
+    let outputDir;
 
-    // Clean up the directory if it exists
-    try {
-      await fs.promises.rm(prDir, { recursive: true, force: true });
-    } catch (error) {
-      if (error.code !== 'ENOENT') {
-        throw error;
+    if (options.output) {
+      outputDir = path.resolve(options.output);
+
+      if (!(await fs.promises.stat(outputDir).catch(() => false))) {
+        fatal(`The output directory '${options.output}' does not exist`);
+        return;
       }
+    } else {
+      const defaultDir = path.resolve(
+        __dirname,
+        '..',
+        'artifacts',
+        `pr_${pullRequest.number}_${options.platform}_${options.arch}`,
+      );
+
+      // Clean up the directory if it exists
+      try {
+        await fs.promises.rm(defaultDir, { recursive: true, force: true });
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          throw error;
+        }
+      }
+
+      // Create the directory
+      await fs.promises.mkdir(defaultDir, { recursive: true });
+
+      outputDir = defaultDir;
     }
 
-    // Create the directory
-    await fs.promises.mkdir(prDir, { recursive: true });
     console.log(
       `Downloading artifact '${artifactName}' from pull request #${pullRequestNumber}...`,
     );
@@ -301,13 +320,13 @@ program
       archive_format: 'zip',
     });
 
-    const artifactPath = path.join(prDir, `${artifactName}.zip`);
+    const artifactPath = path.join(outputDir, `${artifactName}.zip`);
     await fs.promises.writeFile(artifactPath, Buffer.from(response.data));
 
     console.log('Extracting dist...');
 
     // Extract the artifact zip
-    const extractPath = path.join(prDir, artifactName);
+    const extractPath = path.join(outputDir, artifactName);
     await fs.promises.mkdir(extractPath, { recursive: true });
     await extractZip(artifactPath, { dir: extractPath });
 
@@ -319,7 +338,7 @@ program
     }
 
     // Extract dist.zip
-    await extractZip(distZipPath, { dir: prDir });
+    await extractZip(distZipPath, { dir: outputDir });
 
     // Check if Electron exists within the extracted dist.zip
     const platformExecutables = {
@@ -329,7 +348,12 @@ program
     };
     const executableName = platformExecutables[options.platform];
 
-    const electronAppPath = path.join(prDir, executableName);
+    if (!executableName) {
+      fatal(`Unable to extract executable for platform '${options.platform}'`);
+      return;
+    }
+
+    const electronAppPath = path.join(outputDir, executableName);
     if (!(await fs.promises.stat(electronAppPath).catch(() => false))) {
       fatal(`${executableName} not found within the extracted dist.zip.`);
       return;
