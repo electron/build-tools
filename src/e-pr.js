@@ -2,6 +2,7 @@
 
 const childProcess = require('child_process');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const extractZip = require('extract-zip');
@@ -307,63 +308,68 @@ program
       outputDir = defaultDir;
     }
 
-    console.log(
-      `Downloading artifact '${artifactName}' from pull request #${pullRequestNumber}...`,
-    );
+    // Download the artifact to a temporary directory
+    const tempDir = path.join(os.tmpdir(), 'electron-tmp');
+    await fs.promises.mkdir(tempDir);
 
-    // Download the artifact
-    // TODO: use write stream
-    const response = await octokit.actions.downloadArtifact({
-      owner: 'electron',
-      repo: 'electron',
-      artifact_id: artifact.id,
-      archive_format: 'zip',
-    });
+    let distExecutablePath;
 
-    const artifactPath = path.join(outputDir, `${artifactName}.zip`);
-    await fs.promises.writeFile(artifactPath, Buffer.from(response.data));
+    try {
+      console.log(
+        `Downloading artifact '${artifactName}' from pull request #${pullRequestNumber}...`,
+      );
 
-    console.log('Extracting dist...');
+      const artifactPath = path.join(tempDir, `${artifactName}.zip`);
 
-    // Extract the artifact zip
-    const extractPath = path.join(outputDir, artifactName);
-    await fs.promises.mkdir(extractPath, { recursive: true });
-    await extractZip(artifactPath, { dir: extractPath });
+      const response = await octokit.actions.downloadArtifact({
+        owner: 'electron',
+        repo: 'electron',
+        artifact_id: artifact.id,
+        archive_format: 'zip',
+      });
+      await fs.promises.writeFile(artifactPath, Buffer.from(response.data));
 
-    // Check if dist.zip exists within the extracted artifact
-    const distZipPath = path.join(extractPath, 'dist.zip');
-    if (!(await fs.promises.stat(distZipPath).catch(() => false))) {
-      fatal(`dist.zip not found within the extracted artifact.`);
-      return;
+      console.log('Extracting dist...');
+
+      // Extract the artifact zip
+      const extractPath = path.join(tempDir, artifactName);
+      await fs.promises.mkdir(extractPath, { recursive: true });
+      await extractZip(artifactPath, { dir: extractPath });
+
+      // Check if dist.zip exists within the extracted artifact
+      const distZipPath = path.join(extractPath, 'dist.zip');
+      if (!(await fs.promises.stat(distZipPath).catch(() => false))) {
+        fatal(`dist.zip not found within the extracted artifact.`);
+        return;
+      }
+
+      // Extract dist.zip to the final outputDir
+      await extractZip(distZipPath, { dir: outputDir });
+
+      // Check if Electron exists within the extracted dist.zip
+      const platformExecutables = {
+        win32: 'electron.exe',
+        darwin: 'Electron.app',
+        linux: 'electron',
+      };
+      const executableName = platformExecutables[options.platform];
+
+      if (!executableName) {
+        fatal(`Unable to find executable for platform '${options.platform}'`);
+        return;
+      }
+
+      distExecutablePath = path.join(outputDir, executableName);
+      if (!(await fs.promises.stat(distExecutablePath).catch(() => false))) {
+        fatal(`${executableName} not found within the extracted dist.zip.`);
+        return;
+      }
+    } finally {
+      // Cleanup temporary directory
+      await fs.promises.rm(tempDir, { recursive: true });
     }
 
-    // Extract dist.zip
-    await extractZip(distZipPath, { dir: outputDir });
-
-    // Check if Electron exists within the extracted dist.zip
-    const platformExecutables = {
-      win32: 'electron.exe',
-      darwin: 'Electron.app',
-      linux: 'electron',
-    };
-    const executableName = platformExecutables[options.platform];
-
-    if (!executableName) {
-      fatal(`Unable to find executable for platform '${options.platform}'`);
-      return;
-    }
-
-    const electronAppPath = path.join(outputDir, executableName);
-    if (!(await fs.promises.stat(electronAppPath).catch(() => false))) {
-      fatal(`${executableName} not found within the extracted dist.zip.`);
-      return;
-    }
-
-    // Remove the artifact and extracted artifact zip
-    await fs.promises.rm(artifactPath);
-    await fs.promises.rm(extractPath, { recursive: true });
-
-    console.info(`Downloaded to ${electronAppPath}`);
+    console.info(`Downloaded to ${distExecutablePath}`);
   });
 
 program.parse(process.argv);
