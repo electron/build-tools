@@ -138,7 +138,7 @@ function pullRequestSource(source) {
 }
 
 program
-  .command('open')
+  .command('open', null, { isDefault: true })
   .description('Open a GitHub URL where you can PR your changes')
   .option('-s, --source [source_branch]', 'Where the changes are coming from')
   .option('-t, --target [target_branch]', 'Where the changes are going to')
