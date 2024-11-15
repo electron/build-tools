@@ -482,7 +482,7 @@ git cherry-pick --continue
 git push
 
 # create pull request
-e pr --backport 1234
+e pr open --backport 1234
 ```
 
 ## Common Usage
