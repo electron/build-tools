@@ -145,7 +145,7 @@ program
   .option('-b, --backport <pull_request>', 'Pull request being backported')
   .action(async (options) => {
     const source = options.source || guessPRSource(current());
-    const target = options.target || guessPRSource(current());
+    const target = options.target || guessPRTarget(current());
 
     if (!source) {
       fatal(`'source' is required to create a PR`);
