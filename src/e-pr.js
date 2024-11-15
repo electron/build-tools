@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 
 const childProcess = require('child_process');
+const fs = require('fs');
 const path = require('path');
+
+const extractZip = require('extract-zip');
 const querystring = require('querystring');
 const semver = require('semver');
-
 const open = require('open');
 const program = require('commander');
+const { Octokit } = require('@octokit/rest');
 
+const { getGitHubAuthToken } = require('./utils/github-auth');
 const { current } = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
 
@@ -134,27 +138,23 @@ function pullRequestSource(source) {
 }
 
 program
+  .command('open')
   .description('Open a GitHub URL where you can PR your changes')
-  .option(
-    '-s, --source <source_branch>',
-    'Where the changes are coming from',
-    guessPRSource(current()),
-  )
-  .option(
-    '-t, --target <target_branch>',
-    'Where the changes are going to',
-    guessPRTarget(current()),
-  )
+  .option('-s, --source [source_branch]', 'Where the changes are coming from')
+  .option('-t, --target [target_branch]', 'Where the changes are going to')
   .option('-b, --backport <pull_request>', 'Pull request being backported')
   .action(async (options) => {
-    if (!options.source) {
+    const source = options.source || guessPRSource(current());
+    const target = options.target || guessPRSource(current());
+
+    if (!source) {
       fatal(`'source' is required to create a PR`);
-    } else if (!options.target) {
+    } else if (!target) {
       fatal(`'target' is required to create a PR`);
     }
 
     const repoBaseUrl = 'https://github.com/electron/electron';
-    const comparePath = `${options.target}...${pullRequestSource(options.source)}`;
+    const comparePath = `${target}...${pullRequestSource(source)}`;
     const queryParams = { expand: 1 };
 
     if (!options.backport) {
@@ -188,5 +188,143 @@ program
     }
 
     return open(`${repoBaseUrl}/compare/${comparePath}?${querystring.stringify(queryParams)}`);
-  })
-  .parse(process.argv);
+  });
+
+program
+  .command('download-dist <pull_request_number>')
+  .description('Download a pull request dist')
+  .option('--platform [platform]', 'Platform to download dist for', process.platform)
+  .option('--arch [arch]', 'Architecture to download dist for', process.arch)
+  .action(async (pullRequestNumber, options) => {
+    if (!pullRequestNumber) {
+      fatal(`Pull request number is required to download a PR`);
+    }
+
+    const octokit = new Octokit({
+      auth: await getGitHubAuthToken(['repo']),
+    });
+
+    let pullRequest;
+    try {
+      const { data } = await octokit.pulls.get({
+        owner: 'electron',
+        repo: 'electron',
+        pull_number: pullRequestNumber,
+      });
+      pullRequest = data;
+    } catch (error) {
+      console.error(`Failed to get pull request: ${error}`);
+      return;
+    }
+
+    let workflowRuns;
+    try {
+      const { data } = await octokit.rest.actions.listWorkflowRunsForRepo({
+        owner: 'electron',
+        repo: 'electron',
+        branch: pullRequest.head.ref,
+        name: 'Build',
+        event: 'pull_request',
+        status: 'completed',
+        per_page: 10,
+        sort: 'created',
+        direction: 'desc',
+      });
+      workflowRuns = data.workflow_runs;
+    } catch (error) {
+      console.error(`Failed to list workflow runs: ${error}`);
+      return;
+    }
+
+    const latestBuildWorkflowRun = workflowRuns.find((run) => run.name === 'Build');
+    if (!latestBuildWorkflowRun) {
+      fatal(`No 'Build' workflow runs found for pull request #${pullRequestNumber}`);
+      return;
+    }
+
+    let artifacts;
+    try {
+      const { data } = await octokit.actions.listWorkflowRunArtifacts({
+        owner: 'electron',
+        repo: 'electron',
+        run_id: latestBuildWorkflowRun.id,
+      });
+      artifacts = data.artifacts;
+    } catch (error) {
+      console.error(`Failed to list artifacts: ${error}`);
+      return;
+    }
+
+    const artifactName = `generated_artifacts_${options.platform}_${options.arch}`;
+    const artifact = artifacts.find((artifact) => artifact.name === artifactName);
+    if (!artifact) {
+      console.error(`Failed to find artifact: ${artifactName}`);
+      return;
+    }
+
+    const prDir = path.resolve(
+      __dirname,
+      '..',
+      'artifacts',
+      `pr_${pullRequest.number}_${options.platform}_${options.arch}`,
+    );
+
+    // Clean up the directory if it exists
+    try {
+      await fs.promises.rm(prDir, { recursive: true, force: true });
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
+    }
+
+    // Create the directory
+    await fs.promises.mkdir(prDir, { recursive: true });
+    console.log(
+      `Downloading artifact '${artifactName}' from pull request #${pullRequestNumber}...`,
+    );
+
+    // Download the artifact
+    // TODO: use write stream
+    const response = await octokit.actions.downloadArtifact({
+      owner: 'electron',
+      repo: 'electron',
+      artifact_id: artifact.id,
+      archive_format: 'zip',
+    });
+
+    const artifactPath = path.join(prDir, `${artifactName}.zip`);
+    await fs.promises.writeFile(artifactPath, Buffer.from(response.data));
+
+    console.log('Extracting dist...');
+
+    // Extract the artifact zip
+    const extractPath = path.join(prDir, artifactName);
+    await fs.promises.mkdir(extractPath, { recursive: true });
+    await extractZip(artifactPath, { dir: extractPath });
+
+    // Check if dist.zip exists within the extracted artifact
+    const distZipPath = path.join(extractPath, 'dist.zip');
+    if (!(await fs.promises.stat(distZipPath).catch(() => false))) {
+      fatal(`dist.zip not found within the extracted artifact.`);
+      return;
+    }
+
+    // Extract dist.zip
+    await extractZip(distZipPath, { dir: prDir });
+
+    // Check if Electron.app exists within the extracted dist.zip
+    const electronAppPath = path.join(prDir, 'Electron.app');
+    if (!(await fs.promises.stat(electronAppPath).catch(() => false))) {
+      fatal(`Electron.app not found within the extracted dist.zip.`);
+      return;
+    }
+
+    // Remove the artifact and extracted artifact zip
+    await fs.promises.rm(artifactPath);
+    await fs.promises.rm(extractPath, { recursive: true });
+
+    console.info(`Downloaded to ${electronAppPath}`);
+  });
+
+program.parse(process.argv);
