@@ -193,8 +193,16 @@ program
 program
   .command('download-dist <pull_request_number>')
   .description('Download a pull request dist')
-  .option('--platform [platform]', 'Platform to download dist for. Defaults to current platform.', process.platform)
-  .option('--arch [arch]', 'Architecture to download dist for. Defaults to current arch.', process.arch)
+  .option(
+    '--platform [platform]',
+    'Platform to download dist for. Defaults to current platform.',
+    process.platform,
+  )
+  .option(
+    '--arch [arch]',
+    'Architecture to download dist for. Defaults to current arch.',
+    process.arch,
+  )
   .action(async (pullRequestNumber, options) => {
     if (!pullRequestNumber) {
       fatal(`Pull request number is required to download a PR`);
@@ -313,10 +321,17 @@ program
     // Extract dist.zip
     await extractZip(distZipPath, { dir: prDir });
 
-    // Check if Electron.app exists within the extracted dist.zip
-    const electronAppPath = path.join(prDir, 'Electron.app');
+    // Check if Electron exists within the extracted dist.zip
+    const platformExecutables = {
+      win32: 'electron.exe',
+      darwin: 'Electron.app',
+      linux: 'electron',
+    };
+    const executableName = platformExecutables[options.platform];
+
+    const electronAppPath = path.join(prDir, executableName);
     if (!(await fs.promises.stat(electronAppPath).catch(() => false))) {
-      fatal(`Electron.app not found within the extracted dist.zip.`);
+      fatal(`${executableName} not found within the extracted dist.zip.`);
       return;
     }
 
