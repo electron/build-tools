@@ -169,7 +169,7 @@ program
   .command('backport [pr]', 'Assists with manual backport processes')
   .command('show <subcommand>', 'Show info about the current build config')
   .command('test [specRunnerArgs...]', `Run Electron's spec runner`)
-  .command('pr [options]', 'Open a GitHub URL where you can PR your changes')
+  .command('pr [subcommand]', 'Open a GitHub URL where you can PR your changes')
   .command('patches <target>', 'Refresh the patches in $root/src/electron/patches/$target')
   .command('open <sha1|PR#>', 'Open a GitHub URL for the given commit hash / pull # / issue #')
   .command('auto-update', 'Check for build-tools updates or enable/disable automatic updates')
