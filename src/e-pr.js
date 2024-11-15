@@ -193,8 +193,8 @@ program
 program
   .command('download-dist <pull_request_number>')
   .description('Download a pull request dist')
-  .option('--platform [platform]', 'Platform to download dist for', process.platform)
-  .option('--arch [arch]', 'Architecture to download dist for', process.arch)
+  .option('--platform [platform]', 'Platform to download dist for. Defaults to current platform.', process.platform)
+  .option('--arch [arch]', 'Architecture to download dist for. Defaults to current arch.', process.arch)
   .action(async (pullRequestNumber, options) => {
     if (!pullRequestNumber) {
       fatal(`Pull request number is required to download a PR`);
