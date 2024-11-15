@@ -2,10 +2,9 @@
 
 const childProcess = require('child_process');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 
-const extractZip = require('extract-zip');
+const AdmZip = require('adm-zip');
 const querystring = require('querystring');
 const semver = require('semver');
 const open = require('open');
@@ -15,6 +14,8 @@ const { Octokit } = require('@octokit/rest');
 const { getGitHubAuthToken } = require('./utils/github-auth');
 const { current } = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
+
+const d = require('debug')('build-tools:pr');
 
 // Adapted from https://github.com/electron/clerk
 function findNoteInPRBody(body) {
@@ -214,10 +215,12 @@ program
       fatal(`Pull request number is required to download a PR`);
     }
 
+    d('checking auth...');
     const octokit = new Octokit({
       auth: await getGitHubAuthToken(['repo']),
     });
 
+    d('fetching pr info...');
     let pullRequest;
     try {
       const { data } = await octokit.pulls.get({
@@ -231,6 +234,7 @@ program
       return;
     }
 
+    d('fetching workflow runs...');
     let workflowRuns;
     try {
       const { data } = await octokit.actions.listWorkflowRunsForRepo({
@@ -256,6 +260,7 @@ program
       return;
     }
 
+    d('fetching artifacts...');
     let artifacts;
     try {
       const { data } = await octokit.actions.listWorkflowRunArtifacts({
@@ -308,68 +313,51 @@ program
       outputDir = defaultDir;
     }
 
-    // Download the artifact to a temporary directory
-    const tempDir = path.join(os.tmpdir(), 'electron-tmp');
-    await fs.promises.mkdir(tempDir);
+    console.log(
+      `Downloading artifact '${artifactName}' from pull request #${pullRequestNumber}...`,
+    );
 
-    let distExecutablePath;
+    const response = await octokit.actions.downloadArtifact({
+      owner: 'electron',
+      repo: 'electron',
+      artifact_id: artifact.id,
+      archive_format: 'zip',
+    });
 
-    try {
-      console.log(
-        `Downloading artifact '${artifactName}' from pull request #${pullRequestNumber}...`,
-      );
+    // Extract artifact zip in-memory
+    const artifactZip = new AdmZip(Buffer.from(response.data));
 
-      const artifactPath = path.join(tempDir, `${artifactName}.zip`);
-
-      const response = await octokit.actions.downloadArtifact({
-        owner: 'electron',
-        repo: 'electron',
-        artifact_id: artifact.id,
-        archive_format: 'zip',
-      });
-      await fs.promises.writeFile(artifactPath, Buffer.from(response.data));
-
-      console.log('Extracting dist...');
-
-      // Extract the artifact zip
-      const extractPath = path.join(tempDir, artifactName);
-      await fs.promises.mkdir(extractPath, { recursive: true });
-      await extractZip(artifactPath, { dir: extractPath });
-
-      // Check if dist.zip exists within the extracted artifact
-      const distZipPath = path.join(extractPath, 'dist.zip');
-      if (!(await fs.promises.stat(distZipPath).catch(() => false))) {
-        fatal(`dist.zip not found within the extracted artifact.`);
-        return;
-      }
-
-      // Extract dist.zip to the final outputDir
-      await extractZip(distZipPath, { dir: outputDir });
-
-      // Check if Electron exists within the extracted dist.zip
-      const platformExecutables = {
-        win32: 'electron.exe',
-        darwin: 'Electron.app',
-        linux: 'electron',
-      };
-      const executableName = platformExecutables[options.platform];
-
-      if (!executableName) {
-        fatal(`Unable to find executable for platform '${options.platform}'`);
-        return;
-      }
-
-      distExecutablePath = path.join(outputDir, executableName);
-      if (!(await fs.promises.stat(distExecutablePath).catch(() => false))) {
-        fatal(`${executableName} not found within the extracted dist.zip.`);
-        return;
-      }
-    } finally {
-      // Cleanup temporary directory
-      await fs.promises.rm(tempDir, { recursive: true });
+    const distZipEntry = artifactZip.getEntry('dist.zip');
+    if (!distZipEntry) {
+      fatal(`dist.zip not found in build artifact.`);
+      return;
     }
 
-    console.info(`Downloaded to ${distExecutablePath}`);
+    // Extract dist.zip in-memory
+    const distZipContents = artifactZip.readFile(distZipEntry);
+    const distZip = new AdmZip(distZipContents);
+
+    const platformExecutables = {
+      win32: 'electron.exe',
+      darwin: 'Electron.app/',
+      linux: 'electron',
+    };
+
+    const executableName = platformExecutables[options.platform];
+    if (!executableName) {
+      fatal(`Unable to find executable for platform '${options.platform}'`);
+      return;
+    }
+
+    if (!distZip.getEntry(executableName)) {
+      fatal(`${executableName} not found within dist.zip.`);
+      return;
+    }
+
+    // Extract dist.zip to the output directory
+    await distZip.extractAllToAsync(outputDir);
+
+    console.info(`Downloaded to ${outputDir}`);
   });
 
 program.parse(process.argv);
