@@ -349,7 +349,7 @@ program
     const executableName = platformExecutables[options.platform];
 
     if (!executableName) {
-      fatal(`Unable to extract executable for platform '${options.platform}'`);
+      fatal(`Unable to find executable for platform '${options.platform}'`);
       return;
     }
 
