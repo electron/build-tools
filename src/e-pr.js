@@ -10,6 +10,7 @@ const semver = require('semver');
 const open = require('open');
 const program = require('commander');
 const { Octokit } = require('@octokit/rest');
+const inquirer = require('inquirer');
 
 const { getGitHubAuthToken } = require('./utils/github-auth');
 const { current } = require('./evm-config');
@@ -210,6 +211,7 @@ program
     'Specify the output directory for downloaded artifacts. ' +
       'Defaults to ~/.electron_build_tools/artifacts/pr_{number}_{platform}_{arch}',
   )
+  .option('-s, --skip-confirmation', 'Skip the confirmation prompt before downloading the dist.')
   .action(async (pullRequestNumber, options) => {
     if (!pullRequestNumber) {
       fatal(`Pull request number is required to download a PR`);
@@ -232,6 +234,24 @@ program
     } catch (error) {
       console.error(`Failed to get pull request: ${error}`);
       return;
+    }
+
+    if (!options.skipConfirmation) {
+      const isElectronRepo = pullRequest.head.repo.full_name !== 'electron/electron';
+      const { proceed } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'proceed',
+          message: `You are about to download artifacts from:
+
+“${pullRequest.title} (#${pullRequest.number})” by ${pullRequest.user.login}
+${pullRequest.head.repo.html_url}${isElectronRepo ? ' (fork)' : ''}
+
+Proceed?`,
+        },
+      ]);
+
+      if (!proceed) return;
     }
 
     d('fetching workflow runs...');
@@ -291,10 +311,9 @@ program
         return;
       }
     } else {
+      const artifactsDir = path.resolve(__dirname, '..', 'artifacts');
       const defaultDir = path.resolve(
-        __dirname,
-        '..',
-        'artifacts',
+        artifactsDir,
         `pr_${pullRequest.number}_${options.platform}_${options.arch}`,
       );
 
@@ -329,7 +348,7 @@ program
 
     const distZipEntry = artifactZip.getEntry('dist.zip');
     if (!distZipEntry) {
-      fatal(`dist.zip not found in build artifact.`);
+      fatal('dist.zip not found in build artifact.');
       return;
     }
 
