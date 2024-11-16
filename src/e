@@ -179,7 +179,8 @@ program
     'Opens a PR to electron/electron that backport the given CL into our patches folder',
   )
   .alias('auto-cherry-pick')
-  .command('gh-auth', 'Generates a device oauth token');
+  .command('gh-auth', 'Generates a device oauth token')
+  .command('clean', 'Cleanup artifacts produced by build tools');
 
 const ci = program.command('ci').executableDir(path.join(__dirname, 'ci'));
 ci.command('status', 'Show information about CI job statuses');

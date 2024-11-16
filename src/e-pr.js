@@ -15,6 +15,7 @@ const inquirer = require('inquirer');
 const { getGitHubAuthToken } = require('./utils/github-auth');
 const { current } = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
+const { ARTIFACTS_DIR, maybeCheckStaleArtifacts } = require('./utils/artifacts');
 
 const d = require('debug')('build-tools:pr');
 
@@ -217,6 +218,8 @@ program
       fatal(`Pull request number is required to download a PR`);
     }
 
+    maybeCheckStaleArtifacts();
+
     d('checking auth...');
     const octokit = new Octokit({
       auth: await getGitHubAuthToken(['repo']),
@@ -311,9 +314,8 @@ Proceed?`,
         return;
       }
     } else {
-      const artifactsDir = path.resolve(__dirname, '..', 'artifacts');
       const defaultDir = path.resolve(
-        artifactsDir,
+        ARTIFACTS_DIR,
         `pr_${pullRequest.number}_${options.platform}_${options.arch}`,
       );
 

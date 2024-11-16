@@ -2,6 +2,7 @@
 artifacts
 configs
 coverage
+local-storage.json
 node_modules
 package-lock.json
 third_party
