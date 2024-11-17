@@ -3,6 +3,9 @@
 const childProcess = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { Readable } = require('stream');
+const { pipeline } = require('stream/promises');
+const { buffer } = require('stream/consumers');
 
 const AdmZip = require('adm-zip');
 const querystring = require('querystring');
@@ -12,6 +15,7 @@ const program = require('commander');
 const { Octokit } = require('@octokit/rest');
 const inquirer = require('inquirer');
 
+const { progressStream } = require('./utils/download');
 const { getGitHubAuthToken } = require('./utils/github-auth');
 const { current } = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
@@ -218,9 +222,8 @@ program
     }
 
     d('checking auth...');
-    const octokit = new Octokit({
-      auth: await getGitHubAuthToken(['repo']),
-    });
+    const auth = await getGitHubAuthToken(['repo']);
+    const octokit = new Octokit({ auth });
 
     d('fetching pr info...');
     let pullRequest;
@@ -277,7 +280,6 @@ Proceed?`,
     const latestBuildWorkflowRun = workflowRuns.find((run) => run.name === 'Build');
     if (!latestBuildWorkflowRun) {
       fatal(`No 'Build' workflow runs found for pull request #${pullRequestNumber}`);
-      return;
     }
 
     d('fetching artifacts...');
@@ -308,7 +310,6 @@ Proceed?`,
 
       if (!(await fs.promises.stat(outputDir).catch(() => false))) {
         fatal(`The output directory '${options.output}' does not exist`);
-        return;
       }
     } else {
       const artifactsDir = path.resolve(__dirname, '..', 'artifacts');
@@ -336,23 +337,43 @@ Proceed?`,
       `Downloading artifact '${artifactName}' from pull request #${pullRequestNumber}...`,
     );
 
-    const response = await octokit.actions.downloadArtifact({
+    const { url } = await octokit.actions.downloadArtifact.endpoint({
       owner: 'electron',
       repo: 'electron',
       artifact_id: artifact.id,
       archive_format: 'zip',
     });
 
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${auth}`,
+      },
+    });
+
+    if (!response.ok) {
+      fatal(`Could not find artifact: ${url} got ${response.status}`);
+    }
+
+    const total = parseInt(response.headers.get('content-length'), 10);
+    const artifactStream = Readable.fromWeb(response.body);
+
+    if (!process.env.CI) {
+      // Show download progress
+      pipeline(artifactStream, progressStream(total, '[:bar] :mbRateMB/s :percent :etas'));
+    }
+
+    const artifactData = await buffer(artifactStream);
+
     // Extract artifact zip in-memory
-    const artifactZip = new AdmZip(Buffer.from(response.data));
+    const artifactZip = new AdmZip(Buffer.from(artifactData));
 
     const distZipEntry = artifactZip.getEntry('dist.zip');
     if (!distZipEntry) {
       fatal('dist.zip not found in build artifact.');
-      return;
     }
 
     // Extract dist.zip in-memory
+    d('unzipping dist.zip from artifact...');
     const distZipContents = artifactZip.readFile(distZipEntry);
     const distZip = new AdmZip(distZipContents);
 
@@ -365,15 +386,14 @@ Proceed?`,
     const executableName = platformExecutables[options.platform];
     if (!executableName) {
       fatal(`Unable to find executable for platform '${options.platform}'`);
-      return;
     }
 
     if (!distZip.getEntry(executableName)) {
       fatal(`${executableName} not found within dist.zip.`);
-      return;
     }
 
     // Extract dist.zip to the output directory
+    d('unzipping dist.zip...');
     await distZip.extractAllToAsync(outputDir);
 
     console.info(`Downloaded to ${outputDir}`);
