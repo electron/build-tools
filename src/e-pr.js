@@ -396,7 +396,7 @@ Proceed?`,
     d('unzipping dist.zip...');
     await distZip.extractAllToAsync(outputDir);
 
-    console.info(`Downloaded to ${outputDir}`);
+    console.log(`${color.success} Downloaded to ${outputDir}`);
   });
 
 program.parse(process.argv);
