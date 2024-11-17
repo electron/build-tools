@@ -215,7 +215,11 @@ program
     'Specify the output directory for downloaded artifacts. ' +
       'Defaults to ~/.electron_build_tools/artifacts/pr_{number}_{platform}_{arch}',
   )
-  .option('-s, --skip-confirmation', 'Skip the confirmation prompt before downloading the dist.')
+  .option(
+    '-s, --skip-confirmation',
+    'Skip the confirmation prompt before downloading the dist.',
+    !!process.env.CI,
+  )
   .action(async (pullRequestNumber, options) => {
     if (!pullRequestNumber) {
       fatal(`Pull request number is required to download a PR`);
