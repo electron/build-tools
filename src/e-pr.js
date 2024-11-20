@@ -19,6 +19,7 @@ const { progressStream } = require('./utils/download');
 const { getGitHubAuthToken } = require('./utils/github-auth');
 const { current } = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
+const { openExternal } = require('./utils/open-external');
 
 const d = require('debug')('build-tools:pr');
 
@@ -220,6 +221,7 @@ program
     'Skip the confirmation prompt before downloading the dist.',
     !!process.env.CI,
   )
+  .option('--fiddle', 'Registers build as a local version in Electron Fiddle.')
   .action(async (pullRequestNumber, options) => {
     if (!pullRequestNumber) {
       fatal(`Pull request number is required to download a PR`);
@@ -419,6 +421,30 @@ Proceed?`,
       }
 
       fatal(error);
+    }
+
+    if (options.fiddle) {
+      const version = (await fs.promises.readFile(path.join(outputDir, 'version'))).toString(
+        'utf8',
+      );
+      if (!semver.valid(version)) {
+        fatal(`Downloaded build contains invalid version: ${version}`);
+      }
+
+      // Replace prerelease version to avoid colliding with real versions in the
+      // version picker.
+      // 35.0.0-nightly.20241114 => 35.0.0-dist
+      const parsedVersion = semver.parse(version);
+      parsedVersion.prerelease = ['dist'];
+      const localVersion = parsedVersion.format();
+
+      const fiddleUrl = new URL('electron-fiddle://register-local-version/');
+      fiddleUrl.searchParams.append('name', pullRequest.title);
+      fiddleUrl.searchParams.append('version', localVersion);
+      fiddleUrl.searchParams.append('path', outputDir);
+      openExternal(fiddleUrl.href);
+
+      console.log(`${color.success} Registered local version ${localVersion} in Electron Fiddle`);
     }
   });
 
