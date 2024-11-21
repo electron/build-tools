@@ -2,12 +2,12 @@
 
 const childProcess = require('child_process');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { Readable } = require('stream');
 const { pipeline } = require('stream/promises');
-const { buffer } = require('stream/consumers');
 
-const AdmZip = require('adm-zip');
+const extractZip = require('extract-zip');
 const querystring = require('querystring');
 const semver = require('semver');
 const open = require('open');
@@ -341,6 +341,10 @@ Proceed?`,
       `Downloading artifact '${artifactName}' from pull request #${pullRequestNumber}...`,
     );
 
+    // Download the artifact to a temporary directory
+    const tempDir = path.join(os.tmpdir(), 'electron-tmp');
+    await fs.promises.mkdir(tempDir);
+
     const { url } = await octokit.actions.downloadArtifact.endpoint({
       owner: 'electron',
       repo: 'electron',
@@ -359,48 +363,63 @@ Proceed?`,
     }
 
     const total = parseInt(response.headers.get('content-length'), 10);
-    const artifactStream = Readable.fromWeb(response.body);
+    const artifactDownloadStream = Readable.fromWeb(response.body);
 
-    if (!process.env.CI) {
-      // Show download progress
-      pipeline(artifactStream, progressStream(total, '[:bar] :mbRateMB/s :percent :etas'));
+    try {
+      const artifactZipPath = path.join(tempDir, `${artifactName}.zip`);
+      const artifactFileStream = fs.createWriteStream(artifactZipPath);
+      await pipeline(
+        artifactDownloadStream,
+        // Show download progress
+        ...(process.env.CI ? [] : [progressStream(total, '[:bar] :mbRateMB/s :percent :etas')]),
+        artifactFileStream,
+      );
+
+      // Extract artifact zip
+      d('unzipping artifact to %s', tempDir);
+      await extractZip(artifactZipPath, { dir: tempDir });
+
+      // Check if dist.zip exists within the extracted artifact
+      const distZipPath = path.join(tempDir, 'dist.zip');
+      if (!(await fs.promises.stat(distZipPath).catch(() => false))) {
+        throw new Error(`dist.zip not found in build artifact.`);
+      }
+
+      // Extract dist.zip
+      // NOTE: 'extract-zip' is used as it correctly extracts symlinks.
+      d('unzipping dist.zip to %s', outputDir);
+      await extractZip(distZipPath, { dir: outputDir });
+
+      const platformExecutables = {
+        win32: 'electron.exe',
+        darwin: 'Electron.app/',
+        linux: 'electron',
+      };
+
+      const executableName = platformExecutables[options.platform];
+      if (!executableName) {
+        throw new Error(`Unable to find executable for platform '${options.platform}'`);
+      }
+
+      const executablePath = path.join(outputDir, executableName);
+      if (!(await fs.promises.stat(executablePath).catch(() => false))) {
+        throw new Error(`${executableName} not found within dist.zip.`);
+      }
+
+      // Cleanup temporary files
+      await fs.promises.rm(tempDir, { recursive: true });
+
+      console.log(`${color.success} Downloaded to ${outputDir}`);
+    } catch (error) {
+      // Cleanup temporary files
+      try {
+        await fs.promises.rm(tempDir, { recursive: true });
+      } catch {
+        // ignore
+      }
+
+      fatal(error);
     }
-
-    const artifactData = await buffer(artifactStream);
-
-    // Extract artifact zip in-memory
-    const artifactZip = new AdmZip(Buffer.from(artifactData));
-
-    const distZipEntry = artifactZip.getEntry('dist.zip');
-    if (!distZipEntry) {
-      fatal('dist.zip not found in build artifact.');
-    }
-
-    // Extract dist.zip in-memory
-    d('unzipping dist.zip from artifact...');
-    const distZipContents = artifactZip.readFile(distZipEntry);
-    const distZip = new AdmZip(distZipContents);
-
-    const platformExecutables = {
-      win32: 'electron.exe',
-      darwin: 'Electron.app/',
-      linux: 'electron',
-    };
-
-    const executableName = platformExecutables[options.platform];
-    if (!executableName) {
-      fatal(`Unable to find executable for platform '${options.platform}'`);
-    }
-
-    if (!distZip.getEntry(executableName)) {
-      fatal(`${executableName} not found within dist.zip.`);
-    }
-
-    // Extract dist.zip to the output directory
-    d('unzipping dist.zip...');
-    await distZip.extractAllToAsync(outputDir);
-
-    console.log(`${color.success} Downloaded to ${outputDir}`);
   });
 
 program.parse(process.argv);
