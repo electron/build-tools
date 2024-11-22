@@ -433,9 +433,10 @@ Proceed?`,
 
       // Replace prerelease version to avoid colliding with real versions in the
       // version picker.
-      // 35.0.0-nightly.20241114 => 35.0.0-dist
+      // 35.0.0-nightly.20241114 => 35.0.0-dist.c6164aa
+      const shortCommitHash = latestBuildWorkflowRun.head_sha.substring(0, 7);
       const parsedVersion = semver.parse(version);
-      parsedVersion.prerelease = ['dist'];
+      parsedVersion.prerelease = ['dist', shortCommitHash];
       const localVersion = parsedVersion.format();
 
       const fiddleUrl = new URL('electron-fiddle://register-local-version/');
