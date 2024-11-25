@@ -191,30 +191,6 @@ function sanitizeConfig(name, config, overwrite = false) {
     changes.push(`added missing property ${color.config('$schema')}`);
   }
 
-  if (config.origin) {
-    config.remotes = {
-      electron: {
-        origin: config.origin.electron,
-      },
-    };
-
-    delete config.origin;
-    changes.push(`replaced superceded 'origin' property with 'remotes' property`);
-  } else if (config.remotes && config.remotes.node) {
-    delete config.remotes.node;
-    changes.push(`removed deprecated ${color.config('remotes.node')} property`);
-  }
-
-  if (!config.reclient) {
-    config.reclient = 'none';
-    changes.push(`defined ${color.config('reclient')} to default value of none`);
-  }
-
-  if (!['none', 'remote_exec'].includes(config.reclient)) {
-    config.reclient = 'none';
-    changes.push(`fixed invalid property ${color.config('reclient: none')}`);
-  }
-
   if (!('preserveSDK' in config)) {
     config.preserveSDK = config.preserveXcode ?? 5;
     changes.push(`added ${color.config('preserveSDK')} property`);
@@ -230,25 +206,16 @@ function sanitizeConfig(name, config, overwrite = false) {
     changes.push(`removed ${color.config('onlySdk')} property`);
   }
 
-  if (config.goma) {
-    delete config.goma;
-    changes.push(`removed deprecated ${color.config('goma')} property`);
-  }
-
-  if (config.gomaSource) {
-    delete config.gomaSource;
-    changes.push(`removed deprecated ${color.config('gomaSource')} property`);
-  }
-
   const remoteExecGnArg = 'use_remoteexec = true';
   const hasRemoteExecGN = !(
     !config.gen ||
     !config.gen.args ||
     !config.gen.args.find((arg) => /^use_remoteexec ?= ?true$/.test(arg))
   );
+
   if (config.reclient !== 'none' && !hasRemoteExecGN) {
-    config.gen = config.gen || {};
-    config.gen.args = config.gen.args || [];
+    config.gen ??= {};
+    config.gen.args ??= [];
     config.gen.args.push(remoteExecGnArg);
     changes.push(`added gn arg ${color.cmd(remoteExecGnArg)} needed by remoteexec`);
   } else if (config.reclient === 'none' && hasRemoteExecGN) {
@@ -256,7 +223,7 @@ function sanitizeConfig(name, config, overwrite = false) {
     changes.push(`removed gn arg ${color.cmd(remoteExecGnArg)} as remoteexec is disabled`);
   }
 
-  if (!config.env) config.env = {};
+  config.env ??= {};
 
   if (!config.env.CHROMIUM_BUILDTOOLS_PATH) {
     const toolsPath = path.resolve(config.root, 'src', 'buildtools');
