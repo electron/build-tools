@@ -20,16 +20,21 @@ const color = {
   warn: chalk.bgYellowBright.black('WARN'),
 };
 
-function fatal(e, code = 1) {
+function logError(e) {
   if (typeof e === 'string') {
     console.error(`${color.err} ${e}`);
   } else {
     console.error(`${color.err} ${e.stack ? e.stack : e.message}`);
   }
+}
+
+function fatal(e, code = 1) {
+  logError(e);
   process.exit(code);
 }
 
 module.exports = {
   color,
   fatal,
+  logError,
 };

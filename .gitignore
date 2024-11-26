@@ -1,4 +1,5 @@
 .nyc_output/
+artifacts
 configs
 coverage
 node_modules
