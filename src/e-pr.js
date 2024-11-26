@@ -18,7 +18,7 @@ const inquirer = require('inquirer');
 const { progressStream } = require('./utils/download');
 const { getGitHubAuthToken } = require('./utils/github-auth');
 const { current } = require('./evm-config');
-const { color, fatal } = require('./utils/logging');
+const { color, fatal, logError } = require('./utils/logging');
 
 const d = require('debug')('build-tools:pr');
 
@@ -407,19 +407,17 @@ Proceed?`,
         throw new Error(`${executableName} not found within dist.zip.`);
       }
 
-      // Cleanup temporary files
-      await fs.promises.rm(tempDir, { recursive: true });
-
       console.log(`${color.success} Downloaded to ${outputDir}`);
     } catch (error) {
+      logError(error);
+      process.exitCode = 1; // wait for cleanup
+    } finally {
       // Cleanup temporary files
       try {
         await fs.promises.rm(tempDir, { recursive: true });
       } catch {
         // ignore
       }
-
-      fatal(error);
     }
   });
 
