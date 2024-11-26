@@ -254,7 +254,7 @@ program
 
 “${pullRequest.title} (#${pullRequest.number})” by ${pullRequest.user.login}
 ${pullRequest.head.repo.html_url}${isElectronRepo ? ' (fork)' : ''}
-
+${pullRequest.state !== 'open' ? '\n❗❗❗ The pull request is closed, only proceed if you trust the source ❗❗❗\n' : ''}
 Proceed?`,
         },
       ]);
