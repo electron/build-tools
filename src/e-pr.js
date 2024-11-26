@@ -248,6 +248,7 @@ program
       const { proceed } = await inquirer.prompt([
         {
           type: 'confirm',
+          default: false,
           name: 'proceed',
           message: `You are about to download artifacts from:
 
