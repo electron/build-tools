@@ -302,7 +302,8 @@ Proceed?`,
       return;
     }
 
-    const artifactName = `generated_artifacts_${options.platform}_${options.arch}`;
+    const artifactPlatform = options.platform === 'win32' ? 'win' : options.platform;
+    const artifactName = `generated_artifacts_${artifactPlatform}_${options.arch}`;
     const artifact = artifacts.find((artifact) => artifact.name === artifactName);
     if (!artifact) {
       console.error(`Failed to find artifact: ${artifactName}`);
