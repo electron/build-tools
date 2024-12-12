@@ -346,6 +346,7 @@ Proceed?`,
 
     // Download the artifact to a temporary directory
     const tempDir = path.join(os.tmpdir(), 'electron-tmp');
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
     await fs.promises.mkdir(tempDir);
 
     const { url } = await octokit.actions.downloadArtifact.endpoint({
