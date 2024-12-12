@@ -213,7 +213,7 @@ program
   .option(
     '-o, --output <output_directory>',
     'Specify the output directory for downloaded artifacts. ' +
-      'Defaults to ~/.electron_build_tools/artifacts/pr_{number}_{platform}_{arch}',
+      'Defaults to ~/.electron_build_tools/artifacts/pr-{number}_{commithash}_{platform}-{arch}',
   )
   .option(
     '-s, --skip-confirmation',
@@ -286,6 +286,7 @@ Proceed?`,
     if (!latestBuildWorkflowRun) {
       fatal(`No 'Build' workflow runs found for pull request #${pullRequestNumber}`);
     }
+    const shortCommitHash = latestBuildWorkflowRun.head_sha.substring(0, 7);
 
     d('fetching artifacts...');
     let artifacts;
@@ -320,7 +321,7 @@ Proceed?`,
       const artifactsDir = path.resolve(__dirname, '..', 'artifacts');
       const defaultDir = path.resolve(
         artifactsDir,
-        `pr_${pullRequest.number}_${options.platform}_${options.arch}`,
+        `pr-${pullRequest.number}_${shortCommitHash}_${options.platform}-${options.arch}`,
       );
 
       // Clean up the directory if it exists
