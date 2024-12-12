@@ -213,7 +213,7 @@ program
   .option(
     '-o, --output <output_directory>',
     'Specify the output directory for downloaded artifacts. ' +
-      'Defaults to ~/.electron_build_tools/artifacts/pr-{number}_{commithash}_{platform}-{arch}',
+      'Defaults to ~/.electron_build_tools/artifacts/pr_{number}_{commithash}_{platform}_{arch}',
   )
   .option(
     '-s, --skip-confirmation',
@@ -322,7 +322,7 @@ Proceed?`,
       const artifactsDir = path.resolve(__dirname, '..', 'artifacts');
       const defaultDir = path.resolve(
         artifactsDir,
-        `pr-${pullRequest.number}_${shortCommitHash}_${options.platform}-${options.arch}`,
+        `pr_${pullRequest.number}_${shortCommitHash}_${options.platform}_${options.arch}`,
       );
 
       // Clean up the directory if it exists
