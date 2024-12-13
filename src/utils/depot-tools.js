@@ -60,7 +60,8 @@ function platformOpts() {
   if ((os.platform() === 'win32' && winToolchainOverride !== '0') || winToolchainOverride === '1') {
     opts = {
       DEPOT_TOOLS_WIN_TOOLCHAIN: '1',
-      DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL: 'https://dev-cdn.electronjs.org/windows-toolchains/_',
+      DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL:
+        'https://electronbuildtools.blob.core.windows.net/windows-toolchains/_',
       GYP_MSVS_HASH_9ff60e43ba91947baca460d0ca3b1b980c3a2c23:
         '6d205e765a23d3cbe0fcc8d1191ae406d8bf9c04',
       GYP_MSVS_HASH_a687d8e2e4114d9015eb550e1b156af21381faac:
