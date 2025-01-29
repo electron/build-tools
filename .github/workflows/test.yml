@@ -29,6 +29,8 @@ jobs:
         git config --global core.autocrlf false
         git config --global core.eol lf
         git config --global core.filemode false
+        git config --global core.fscache true
+        git config --global core.preloadindex true
         git config --global branch.autosetuprebase always
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # tag: v4.2.2
       with:
