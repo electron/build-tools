@@ -14,9 +14,7 @@ const opts = {
   stdio: 'inherit',
 };
 
-program
-  .description('Run the Electron build with a debugger (gdb or lldb)')
-  .action(debug);
+program.description('Run the Electron build with a debugger (gdb or lldb)').action(debug);
 
 function run_gdb(config) {
   const electron = evmConfig.execOf(config);
