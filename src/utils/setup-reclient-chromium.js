@@ -73,19 +73,48 @@ function configureReclient() {
       fatal('Failed to apply EngFlow reclient configs patch');
     }
 
-    const configureConfigScript = path.join(engflowConfigsDir, 'configure_reclient.py');
-    const { status: configureStatus } = spawnSync(
+    const configureReclientScript = path.join(engflowConfigsDir, 'configure_reclient.py');
+    const { status: configureReclientStatus } = spawnSync(
       evmConfig.current(),
       'python3',
-      [configureConfigScript, '--src_dir=src', '--force'],
+      [configureReclientScript, '--src_dir=src', '--force'],
       {
         cwd: root,
         stdio: 'inherit',
       },
     );
 
-    if (configureStatus !== 0) {
+    if (configureReclientStatus !== 0) {
       fatal('Failed to configure EngFlow reclient configs');
+    }
+
+    const configureConfigScript = path.join(
+      srcDir,
+      'buildtools',
+      'reclient_cfgs',
+      'configure_reclient_cfgs.py',
+    );
+    const { status: configureConfigStatus } = spawnSync(
+      evmConfig.current(),
+      'python3',
+      [
+        configureConfigScript,
+        '--rbe_instance',
+        'projects/rbe-chrome-untrusted/instances/default_instance',
+        '--reproxy_cfg_template',
+        'reproxy.cfg.template',
+        '--rewrapper_cfg_project',
+        '',
+        '--skip_remoteexec_cfg_fetch',
+      ],
+      {
+        cwd: root,
+        stdio: 'inherit',
+      },
+    );
+
+    if (configureConfigStatus !== 0) {
+      fatal('Failed to configure RBE config scripts for untrusted RBE');
     }
 
     console.info(`${color.info} Successfully configured EngFlow reclient configs for Chromium`);
