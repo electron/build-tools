@@ -34,6 +34,20 @@ function checkGlobalGitConfig() {
       spawnSyncWithLog('git', ['config', '--global', 'branch.autosetuprebase', 'always']);
     }, new Error('git config --global branch.autosetuprebase must be set to always.'));
   }
+
+  const { stdout: fscache } = cp.spawnSync('git', ['config', '--global', 'core.fscache']);
+  if (fscache.toString().trim() !== 'true') {
+    maybeAutoFix(() => {
+      spawnSyncWithLog('git', ['config', '--global', 'core.fscache', 'true']);
+    }, new Error('git config --global core.fscache should be set to true.'));
+  }
+
+  const { stdout: preloadIndex } = cp.spawnSync('git', ['config', '--global', 'core.preloadindex']);
+  if (preloadIndex.toString().trim() !== 'true') {
+    maybeAutoFix(() => {
+      spawnSyncWithLog('git', ['config', '--global', 'core.preloadindex', 'true']);
+    }, new Error('git config --global core.preloadindex should be set to true.'));
+  }
 }
 
 module.exports = {
