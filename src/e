@@ -181,11 +181,6 @@ program
   .alias('auto-cherry-pick')
   .command('gh-auth', 'Generates a device oauth token');
 
-const ci = program.command('ci').executableDir(path.join(__dirname, 'ci'));
-ci.command('status', 'Show information about CI job statuses');
-ci.command('rerun', 'Rerun CI workflows and builds');
-ci.command('cancel', 'Cancel CI workflows and builds');
-
 program
   .command('load-macos-sdk')
   .description('Loads required versions of macOS SDKs and symlinks them (may require sudo)')
