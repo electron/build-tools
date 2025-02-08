@@ -12,7 +12,7 @@ const { deleteDir } = require('./paths');
 const SDKDir = path.resolve(__dirname, '..', '..', 'third_party', 'SDKs');
 const SDKZip = path.resolve(SDKDir, 'MacOSX.sdk.zip');
 
-const XcodeBaseURL = 'https://dev-cdn.electronjs.org/xcode/';
+const XcodeBaseURL = 'https://dev-cdn-experimental.electronjs.org/xcode/';
 
 const SDKs = {
   '15.1': {
