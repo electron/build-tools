@@ -179,7 +179,12 @@ program
     'Opens a PR to electron/electron that backport the given CL into our patches folder',
   )
   .alias('auto-cherry-pick')
-  .command('gh-auth', 'Generates a device oauth token');
+  .command('gh-auth', 'Generates a device oauth token')
+  .command(
+    'rcv <roll-pr> [chromium-version]',
+    'Attempts to reconstruct an intermediate Chromium version from a roll PR',
+  )
+  .alias('reconstruct-chromium-version');
 
 program
   .command('load-macos-sdk')
