@@ -65,42 +65,33 @@ program
       return;
     }
 
-    const checkoutResult = spawnSync(config, 'git', ['checkout', targetBranch], gitOpts);
-    if (checkoutResult.status !== 0) {
-      fatal('Failed to checkout base branch');
-      return;
-    }
-
-    const ensureLatestResult = spawnSync(config, 'git', ['pull', 'origin', targetBranch], gitOpts);
-    if (ensureLatestResult.status !== 0) {
-      fatal('Failed to update base branch');
-      return;
-    }
-
-    const ensureMergeRefLocal = spawnSync(config, 'git', ['fetch', 'origin', pr.base.ref], gitOpts);
-    if (ensureMergeRefLocal.status !== 0) {
-      fatal('Failed to fetch latest upstream');
-      return;
-    }
+    spawnSync(config, 'git', ['checkout', targetBranch], gitOpts, 'Failed to checkout base branch');
+    spawnSync(
+      config,
+      'git',
+      ['pull', 'origin', targetBranch],
+      gitOpts,
+      'Failed to update base branch',
+    );
+    spawnSync(
+      config,
+      'git',
+      ['fetch', 'origin', pr.base.ref],
+      gitOpts,
+      'Failed to fetch latest upstream',
+    );
 
     const manualBpBranch = `manual-bp/${user.login}/pr/${prNumber}/branch/${targetBranch}`;
     spawnSync(config, 'git', ['branch', '-D', manualBpBranch], gitOpts);
-    const backportBranchResult = spawnSync(
+    spawnSync(
       config,
       'git',
       ['checkout', '-b', manualBpBranch],
       gitOpts,
+      `Failed to checkout new branch "${manualBpBranch}"`,
     );
-    if (backportBranchResult.status !== 0) {
-      fatal(`Failed to checkout new branch "${manualBpBranch}"`);
-      return;
-    }
 
-    const yarnInstallResult = spawnSync(config, 'yarn', ['install'], gitOpts);
-    if (yarnInstallResult.status !== 0) {
-      fatal(`Failed to do "yarn install" on new branch`);
-      return;
-    }
+    spawnSync(config, 'yarn', ['install'], gitOpts, `Failed to do "yarn install" on new branch`);
 
     const cherryPickResult = spawnSync(config, 'git', ['cherry-pick', pr.merge_commit_sha], {
       cwd: gitOpts.cwd,
