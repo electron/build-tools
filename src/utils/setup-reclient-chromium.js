@@ -59,7 +59,7 @@ function configureReclient() {
       'tools',
       'engflow_reclient_configs.patch',
     );
-    const { status: patchStatus } = spawnSync(
+    spawnSync(
       evmConfig.current(),
       'git',
       ['apply', reclientConfigPatchPath],
@@ -67,14 +67,11 @@ function configureReclient() {
         cwd: engflowConfigsDir,
         stdio: 'inherit',
       },
+      'Failed to apply EngFlow reclient configs patch',
     );
 
-    if (patchStatus !== 0) {
-      fatal('Failed to apply EngFlow reclient configs patch');
-    }
-
     const configureReclientScript = path.join(engflowConfigsDir, 'configure_reclient.py');
-    const { status: configureReclientStatus } = spawnSync(
+    spawnSync(
       evmConfig.current(),
       'python3',
       [configureReclientScript, '--src_dir=src', '--force'],
@@ -82,11 +79,8 @@ function configureReclient() {
         cwd: root,
         stdio: 'inherit',
       },
+      'Failed to configure EngFlow reclient configs',
     );
-
-    if (configureReclientStatus !== 0) {
-      fatal('Failed to configure EngFlow reclient configs');
-    }
 
     const configureConfigScript = path.join(
       srcDir,
@@ -94,7 +88,7 @@ function configureReclient() {
       'reclient_cfgs',
       'configure_reclient_cfgs.py',
     );
-    const { status: configureConfigStatus } = spawnSync(
+    spawnSync(
       evmConfig.current(),
       'python3',
       [
@@ -111,11 +105,8 @@ function configureReclient() {
         cwd: root,
         stdio: 'inherit',
       },
+      'Failed to configure RBE config scripts for untrusted RBE',
     );
-
-    if (configureConfigStatus !== 0) {
-      fatal('Failed to configure RBE config scripts for untrusted RBE');
-    }
 
     console.info(`${color.info} Successfully configured EngFlow reclient configs for Chromium`);
   }

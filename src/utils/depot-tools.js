@@ -4,7 +4,7 @@ const os = require('os');
 const childProcess = require('child_process');
 const pathKey = require('path-key');
 
-const { color } = require('./logging');
+const { color, fatal } = require('./logging');
 
 const defaultDepotPath = path.resolve(__dirname, '..', '..', 'third_party', 'depot_tools');
 const DEPOT_TOOLS_DIR = process.env.DEPOT_TOOLS_DIR || defaultDepotPath;
@@ -121,7 +121,7 @@ function depotOpts(config, opts = {}) {
   return opts;
 }
 
-function depotSpawnSync(config, cmd, args, opts_in) {
+function depotSpawnSync(config, cmd, args, opts_in, fatalMessage) {
   const opts = depotOpts(config, opts_in);
   if (os.platform() === 'win32' && ['python', 'python3'].includes(cmd)) {
     cmd = `${cmd}.bat`;
@@ -133,7 +133,13 @@ function depotSpawnSync(config, cmd, args, opts_in) {
       console.log(color.childExec(cmd, args, opts));
     }
   }
-  return childProcess.spawnSync(cmd, args, opts);
+  const result = childProcess.spawnSync(cmd, args, opts);
+  if (fatalMessage !== undefined && result.status !== 0) {
+    fatal(fatalMessage);
+    return;
+  }
+
+  return result;
 }
 
 function depotExecFileSync(config, exec, args, opts_in) {

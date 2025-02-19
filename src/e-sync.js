@@ -68,11 +68,7 @@ function runGClientSync(syncArgs, syncOpts) {
         }
       : {},
   };
-  const { status } = depot.spawnSync(config, exec, args, opts);
-
-  if (status !== 0) {
-    fatal('gclient sync failed');
-  }
+  depot.spawnSync(config, exec, args, opts, 'gclient sync failed');
 
   // Only set remotes if we're building an Electron target.
   if (config.defaultTarget !== 'chrome') {
