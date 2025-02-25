@@ -66,7 +66,7 @@ function downloadAndPrepareReclient(config) {
   deleteDir(reclientDir);
   deleteDir(tmpDownload);
 
-  const downloadURL = `https://dev-cdn.electronjs.org/reclient/credential-helper/${CREDENTIAL_HELPER_TAG}/electron-rbe-credential-helper-${targetPlatform}.tar.gz`;
+  const downloadURL = `https://dev-cdn-experimental.electronjs.org/reclient/credential-helper/${CREDENTIAL_HELPER_TAG}/electron-rbe-credential-helper-${targetPlatform}.tar.gz`;
   console.log(`Downloading ${color.cmd(downloadURL)} into ${color.path(tmpDownload)}`);
   const { status } = childProcess.spawnSync(
     process.execPath,
