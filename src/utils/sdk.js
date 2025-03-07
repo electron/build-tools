@@ -89,10 +89,12 @@ function maybeRemoveOldXcodes() {
 // Extract the SDK version from the toolchain file and normalize it.
 function extractSDKVersion(toolchainFile) {
   const contents = fs.readFileSync(toolchainFile, 'utf8');
-  const match = /macOS\s(\d+(\.\d+)?)\sSDK\n\#/.exec(contents);
-  if (!match) return null;
+  const match = /macOS\s+(?:(\d+(?:\.\d+)?)\s+SDK|SDK\s+(\d+(?:\.\d+)?))/.exec(contents);
 
-  return match[1].includes('.') ? match[1] : `${match[1]}.0`;
+  if (match?.[1]) return match[1].includes('.') ? match[1] : `${match[1]}.0`;
+  if (match?.[2]) return match[2].includes('.') ? match[2] : `${match[2]}.0`;
+
+  return null;
 }
 
 function expectedSDKVersion() {
@@ -110,6 +112,7 @@ function expectedSDKVersion() {
   }
 
   const version = extractSDKVersion(macToolchainPy);
+  console.log('version: ', version);
   if (isNaN(Number(version)) || !SDKs[version]) {
     console.warn(
       color.warn,
