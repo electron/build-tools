@@ -248,6 +248,12 @@ For example, running `e d gn ls out/Testing | grep "//ui/views/"` produces somet
 
 You could then run `e build --target ui/views/examples:views_examples_with_content` to produce Chrome's `//ui/views` example executable and run it with `./out/Testing/views_examples_with_content`.
 
+When first run, `e build` will try to set up reclient to speed up your builds. The permission prompt
+can look scary because GitHub's UI is less than optimal
+([related discussion](https://github.com/orgs/community/discussions/37117)). However, Electron only
+obtains user profile access and `read:org` permission. No permission is granted to any of your
+repositories or content.
+
 ## Using Electron
 
 After you've built Electron, it's time to use it!
