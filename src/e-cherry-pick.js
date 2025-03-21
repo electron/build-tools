@@ -8,6 +8,7 @@ const path = require('path');
 const os = require('os');
 const { Octokit } = require('@octokit/rest');
 
+const { getGerritPatchDetailsFromURL } = require('./utils/gerrit');
 const { getGitHubAuthToken } = require('./utils/github-auth');
 const { fatal, color } = require('./utils/logging');
 
