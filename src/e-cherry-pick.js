@@ -8,7 +8,7 @@ const path = require('path');
 const os = require('os');
 const { Octokit } = require('@octokit/rest');
 
-const { getCveForBugNr } = require('./utils/crbug');
+const { getGerritPatchDetailsFromURL } = require('./utils/gerrit');
 const { getGitHubAuthToken } = require('./utils/github-auth');
 const { fatal, color } = require('./utils/logging');
 
@@ -16,14 +16,6 @@ const ELECTRON_REPO_DATA = {
   owner: 'electron',
   repo: 'electron',
 };
-
-const gerritSources = [
-  'chromium-review.googlesource.com',
-  'skia-review.googlesource.com',
-  'webrtc-review.googlesource.com',
-  'pdfium-review.googlesource.com',
-  'dawn-review.googlesource.com',
-];
 
 async function getPatchDetailsFromURL(urlStr, security) {
   const parsedUrl = new URL(urlStr);
@@ -36,54 +28,6 @@ async function getPatchDetailsFromURL(urlStr, security) {
   fatal(
     'Expected a gerrit or github URL (e.g. https://chromium-review.googlesource.com/c/v8/v8/+/2465830)',
   );
-}
-
-async function getGerritPatchDetailsFromURL(gerritUrl, security) {
-  const { host, pathname } = gerritUrl;
-
-  if (!gerritSources.includes(host)) {
-    fatal('Unsupported gerrit host');
-  }
-  const [, repo, number] = /^\/c\/(.+?)\/\+\/(\d+)/.exec(pathname);
-
-  d(`fetching patch from gerrit`);
-  const changeId = `${repo}~${number}`;
-  const patchUrl = new URL(
-    `/changes/${encodeURIComponent(changeId)}/revisions/current/patch`,
-    gerritUrl,
-  );
-
-  const patch = await fetch(patchUrl)
-    .then((resp) => resp.text())
-    .then((text) => Buffer.from(text, 'base64').toString('utf8'));
-
-  const [, commitId] = /^From ([0-9a-f]+)/.exec(patch);
-
-  const bugNumber =
-    /^(?:Bug|Fixed)[:=] ?(.+)$/im.exec(patch)?.[1] || /^Bug= ?chromium:(.+)$/m.exec(patch)?.[1];
-
-  let cve = '';
-  if (security) {
-    try {
-      cve = await getCveForBugNr(bugNumber.replace('chromium:', ''));
-    } catch (err) {
-      d(err);
-      console.error(
-        `${color.warn} Failed to fetch CVE for ${bugNumber} - you'll need to find it manually`,
-      );
-    }
-  }
-
-  const patchDirName =
-    {
-      'chromium-review.googlesource.com:chromium/src': 'chromium',
-      'skia-review.googlesource.com:skia': 'skia',
-      'webrtc-review.googlesource.com:src': 'webrtc',
-    }[`${host}:${repo}`] || repo.split('/').reverse()[0];
-
-  const shortCommit = commitId.substr(0, 12);
-
-  return { patchDirName, shortCommit, patch, bugNumber, cve };
 }
 
 async function getGitHubPatchDetailsFromURL(gitHubUrl, security) {
