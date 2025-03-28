@@ -116,7 +116,6 @@ function expectedSDKVersion() {
   }
 
   const version = extractSDKVersion(macToolchainPy);
-  console.log('version: ', version);
   if (isNaN(Number(version)) || !SDKs[version]) {
     console.warn(
       color.warn,
