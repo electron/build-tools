@@ -14,7 +14,8 @@ const { getGerritPatchDetailsFromURL } = require('./utils/gerrit');
 const { getGitHubAuthToken } = require('./utils/github-auth');
 const { color, fatal } = require('./utils/logging');
 
-const ELECTRON_BOT_AUTHOR = 'Electron Bot <electron-bot@users.noreply.github.com>';
+const ELECTRON_BOT_EMAIL = 'electron-bot@users.noreply.github.com';
+const ELECTRON_BOT_NAME = 'Electron Bot';
 const ELECTRON_REPO_DATA = {
   owner: 'electron',
   repo: 'electron',
@@ -67,8 +68,6 @@ function gitCommit(config, commitMessage, opts, fatalMessage) {
     [
       'commit',
       '--no-verify', // There's a bug on Windows that creates incorrect changes
-      '--author',
-      os.platform() === 'win32' ? `"${ELECTRON_BOT_AUTHOR}"` : ELECTRON_BOT_AUTHOR,
       '-m',
       os.platform() === 'win32' ? `"${commitMessage}"` : commitMessage,
     ],
@@ -167,6 +166,13 @@ program
     const spawnOpts = {
       cwd: path.resolve(config.root, 'src', 'electron'),
       stdio: 'pipe',
+      env: {
+        ...process.env,
+        GIT_AUTHOR_EMAIL: ELECTRON_BOT_EMAIL,
+        GIT_AUTHOR_NAME: ELECTRON_BOT_NAME,
+        GIT_COMMITTER_EMAIL: ELECTRON_BOT_EMAIL,
+        GIT_COMMITTER_NAME: ELECTRON_BOT_NAME,
+      },
     };
     const gitStatusResult = spawnSync(config, 'git', ['status', '--porcelain'], spawnOpts);
     if (gitStatusResult.status !== 0 || gitStatusResult.stdout.toString().trim().length !== 0) {
