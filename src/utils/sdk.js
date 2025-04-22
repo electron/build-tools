@@ -185,7 +185,7 @@ function ensureSDKAndSymlink(config) {
   return `//out/${path.basename(outDir)}/${outRelative}`;
 }
 
-function ensureSDK() {
+function ensureSDK(version) {
   // For testing purposes
   if (process.env.__VITEST__) {
     console.log('TEST: ensureSDK called');
@@ -194,7 +194,14 @@ function ensureSDK() {
 
   ensureViableXCode();
 
-  const expected = expectedSDKVersion();
+  if (version && !SDKs[version]) {
+    const availableVersions = Object.keys(SDKs).join(', ');
+    fatal(
+      `SDK version ${version} is invalid or unsupported - please use one of the following: ${availableVersions}`,
+    );
+  }
+
+  const expected = version || expectedSDKVersion();
   const eventualVersionedPath = path.resolve(SDKDir, `MacOSX${expected}.sdk`);
 
   const shouldEnsureSDK = !fs.existsSync(eventualVersionedPath) || getSDKVersion() !== expected;
@@ -271,6 +278,8 @@ function ensureSDK() {
     evmConfig.setEnvVar(evmConfig.currentName(), 'SDKROOT', eventualVersionedPath);
 
     console.log(`${color.info} Now using SDK version ${color.path(getSDKVersion())}`);
+  } else {
+    console.log(`${color.info} SDK version ${color.path(getSDKVersion())} is already in use`);
   }
 
   deleteDir(SDKZip);
