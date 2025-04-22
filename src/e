@@ -187,10 +187,10 @@ program
   .alias('reconstruct-chromium-version');
 
 program
-  .command('load-macos-sdk')
+  .command('load-macos-sdk [version]')
   .description('Loads required versions of macOS SDKs and symlinks them (may require sudo)')
-  .action(() => {
-    ensureSDK();
+  .action((version) => {
+    ensureSDK(version);
   });
 
 program
