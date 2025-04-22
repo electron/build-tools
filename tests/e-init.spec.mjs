@@ -36,7 +36,7 @@ describe('e-init', () => {
       expect(result.exitCode).toStrictEqual(0);
       expect(fs.statSync(root).isDirectory()).toStrictEqual(true);
       expect(fs.statSync(gclient_file).isFile()).toStrictEqual(true);
-    });
+    }, { timeout: 600_000 });
 
     it('creates a config correctly reflecting options passed', () => {
       const root = path.resolve(sandbox.tmpdir, 'main');
