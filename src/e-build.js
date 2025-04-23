@@ -10,7 +10,7 @@ const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const { ensureDir } = require('./utils/paths');
 const reclient = require('./utils/reclient');
-const { ensureSDK, ensureSDKAndSymlink } = require('./utils/sdk');
+const { ensureSDKAndSymlink } = require('./utils/sdk');
 
 function getGNArgs(config) {
   const configArgs = config.gen.args;
@@ -110,10 +110,6 @@ program
       }
 
       reclient.downloadAndPrepare(config);
-
-      if (process.platform === 'darwin') {
-        ensureSDK();
-      }
 
       if (options.onlyGen) {
         runGNGen(config);
