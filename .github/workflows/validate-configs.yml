@@ -16,17 +16,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Validate JSON schema
-        uses: dsanders11/json-schema-validate-action@ec60131eddf6f51ed0c737fdcd28616ae1a0e564 # v1.2.0
+        uses: dsanders11/json-schema-validate-action@b5da274adf09991e884b85426bcf941e0477771b # v1.3.0
         with:
           schema: json-schema
           files: evm-config.schema.json
       - name: Validate GitHub Actions workflows
-        uses: dsanders11/json-schema-validate-action@ec60131eddf6f51ed0c737fdcd28616ae1a0e564 # v1.2.0
+        uses: dsanders11/json-schema-validate-action@b5da274adf09991e884b85426bcf941e0477771b # v1.3.0
         with:
           schema: https://json.schemastore.org/github-workflow.json
           files: .github/workflows/*.yml
       - name: Validate .prettierrc.json
-        uses: dsanders11/json-schema-validate-action@ec60131eddf6f51ed0c737fdcd28616ae1a0e564 # v1.2.0
+        uses: dsanders11/json-schema-validate-action@b5da274adf09991e884b85426bcf941e0477771b # v1.3.0
         with:
           schema: https://json.schemastore.org/prettierrc.json
           files: .prettierrc.json
