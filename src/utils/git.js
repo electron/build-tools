@@ -48,6 +48,13 @@ function checkGlobalGitConfig() {
       spawnSyncWithLog('git', ['config', '--global', 'core.preloadindex', 'true']);
     }, new Error('git config --global core.preloadindex should be set to true.'));
   }
+
+  const { stdout: longPaths } = cp.spawnSync('git', ['config', '--global', 'core.longpaths']);
+  if (longPaths.toString().trim() !== 'true') {
+    maybeAutoFix(() => {
+      spawnSyncWithLog('git', ['config', '--global', 'core.longpaths', 'true']);
+    }, new Error('git config --global core.longpaths should be set to true.'));
+  }
 }
 
 module.exports = {
