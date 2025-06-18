@@ -14,7 +14,7 @@ const reclientHelperPath = path.resolve(
 );
 const rbeServiceAddress = 'rbe.notgoma.com:443';
 
-const CREDENTIAL_HELPER_TAG = 'v0.4.4';
+const CREDENTIAL_HELPER_TAG = 'v0.5.0';
 
 let usingRemote = true;
 
