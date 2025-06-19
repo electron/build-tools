@@ -1,5 +1,5 @@
 root: /path/to/chromium/
-reclient: remote_exec
+remoteBuild: reclient
 defaultTarget: chrome
 execName: Chromium
 gen:
