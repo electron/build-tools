@@ -16,7 +16,7 @@ const validConfig = {
     },
   },
   preserveSDK: 5,
-  reclient: 'none',
+  remoteBuild: 'none',
   gen: {
     args: [],
     out: 'Testing',
