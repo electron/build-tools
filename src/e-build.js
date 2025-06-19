@@ -63,14 +63,16 @@ function runNinja(config, target, ninjaArgs) {
     reclient.auth(config);
 
     // Autoninja sets this absurdly high, we take it down a notch
-    if (!ninjaArgs.includes('-j') && !ninjaArgs.find((arg) => /^-j[0-9]+$/.test(arg.trim())) && config.remoteBuild === 'reclient') {
+    if (
+      !ninjaArgs.includes('-j') &&
+      !ninjaArgs.find((arg) => /^-j[0-9]+$/.test(arg.trim())) &&
+      config.remoteBuild === 'reclient'
+    ) {
       ninjaArgs.push('-j', 200);
     }
 
     if (config.remoteBuild === 'siso') {
-      ninjaArgs.push(
-        ...siso.flags(config)
-      );
+      ninjaArgs.push(...siso.flags(config));
     }
   } else {
     console.info(`${color.info} Building ${target} with remote execution disabled`);

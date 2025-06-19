@@ -217,12 +217,14 @@ function sanitizeConfig(name, config, overwrite = false) {
     !config.gen ||
     !config.gen.args ||
     !config.gen.args.find((arg) => /^use_siso ?= ?true$/.test(arg))
-  )
+  );
 
   if (!config.remoteBuild) {
     if (config.reclient) {
       config.remoteBuild = config.reclient === 'none' ? 'none' : 'reclient';
-      changes.push(`converted ${color.config('reclient')} setting ${color.config('remoteBuild')} property`);
+      changes.push(
+        `converted ${color.config('reclient')} setting ${color.config('remoteBuild')} property`,
+      );
       delete config.reclient;
     } else {
       config.remoteBuild = 'none';
@@ -244,7 +246,9 @@ function sanitizeConfig(name, config, overwrite = false) {
     config.gen ??= {};
     config.gen.args ??= [];
     config.gen.args.push(useSisoGnArg);
-    changes.push(`added gn arg ${color.cmd(useSisoGnArg)} needed by ${color.config('remoteBuild')} siso`);
+    changes.push(
+      `added gn arg ${color.cmd(useSisoGnArg)} needed by ${color.config('remoteBuild')} siso`,
+    );
   } else if (config.remoteBuild !== 'siso' && hasUseSisoGN) {
     config.gen.args = config.gen.args.filter((arg) => !/^use_siso ?= ?true$/.test(arg));
     changes.push(`removed gn arg ${color.cmd(useSisoGnArg)} as siso is disabled`);
@@ -252,13 +256,17 @@ function sanitizeConfig(name, config, overwrite = false) {
 
   if (!config.rbeHelperPath && config.reclientHelperPath) {
     config.rbeHelperPath = config.reclientHelperPath;
-    changes.push(`renamed ${color.config('reclientHelperPath')} to ${color.config('rbeHelperPath')}`);
+    changes.push(
+      `renamed ${color.config('reclientHelperPath')} to ${color.config('rbeHelperPath')}`,
+    );
     delete config.reclientHelperPath;
   }
 
   if (!config.rbeServiceAddress && config.reclientServiceAddress) {
     config.rbeServiceAddress = config.reclientServiceAddress;
-    changes.push(`renamed ${color.config('reclientServiceAddress')} to ${color.config('rbeServiceAddress')}`);
+    changes.push(
+      `renamed ${color.config('reclientServiceAddress')} to ${color.config('rbeServiceAddress')}`,
+    );
     delete config.reclientServiceAddress;
   }
 

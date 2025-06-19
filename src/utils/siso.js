@@ -11,13 +11,11 @@ const sisoEnv = (config) => {
     SISO_REAPI_INSTANCE,
     SISO_REAPI_ADDRESS: reclient.serviceAddress(config),
     SISO_CREDENTIAL_HELPER: reclient.helperPath(config),
-  }
-}
+  };
+};
 
 function sisoFlags(config) {
   if (config.remoteBuild !== 'siso') return [];
-
-  
 
   return [
     '-remote_jobs',
@@ -27,11 +25,11 @@ function sisoFlags(config) {
     '-reapi_instance',
     SISO_REAPI_INSTANCE,
     '-reapi_address',
-    reclient.serviceAddress(config)
-  ]
+    reclient.serviceAddress(config),
+  ];
 }
 
 module.exports = {
   env: sisoEnv,
   flags: sisoFlags,
-}
+};

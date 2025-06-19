@@ -201,7 +201,10 @@ program
       }
 
       // maybe authenticate with RBE
-      if (process.env.NODE_ENV !== 'test' && (config.remoteBuild === 'reclient' || config.remoteBuild === 'siso')) {
+      if (
+        process.env.NODE_ENV !== 'test' &&
+        (config.remoteBuild === 'reclient' || config.remoteBuild === 'siso')
+      ) {
         childProcess.execFileSync(process.execPath, [e, 'd', 'rbe', 'login'], opts);
       }
 

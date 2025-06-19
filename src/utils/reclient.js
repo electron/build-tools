@@ -24,9 +24,7 @@ function downloadAndPrepareRBECredentialHelper(config) {
   // If a custom reclient credentials helper is specified, expect
   // that it exists in the specified location
   if (config.rbeHelperPath) {
-    console.log(
-      `Using custom reclient credentials helper at  ${color.path(config.rbeHelperPath)}`,
-    );
+    console.log(`Using custom reclient credentials helper at  ${color.path(config.rbeHelperPath)}`);
     return;
   }
 
