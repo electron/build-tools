@@ -10,6 +10,7 @@ const { color, fatal } = require('./utils/logging');
 const depot = require('./utils/depot-tools');
 const { ensureDir } = require('./utils/paths');
 const reclient = require('./utils/reclient');
+const siso = require('./utils/siso');
 const { ensureSDK, ensureSDKAndSymlink } = require('./utils/sdk');
 
 function getGNArgs(config) {
@@ -58,12 +59,20 @@ function ensureGNGen(config) {
 }
 
 function runNinja(config, target, ninjaArgs) {
-  if (reclient.usingRemote && config.reclient !== 'none') {
+  if (reclient.usingRemote && config.remoteBuild !== 'none') {
     reclient.auth(config);
 
     // Autoninja sets this absurdly high, we take it down a notch
-    if (!ninjaArgs.includes('-j') && !ninjaArgs.find((arg) => /^-j[0-9]+$/.test(arg.trim()))) {
+    if (
+      !ninjaArgs.includes('-j') &&
+      !ninjaArgs.find((arg) => /^-j[0-9]+$/.test(arg.trim())) &&
+      config.remoteBuild === 'reclient'
+    ) {
       ninjaArgs.push('-j', 200);
+    }
+
+    if (config.remoteBuild === 'siso') {
+      ninjaArgs.push(...siso.flags(config));
     }
   } else {
     console.info(`${color.info} Building ${target} with remote execution disabled`);
@@ -109,7 +118,7 @@ program
         );
       }
 
-      reclient.downloadAndPrepare(config);
+      reclient.downloadAndPrepareRBECredentialHelper(config);
 
       if (process.platform === 'darwin') {
         ensureSDK();

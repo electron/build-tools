@@ -8,25 +8,23 @@ const { deleteDir } = require('./paths');
 
 const reclientDir = path.resolve(__dirname, '..', '..', 'third_party', 'reclient');
 const reclientTagFile = path.resolve(reclientDir, '.tag');
-const reclientHelperPath = path.resolve(
+const rbeHelperPath = path.resolve(
   reclientDir,
   `electron-rbe-credential-helper${process.platform === 'win32' ? '.exe' : ''}`,
 );
-const rbeServiceAddress = 'rbe.notgoma.com:443';
+const RBE_SERVICE_ADDRESS = 'rbe.notgoma.com:443';
 
 const CREDENTIAL_HELPER_TAG = 'v0.5.0';
 
 let usingRemote = true;
 
-function downloadAndPrepareReclient(config) {
-  if (config.reclient === 'none') return;
+function downloadAndPrepareRBECredentialHelper(config) {
+  if (config.remoteBuild === 'none') return;
 
   // If a custom reclient credentials helper is specified, expect
   // that it exists in the specified location
-  if (config.reclientHelperPath) {
-    console.log(
-      `Using custom reclient credentials helper at  ${color.path(config.reclientHelperPath)}`,
-    );
+  if (config.rbeHelperPath) {
+    console.log(`Using custom reclient credentials helper at  ${color.path(config.rbeHelperPath)}`);
     return;
   }
 
@@ -89,7 +87,7 @@ function downloadAndPrepareReclient(config) {
   });
 
   if (process.platform === 'win32') {
-    fs.renameSync(reclientHelperPath.replace(/\.exe$/, ''), reclientHelperPath);
+    fs.renameSync(rbeHelperPath.replace(/\.exe$/, ''), rbeHelperPath);
   }
 
   deleteDir(tmpDownload);
@@ -98,12 +96,12 @@ function downloadAndPrepareReclient(config) {
 }
 
 function reclientEnv(config) {
-  if (config?.reclient === 'none' || !usingRemote) {
+  if (config?.remoteBuild === 'none' || !usingRemote) {
     return {};
   }
 
   let reclientEnv = {
-    RBE_service: config.reclientServiceAddress || rbeServiceAddress,
+    RBE_service: getServiceAddress(config),
     RBE_credentials_helper: getHelperPath(config),
     RBE_credentials_helper_args: 'print',
     RBE_experimental_credentials_helper: getHelperPath(config),
@@ -117,7 +115,7 @@ function reclientEnv(config) {
     reclientEnv.RBE_fail_early_min_fallback_ratio = 0;
   }
 
-  const result = childProcess.spawnSync(reclientHelperPath, ['flags'], {
+  const result = childProcess.spawnSync(rbeHelperPath, ['flags'], {
     stdio: 'pipe',
   });
 
@@ -135,7 +133,7 @@ function reclientEnv(config) {
 }
 
 function ensureHelperAuth(config) {
-  const result = childProcess.spawnSync(reclientHelperPath, ['status'], {
+  const result = childProcess.spawnSync(rbeHelperPath, ['status'], {
     stdio: 'pipe',
   });
   if (result.status !== 0) {
@@ -150,14 +148,18 @@ function ensureHelperAuth(config) {
 }
 
 function getHelperPath(config) {
-  return config.reclientHelperPath || reclientHelperPath;
+  return config.rbeHelperPath || rbeHelperPath;
+}
+
+function getServiceAddress(config) {
+  return config.rbeServiceAddress || RBE_SERVICE_ADDRESS;
 }
 
 module.exports = {
   env: reclientEnv,
-  downloadAndPrepare: downloadAndPrepareReclient,
+  downloadAndPrepareRBECredentialHelper,
   helperPath: getHelperPath,
-  serviceAddress: rbeServiceAddress,
+  serviceAddress: getServiceAddress,
   auth: ensureHelperAuth,
   usingRemote,
 };

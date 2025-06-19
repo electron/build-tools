@@ -1,5 +1,5 @@
 root: /path/to/your/developer/folder
-reclient: remote_exec
+remoteBuild: reclient
 preserveSDK: 5
 remotes:
   electron:

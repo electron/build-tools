@@ -27,7 +27,7 @@ function createConfig(options) {
   // build the `gn gen` args
   const gn_args = [`import("//electron/build/args/${options.import}.gn")`];
 
-  if (options.reclient !== 'none') {
+  if (options.remoteBuild !== 'none') {
     gn_args.push('use_remoteexec=true');
   }
 
@@ -58,7 +58,7 @@ function createConfig(options) {
 
   return {
     $schema: URI.file(path.resolve(__dirname, '..', 'evm-config.schema.json')).toString(),
-    reclient: options.reclient,
+    remoteBuild: options.remoteBuild,
     root,
     remotes: {
       electron,
@@ -137,11 +137,11 @@ program
   .option('--bootstrap', 'Run `e sync` and `e build` after creating the build config.')
   .addOption(
     new Option(
-      '--reclient <target>',
-      `Use Electron's RBE backend. The "remote_exec" mode will fall back to cache-only depending on the auth provided`,
+      '--remote-build <target>',
+      `Use Electron's RBE backend. The "reclient" and "siso" modes will fall back to cache-only depending on the auth provided`,
     )
-      .choices(['remote_exec', 'none'])
-      .default('remote_exec'),
+      .choices(['reclient', 'siso', 'none'])
+      .default('reclient'),
   )
   .option(
     '--use-https',
@@ -201,7 +201,10 @@ program
       }
 
       // maybe authenticate with RBE
-      if (process.env.NODE_ENV !== 'test' && config.reclient === 'remote_exec') {
+      if (
+        process.env.NODE_ENV !== 'test' &&
+        (config.remoteBuild === 'reclient' || config.remoteBuild === 'siso')
+      ) {
         childProcess.execFileSync(process.execPath, [e, 'd', 'rbe', 'login'], opts);
       }
 

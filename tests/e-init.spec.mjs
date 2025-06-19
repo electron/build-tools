@@ -59,7 +59,7 @@ describe('e-init', () => {
 
       const config = require(configPath);
       expect(config).toHaveProperty('$schema');
-      expect(config.reclient).toStrictEqual('remote_exec');
+      expect(config.remoteBuild).toStrictEqual('reclient');
 
       expect(config.remotes).toHaveProperty('electron');
       expect(config.remotes).not.toHaveProperty('node');

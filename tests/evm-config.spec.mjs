@@ -16,7 +16,7 @@ const validConfig = {
     },
   },
   preserveSDK: 5,
-  reclient: 'none',
+  remoteBuild: 'none',
   gen: {
     args: [],
     out: 'Testing',
@@ -65,7 +65,7 @@ describe('example configs', () => {
         },
       },
       configValidationLevel: 'strict',
-      reclient: 'remote_exec',
+      remoteBuild: 'reclient',
       preserveSDK: expect.any(Number),
       gen: {
         out: 'Testing',

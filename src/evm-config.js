@@ -207,20 +207,67 @@ function sanitizeConfig(name, config, overwrite = false) {
   }
 
   const remoteExecGnArg = 'use_remoteexec = true';
+  const useSisoGnArg = 'use_siso = true';
   const hasRemoteExecGN = !(
     !config.gen ||
     !config.gen.args ||
     !config.gen.args.find((arg) => /^use_remoteexec ?= ?true$/.test(arg))
   );
+  const hasUseSisoGN = !(
+    !config.gen ||
+    !config.gen.args ||
+    !config.gen.args.find((arg) => /^use_siso ?= ?true$/.test(arg))
+  );
 
-  if (config.reclient !== 'none' && !hasRemoteExecGN) {
+  if (!config.remoteBuild) {
+    if (config.reclient) {
+      config.remoteBuild = config.reclient === 'none' ? 'none' : 'reclient';
+      changes.push(
+        `converted ${color.config('reclient')} setting ${color.config('remoteBuild')} property`,
+      );
+      delete config.reclient;
+    } else {
+      config.remoteBuild = 'none';
+      changes.push(`added missing explicit ${color.config('remoteBuild')} property`);
+    }
+  }
+
+  if (config.remoteBuild !== 'none' && !hasRemoteExecGN) {
     config.gen ??= {};
     config.gen.args ??= [];
     config.gen.args.push(remoteExecGnArg);
     changes.push(`added gn arg ${color.cmd(remoteExecGnArg)} needed by remoteexec`);
-  } else if (config.reclient === 'none' && hasRemoteExecGN) {
+  } else if (config.remoteBuild === 'none' && hasRemoteExecGN) {
     config.gen.args = config.gen.args.filter((arg) => !/^use_remoteexec ?= ?true$/.test(arg));
     changes.push(`removed gn arg ${color.cmd(remoteExecGnArg)} as remoteexec is disabled`);
+  }
+
+  if (config.remoteBuild === 'siso' && !hasUseSisoGN) {
+    config.gen ??= {};
+    config.gen.args ??= [];
+    config.gen.args.push(useSisoGnArg);
+    changes.push(
+      `added gn arg ${color.cmd(useSisoGnArg)} needed by ${color.config('remoteBuild')} siso`,
+    );
+  } else if (config.remoteBuild !== 'siso' && hasUseSisoGN) {
+    config.gen.args = config.gen.args.filter((arg) => !/^use_siso ?= ?true$/.test(arg));
+    changes.push(`removed gn arg ${color.cmd(useSisoGnArg)} as siso is disabled`);
+  }
+
+  if (!config.rbeHelperPath && config.reclientHelperPath) {
+    config.rbeHelperPath = config.reclientHelperPath;
+    changes.push(
+      `renamed ${color.config('reclientHelperPath')} to ${color.config('rbeHelperPath')}`,
+    );
+    delete config.reclientHelperPath;
+  }
+
+  if (!config.rbeServiceAddress && config.reclientServiceAddress) {
+    config.rbeServiceAddress = config.reclientServiceAddress;
+    changes.push(
+      `renamed ${color.config('reclientServiceAddress')} to ${color.config('rbeServiceAddress')}`,
+    );
+    delete config.reclientServiceAddress;
   }
 
   config.env ??= {};

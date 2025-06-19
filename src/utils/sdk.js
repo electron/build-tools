@@ -282,8 +282,6 @@ function ensureSDK(version) {
     evmConfig.setEnvVar(evmConfig.currentName(), 'SDKROOT', eventualVersionedPath);
 
     console.log(`${color.info} Now using SDK version ${color.path(getSDKVersion())}`);
-  } else {
-    console.log(`${color.info} SDK version ${color.path(getSDKVersion())} is already in use`);
   }
 
   deleteDir(SDKZip);
