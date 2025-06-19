@@ -29,19 +29,20 @@
       "type": "string",
       "minLength": 1
     },
-    "reclient": {
-      "description": "Whether to use the Electron RBE infrastructure",
+    "remoteBuild": {
+      "description": "Whether to use remote builds and what system to use",
       "type": "string",
       "enum": [
-        "remote_exec",
+        "reclient",
+        "siso",
         "none"
       ]
     },
-    "reclientHelperPath": {
+    "rbeHelperPath": {
       "description": "Path to alternative reclient credential helper",
       "type": "string"
     },
-    "reclientServiceAddress": {
+    "rbeServiceAddress": {
       "description": "Alternative RBE cluster address",
       "type": "string"
     },

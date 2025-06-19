@@ -65,7 +65,7 @@ describe('example configs', () => {
         },
       },
       configValidationLevel: 'strict',
-      reclient: 'remote_exec',
+      remoteBuild: 'reclient',
       preserveSDK: expect.any(Number),
       gen: {
         out: 'Testing',

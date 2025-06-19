@@ -33,7 +33,7 @@ program
 
     let cwd;
     if (args[0] === 'rbe') {
-      reclient.downloadAndPrepare(evmConfig.current(), true);
+      reclient.downloadAndPrepareRBECredentialHelper(evmConfig.current(), true);
       args[0] = reclient.helperPath(evmConfig.current());
     }
 

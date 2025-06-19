@@ -99,6 +99,7 @@ function depotOpts(config, opts = {}) {
     ...opts.env,
     // Circular reference so we have to delay load
     ...require('./reclient').env(config),
+    ...require('./siso').env(config),
   };
 
   // put depot tools at the front of the path
