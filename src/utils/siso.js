@@ -1,3 +1,5 @@
+const path = require('path');
+
 const reclient = require('./reclient');
 
 const SISO_REAPI_INSTANCE = 'projects/electron-rbe/instances/default_instance';
@@ -26,6 +28,8 @@ function sisoFlags(config) {
     SISO_REAPI_INSTANCE,
     '-reapi_address',
     reclient.serviceAddress(config),
+    '-load',
+    path.resolve(__dirname, '../electron.star'),
   ];
 }
 
