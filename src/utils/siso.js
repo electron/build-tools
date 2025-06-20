@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 
 const reclient = require('./reclient');
@@ -29,11 +30,35 @@ function sisoFlags(config) {
     '-reapi_address',
     reclient.serviceAddress(config),
     '-load',
-    path.resolve(__dirname, '../electron.star'),
+    path.resolve(__dirname, '../siso/config/electron.star'),
   ];
+}
+
+async function ensureBackendStarlark(config) {
+  if (config.remoteBuild !== 'siso') return;
+
+  const backendConfig = path.resolve(__dirname, '../siso/config/backend.star');
+
+  const starlarkPath = path.resolve(
+    config.root,
+    'src',
+    'build/config/siso/backend_config/backend.star',
+  );
+  let needsUpdate = true;
+  if (fs.existsSync(starlarkPath)) {
+    needsUpdate =
+      (await fs.promises.readFile(starlarkPath, 'utf8')) !==
+      (await fs.promises.readFile(backendConfig, 'utf8'));
+  }
+
+  if (needsUpdate) {
+    await fs.promises.mkdir(path.dirname(starlarkPath), { recursive: true });
+    await fs.promises.copyFile(backendConfig, starlarkPath);
+  }
 }
 
 module.exports = {
   env: sisoEnv,
   flags: sisoFlags,
+  ensureBackendStarlark,
 };
