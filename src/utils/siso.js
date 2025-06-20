@@ -37,7 +37,13 @@ function sisoFlags(config) {
 async function ensureBackendStarlark(config) {
   if (config.remoteBuild !== 'siso') return;
 
-  const backendConfig = path.resolve(__dirname, '../siso/config/backend.star');
+  const backendConfig = path.resolve(config.root, 'src/electron/build/siso/backend.star');
+
+  if (!fs.existsSync(backendConfig)) {
+    throw new Error(
+      `Missing SISO backend config at ${backendConfig}. Either disable siso in build-tools or ensure you are on a branch that supports it.`,
+    );
+  }
 
   const starlarkPath = path.resolve(
     config.root,
