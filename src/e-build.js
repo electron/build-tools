@@ -119,7 +119,7 @@ program
       }
 
       reclient.downloadAndPrepareRBECredentialHelper(config);
-      siso.ensureBackendStarlark();
+      siso.ensureBackendStarlark(config);
 
       if (process.platform === 'darwin') {
         ensureSDK();
