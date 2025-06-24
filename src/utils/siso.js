@@ -30,7 +30,7 @@ function sisoFlags(config) {
     '-reapi_address',
     reclient.serviceAddress(config),
     '-load',
-    path.resolve(config.root, 'electron/build/siso/main.star'),
+    path.resolve(config.root, 'src/electron/build/siso/main.star'),
   ];
 }
 
