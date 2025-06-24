@@ -103,7 +103,7 @@ program
   .option('-t|--target [target]', 'Build a specific ninja target')
   .option('--no-remote', 'Build without remote execution (entirely locally)')
   .allowUnknownOption()
-  .action((ninjaArgs, options) => {
+  .action(async (ninjaArgs, options) => {
     try {
       const config = evmConfig.current();
 
@@ -119,7 +119,7 @@ program
       }
 
       reclient.downloadAndPrepareRBECredentialHelper(config);
-      siso.ensureBackendStarlark(config);
+      await siso.ensureBackendStarlark(config);
 
       if (process.platform === 'darwin') {
         ensureSDK();
