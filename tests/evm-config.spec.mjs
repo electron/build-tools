@@ -3,7 +3,7 @@ import path from 'path';
 
 import YAML from 'yaml';
 
-const { sanitizeConfig, validateConfig, fetchByName } = require('../src/evm-config');
+const { sanitizeConfig, validateConfig, fetchByName } = require('../dist/evm-config');
 
 import { beforeAll, afterAll, describe, expect, it, vi } from 'vitest';
 

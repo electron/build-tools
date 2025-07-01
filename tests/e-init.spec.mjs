@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { validateConfig } from '../src/evm-config';
+import { validateConfig } from '../dist/evm-config';
 
 import createSandbox from './sandbox';
 
