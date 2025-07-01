@@ -2,12 +2,7 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { deleteDir } = require('../src/utils/paths');
-
-// Get the PATH environment variable key cross-platform
-// It's usually PATH, but on Windows it can be any casing like Path...
-// https://github.com/sindresorhus/path-key
-const pathKey = require('path-key')();
+const { deleteDir } = require('../dist/utils/paths');
 
 // execFileSync() wrapper that adds exec'ed scripts to code coverage.
 // Returns { exitCode:number, stderr:string, stdout:string }
@@ -50,7 +45,7 @@ function runSync(args, options) {
   return ret;
 }
 
-const buildToolsSrcDir = path.resolve(__dirname, '..', 'src');
+const buildToolsSrcDir = path.resolve(__dirname, '..', 'dist');
 
 // An `e init` helper.
 // Example use: result = eInitRunner().root('~/electron-src')
@@ -239,7 +234,7 @@ function createSandbox() {
       EVM_CONFIG: evm_config_dir,
       // we want to detect vitest
       __VITEST__: 1,
-      [pathKey]: process.env[pathKey],
+      PATH: process.env.PATH,
     },
   };
 

@@ -4,16 +4,19 @@
   "engines": {
     "node": ">= 18.0.0"
   },
+  "type": "module",
   "main": "null",
   "private": true,
   "scripts": {
     "lint:markdown": "electron-markdownlint \"**/*.md\"",
-    "lint:js": "prettier --check \"src/**/*.js\" \"tests/*.js\" \"src/e\"",
+    "lint:js": "prettier --check \"src/**/*.{js,ts}\" \"tests/*.{js,ts}\"",
     "lint": "npm run lint:js && npm run lint:markdown",
-    "prettier:write": "prettier --write \"src/**/*.js\" \"tests/*.js\" \"src/e\"",
+    "prettier:write": "prettier --write \"src/**/*.{js,ts}\" \"tests/*.{js,ts}\"",
     "prepare": "husky",
+    "pretest": "tsc",
     "test": "nyc --reporter=lcov --reporter=text-summary vitest run --reporter=verbose --exclude tests/bootstrap.spec.mjs",
-    "test:all": "nyc --reporter=lcov --reporter=text-summary vitest run --reporter=verbose"
+    "test:all": "nyc --reporter=lcov --reporter=text-summary vitest run --reporter=verbose",
+    "postinstall": "tsc"
   },
   "repository": "https://github.com/electron/build-tools",
   "author": "Electron Authors",
@@ -22,35 +25,43 @@
     "@marshallofsound/chrome-cookies-secure": "^2.1.1",
     "@octokit/auth-oauth-device": "^3.1.1",
     "@octokit/rest": "^18.5.2",
-    "ajv": "^8.11.0",
-    "ajv-formats": "^2.1.1",
-    "chalk": "^2.4.1",
+    "@types/node": "^22.7.1",
+    "@types/progress": "^2.0.7",
+    "@types/semver": "^7.7.0",
+    "@types/tar": "^6.1.13",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "chalk": "^5.4.1",
     "command-exists": "^1.2.8",
-    "commander": "^9.0.0",
+    "commander": "^9.5.0",
     "debug": "^4.3.1",
     "extract-zip": "^2.0.1",
     "inquirer": "^8.2.4",
     "node-gyp": "^10.0.1",
     "open": "^6.4.0",
-    "path-key": "^3.1.0",
     "progress": "^2.0.3",
     "readline-sync": "^1.4.10",
     "semver": "^7.6.0",
     "tar": "^6.2.1",
+    "typescript": "^5.8.3",
     "vscode-uri": "^3.0.7",
-    "which": "^2.0.2",
     "yaml": "^2.4.5"
   },
   "devDependencies": {
     "@electron/lint-roller": "^1.13.0",
+    "@tsconfig/node22": "^22.0.2",
+    "@types/command-exists": "^1.2.3",
+    "@types/inquirer": "^8.0.0",
+    "@types/readline-sync": "^1.4.8",
     "husky": "^9.1.6",
+    "json-schema-to-typescript": "^15.0.4",
     "lint-staged": "^15.2.10",
     "nyc": "^17.1.0",
     "prettier": "^3.3.3",
     "vitest": "^3.0.6"
   },
   "lint-staged": {
-    "*.js": [
+    "*.{js,ts}": [
       "prettier --write"
     ],
     "e": [

@@ -1,6 +1,5 @@
 import os from 'os';
 import path from 'path';
-import pathKey from 'path-key';
 import createSandbox from './sandbox';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -146,7 +145,7 @@ describe('e-show', () => {
       }, {});
     const envKeys = Object.keys(env).sort();
     expect(envKeys).toEqual(
-      expect.arrayContaining(['CHROMIUM_BUILDTOOLS_PATH', 'GIT_CACHE_PATH', pathKey()]),
+      expect.arrayContaining(['CHROMIUM_BUILDTOOLS_PATH', 'GIT_CACHE_PATH', 'PATH']),
     );
     expect(envKeys).toEqual(
       (isWindows ? expect : expect.not).arrayContaining(['DEPOT_TOOLS_WIN_TOOLCHAIN']),
