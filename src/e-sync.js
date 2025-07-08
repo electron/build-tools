@@ -10,6 +10,7 @@ const { ensureDir } = require('./utils/paths');
 const depot = require('./utils/depot-tools');
 const { configureReclient } = require('./utils/setup-reclient-chromium');
 const { ensureSDK } = require('./utils/sdk');
+const { ensurePrereqs } = require('./utils/prereqs');
 
 function setRemotes(cwd, repo) {
   // Confirm that cwd is the git root
@@ -39,6 +40,8 @@ function setRemotes(cwd, repo) {
 }
 
 function runGClientSync(syncArgs, syncOpts) {
+  ensurePrereqs();
+
   const config = evmConfig.current();
   const srcdir = path.resolve(config.root, 'src');
   ensureDir(srcdir);
