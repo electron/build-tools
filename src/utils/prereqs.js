@@ -1,4 +1,5 @@
 const { execSync } = require('child_process');
+const { fatal } = require('./logging');
 const semver = require('semver');
 
 const MINIMUM_PYTHON_VERSION = '3.9.0';
