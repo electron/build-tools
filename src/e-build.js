@@ -43,7 +43,7 @@ function runGNGen(config) {
   fs.writeFileSync(argsFile, gnArgs, { encoding: 'utf8' });
   const execArgs = ['gen', `out/${config.gen.out}`];
   const execOpts = { cwd: path.resolve(config.root, 'src') };
-  depot.execFileSync(config, gnPath, execArgs, execOpts);
+  depot.spawnSync(config, gnPath, execArgs, execOpts);
 }
 
 function ensureGNGen(config) {
@@ -93,7 +93,7 @@ function runNinja(config, target, ninjaArgs) {
   if (!reclient.usingRemote && config.reclient !== 'none') {
     opts.env = { RBE_remote_disabled: true };
   }
-  depot.execFileSync(config, exec, args, opts);
+  depot.spawnSync(config, exec, args, opts);
 }
 
 program
