@@ -76,8 +76,23 @@ function gitCommit(config, commitMessage, opts, fatalMessage) {
   );
 }
 
+async function fetchChromiumCommit(commitSha) {
+  const { commits: chromiumCommits } = await fetch(
+    `https://chromiumdash.appspot.com/fetch_commits?commit=${commitSha}`,
+  ).then((resp) => resp.json());
+  if (chromiumCommits.length !== 1) {
+    fatal(`Expected to find exactly one commit for SHA "${commitSha}"`);
+    return;
+  }
+
+  // Grab the earliest Chromium version the CL was released in, and the merge time
+  const { earliest, time } = chromiumCommits[0];
+
+  return { earliest, time };
+}
+
 program
-  .arguments('<roll-pr> [chromium-version]')
+  .arguments('<roll-pr> [chromium-version-or-sha]')
   .description('Attempts to reconstruct an intermediate Chromium version from a roll PR')
   .option('--sort', 'Sort cherry-picked commits by CL merge time', false)
   .option(
@@ -85,7 +100,7 @@ program
     'Git merge strategy option to use when cherry-picking',
     'theirs',
   )
-  .action(async (prNumberStr, chromiumVersionStr, options) => {
+  .action(async (prNumberStr, chromiumVersionOrCommitShaStr, options) => {
     const prNumber = parseInt(prNumberStr, 10);
     if (isNaN(prNumber) || `${prNumber}` !== prNumberStr) {
       fatal(`rcv requires a PR number, "${prNumberStr}" was provided`);
@@ -129,20 +144,46 @@ program
       chromiumVersions.push(...milestoneVersions);
     }
 
-    if (chromiumVersionStr !== undefined) {
-      if (
-        compareChromiumVersions(chromiumVersionStr, initialVersion) < 0 ||
-        compareChromiumVersions(chromiumVersionStr, newVersion) > 0
-      ) {
-        fatal(
-          `Chromium version ${chalk.blueBright(chromiumVersionStr)} is not between ${chalk.blueBright(initialVersion)} and ${chalk.blueBright(newVersion)}`,
-        );
-        return;
-      }
+    let usingCommitSha = false;
 
-      // Confirm chromiumVersionStr is a tagged Chromium version
-      if (!chromiumVersions.includes(chromiumVersionStr)) {
-        fatal(`Version ${chalk.blueBright(chromiumVersionStr)} is not a tagged Chromium version`);
+    if (chromiumVersionOrCommitShaStr !== undefined) {
+      if (/^\d+\.\d+\.\d+/.test(chromiumVersionOrCommitShaStr)) {
+        if (
+          compareChromiumVersions(chromiumVersionOrCommitShaStr, initialVersion) < 0 ||
+          compareChromiumVersions(chromiumVersionOrCommitShaStr, newVersion) > 0
+        ) {
+          fatal(
+            `Chromium version ${chalk.blueBright(chromiumVersionOrCommitShaStr)} is not between ${chalk.blueBright(initialVersion)} and ${chalk.blueBright(newVersion)}`,
+          );
+          return;
+        }
+
+        // Confirm chromiumVersionOrCommitShaStr is a tagged Chromium version
+        if (!chromiumVersions.includes(chromiumVersionOrCommitShaStr)) {
+          fatal(
+            `Version ${chalk.blueBright(chromiumVersionOrCommitShaStr)} is not a tagged Chromium version`,
+          );
+          return;
+        }
+      } else if (/^[0-9a-f]+$/.test(chromiumVersionOrCommitShaStr)) {
+        // Assume it's a commit SHA, and verify it falls within the range
+        const { earliest } = await fetchChromiumCommit(chromiumVersionOrCommitShaStr);
+
+        if (
+          compareChromiumVersions(earliest, initialVersion) < 0 ||
+          compareChromiumVersions(earliest, newVersion) > 0
+        ) {
+          fatal(
+            `Chromium commit ${chalk.blueBright(chromiumVersionOrCommitShaStr)} is not between ${chalk.blueBright(initialVersion)} and ${chalk.blueBright(newVersion)}`,
+          );
+          return;
+        }
+
+        usingCommitSha = true;
+      } else {
+        fatal(
+          `Provided value ${chalk.blueBright(chromiumVersionOrCommitShaStr)} does not appear to be a valid Chromium version or commit SHA`,
+        );
         return;
       }
     } else {
@@ -159,7 +200,7 @@ program
           ),
         },
       ]);
-      chromiumVersionStr = version;
+      chromiumVersionOrCommitShaStr = version;
     }
 
     const config = evmConfig.current();
@@ -206,7 +247,7 @@ program
     );
     spawnSync(config, 'git', ['checkout', targetSha], spawnOpts, 'Failed to checkout base commit');
 
-    const rcvBranch = `rcv/pr/${prNumber}/version/${chromiumVersionStr}`;
+    const rcvBranch = `rcv/pr/${prNumber}/version/${chromiumVersionOrCommitShaStr}`;
     spawnSync(config, 'git', ['branch', '-D', rcvBranch], spawnOpts);
     spawnSync(
       config,
@@ -221,14 +262,14 @@ program
     // Update the Chromium version in DEPS
     const regexToReplace = new RegExp(`(chromium_version':\n +').+?',`, 'gm');
     const content = await fs.promises.readFile(path.resolve(spawnOpts.cwd, 'DEPS'), 'utf8');
-    const newContent = content.replace(regexToReplace, `$1${chromiumVersionStr}',`);
+    const newContent = content.replace(regexToReplace, `$1${chromiumVersionOrCommitShaStr}',`);
     await fs.promises.writeFile(path.resolve(spawnOpts.cwd, 'DEPS'), newContent, 'utf8');
 
     // Make a commit with this change
     spawnSync(config, 'git', ['add', 'DEPS'], spawnOpts, 'Failed to add DEPS file for commit');
     gitCommit(
       config,
-      `chore: bump chromium to ${chromiumVersionStr}`,
+      `chore: bump chromium to ${chromiumVersionOrCommitShaStr}`,
       spawnOpts,
       'Failed to commit DEPS file change',
     );
@@ -239,6 +280,27 @@ program
     });
 
     const commitsToCherryPick = [];
+    const chromiumCommitLog = [];
+
+    if (usingCommitSha) {
+      // Pull the commit log from the initial version up until the provided commit SHA
+      const maxCommits = 10000;
+      const textResponse = await fetch(
+        `https://chromium.googlesource.com/chromium/src/+log/${initialVersion}..${chromiumVersionOrCommitShaStr}?n=${maxCommits}&format=JSON`,
+      ).then((resp) => resp.text());
+
+      if (textResponse.startsWith(")]}'")) {
+        chromiumCommitLog.push(...JSON.parse(textResponse.substring(4))['log']);
+
+        if (chromiumCommitLog.length === maxCommits) {
+          fatal('Too many commits in Chromium commit log');
+          return;
+        }
+      } else {
+        fatal('Unexpected response from Chromium commit log fetch');
+        return;
+      }
+    }
 
     for (const commit of commits) {
       const shortSha = commit.sha.substring(0, 7);
@@ -247,19 +309,22 @@ program
 
       if (clMatch) {
         const parsedUrl = new URL(clMatch[0]);
-        const { shortCommit: chromiumShortSha } = await getGerritPatchDetailsFromURL(parsedUrl);
-        const { commits: chromiumCommits } = await fetch(
-          `https://chromiumdash.appspot.com/fetch_commits?commit=${chromiumShortSha}`,
-        ).then((resp) => resp.json());
-        if (chromiumCommits.length !== 1) {
-          fatal(`Expected to find exactly one commit for SHA "${chromiumShortSha}"`);
-          return;
-        }
-        // Grab the earliest Chromium version the CL was released in, and the merge time
-        const { earliest, time } = chromiumCommits[0];
+        const { commitId: chromiumCommitSha } = await getGerritPatchDetailsFromURL(parsedUrl);
+        const { earliest, time } = await fetchChromiumCommit(chromiumCommitSha);
 
-        // Only cherry pick the commit if the earliest version is within target version
-        if (compareChromiumVersions(earliest, chromiumVersionStr) <= 0) {
+        let shouldCherryPick = false;
+
+        // Only cherry pick the commit if it is between the initial Chromium version and the user provided version/commit SHA
+        if (usingCommitSha && chromiumCommitLog.find((c) => c.commit === chromiumCommitSha)) {
+          shouldCherryPick = true;
+        } else if (
+          !usingCommitSha &&
+          compareChromiumVersions(earliest, chromiumVersionOrCommitShaStr) <= 0
+        ) {
+          shouldCherryPick = true;
+        }
+
+        if (shouldCherryPick) {
           console.log(
             `${color.success} Cherry-picking CL commit: ${chalk.yellow(shortSha)} ${message} (${chalk.greenBright(earliest)})`,
           );
