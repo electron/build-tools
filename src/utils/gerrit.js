@@ -56,7 +56,7 @@ async function getGerritPatchDetailsFromURL(gerritUrl, security) {
 
   const shortCommit = commitId.substr(0, 12);
 
-  return { patchDirName, shortCommit, patch, bugNumber, cve };
+  return { patchDirName, shortCommit, commitId, patch, bugNumber, cve };
 }
 
 module.exports = {
