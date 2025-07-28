@@ -95,6 +95,10 @@ program
   .action((args) => {
     try {
       const exec = evmConfig.execOf(evmConfig.current());
+      if (!fs.existsSync(exec)) {
+        fatal(`Could not find Electron executable at ${color.path(exec)}`);
+      }
+
       const opts = { stdio: 'inherit' };
       console.log(color.childExec(exec, args, opts));
       cp.execFileSync(exec, args, opts);
