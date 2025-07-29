@@ -194,7 +194,7 @@ To see all potential options for this command, run:
 $ e build --help
 ```
 
-Once you have the source, the next step is to build it with `e build [target]`.
+Once you have the source, the next step is to build it with `e build --target [target]`.
 Some of the build targets you may want to build include:
 
 | Target        | Description                                              |
