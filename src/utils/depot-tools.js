@@ -73,6 +73,7 @@ function platformOpts() {
       GYP_MSVS_HASH_27370823e7: '28622d16b1',
       GYP_MSVS_HASH_7393122652: '3ba76c5c20',
       GYP_MSVS_HASH_698eb5635a: 'e2bf90edff',
+      GYP_MSVS_HASH_e4305f407e: 'efe71370d5',
     };
   }
 
