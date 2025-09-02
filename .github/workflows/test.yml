@@ -42,7 +42,7 @@ jobs:
         node-version: lts/-1
     - name: Cache node_modules
       id: cache-node-modules
-      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684  # tag: v4.2.3
+      uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809  # tag: v4.2.4
       with:
         path: node_modules
         key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}-node-modules
