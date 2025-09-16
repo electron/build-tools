@@ -9,18 +9,22 @@ const SISO_PROJECT = SISO_REAPI_INSTANCE.split('/')[1];
 const sisoEnv = (config) => {
   if (config.remoteBuild !== 'siso') return {};
 
-  return {
+  let sisoEnv = {
     SISO_PROJECT,
     SISO_REAPI_INSTANCE,
     SISO_REAPI_ADDRESS: reclient.serviceAddress(config),
     SISO_CREDENTIAL_HELPER: reclient.helperPath(config),
   };
+
+  const extraFlags = reclient.helperFlags();
+  sisoEnv = Object.assign(sisoEnv, extraFlags);
+  return sisoEnv;
 };
 
-function sisoFlags(config) {
+function sisoFlags(config, hasExecute) {
   if (config.remoteBuild !== 'siso') return [];
 
-  return [
+  const flags = [
     '-remote_jobs',
     200,
     '-project',
@@ -32,6 +36,12 @@ function sisoFlags(config) {
     '-load',
     path.resolve(config.root, 'src/electron/build/siso/main.star'),
   ];
+
+  if (!hasExecute) {
+    flags.push('-re_exec_enable=false');
+  }
+
+  return flags;
 }
 
 async function ensureBackendStarlark(config) {

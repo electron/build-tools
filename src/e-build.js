@@ -60,7 +60,7 @@ function ensureGNGen(config) {
 
 function runNinja(config, target, ninjaArgs) {
   if (reclient.usingRemote && config.remoteBuild !== 'none') {
-    reclient.auth(config);
+    const hasExecute = reclient.auth(config);
 
     // Autoninja sets this absurdly high, we take it down a notch
     if (
@@ -72,7 +72,7 @@ function runNinja(config, target, ninjaArgs) {
     }
 
     if (config.remoteBuild === 'siso') {
-      ninjaArgs.push(...siso.flags(config));
+      ninjaArgs.push(...siso.flags(config, hasExecute));
     }
   } else {
     console.info(`${color.info} Building ${target} with remote execution disabled`);
