@@ -14,7 +14,7 @@ const rbeHelperPath = path.resolve(
 );
 const RBE_SERVICE_ADDRESS = 'rbe.notgoma.com:443';
 
-const CREDENTIAL_HELPER_TAG = 'v0.5.1';
+const CREDENTIAL_HELPER_TAG = 'v0.5.2';
 
 let usingRemote = true;
 
@@ -95,6 +95,23 @@ function downloadAndPrepareRBECredentialHelper(config) {
   return;
 }
 
+function getHelperFlags() {
+  const result = childProcess.spawnSync(rbeHelperPath, ['flags'], {
+    stdio: 'pipe',
+  });
+
+  if (result.status === 0) {
+    try {
+      const extraArgs = JSON.parse(result.stdout.toString());
+      return extraArgs;
+    } catch (e) {
+      console.error(result.stdout.toString());
+      fatal('Failure to run reclient credential helper');
+    }
+  }
+  return {};
+}
+
 function reclientEnv(config) {
   if (config?.remoteBuild === 'none' || !usingRemote) {
     return {};
@@ -115,20 +132,8 @@ function reclientEnv(config) {
     reclientEnv.RBE_fail_early_min_fallback_ratio = 0;
   }
 
-  const result = childProcess.spawnSync(rbeHelperPath, ['flags'], {
-    stdio: 'pipe',
-  });
-
-  if (result.status === 0) {
-    try {
-      const extraArgs = JSON.parse(result.stdout.toString());
-      reclientEnv = Object.assign(reclientEnv, extraArgs);
-    } catch (e) {
-      console.error(result.stdout.toString());
-      fatal('Failure to run reclient credential helper');
-    }
-  }
-
+  const extraFlags = getHelperFlags();
+  reclientEnv = Object.assign(reclientEnv, extraFlags);
   return reclientEnv;
 }
 
@@ -136,7 +141,10 @@ function ensureHelperAuth(config) {
   const result = childProcess.spawnSync(rbeHelperPath, ['status'], {
     stdio: 'pipe',
   });
-  if (result.status !== 0) {
+  if (result.status === 0) {
+    const reclientFlags = getHelperFlags();
+    return reclientFlags['RBE_exec_strategy'] !== 'local';
+  } else {
     console.error(result.stdout.toString());
     console.error(
       `${color.err} You do not have valid auth for Reclient, please run ${color.cmd(
@@ -158,6 +166,7 @@ function getServiceAddress(config) {
 module.exports = {
   env: reclientEnv,
   downloadAndPrepareRBECredentialHelper,
+  helperFlags: getHelperFlags,
   helperPath: getHelperPath,
   serviceAddress: getServiceAddress,
   auth: ensureHelperAuth,
