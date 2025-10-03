@@ -93,7 +93,8 @@ function runNinja(config, target, ninjaArgs) {
   if (!reclient.usingRemote && config.reclient !== 'none') {
     opts.env = { RBE_remote_disabled: true };
   }
-  depot.spawnSync(config, exec, args, opts);
+  const result = depot.spawnSync(config, exec, args, opts);
+  return result.status ?? 1;
 }
 
 program
@@ -131,7 +132,8 @@ program
       }
 
       const buildTarget = options.target || evmConfig.getDefaultTarget();
-      runNinja(config, buildTarget, ninjaArgs);
+      const exitCode = runNinja(config, buildTarget, ninjaArgs);
+      process.exit(exitCode);
     } catch (e) {
       fatal(e);
     }
