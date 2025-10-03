@@ -274,7 +274,7 @@ program
       'Failed to commit DEPS file change',
     );
 
-    const { data: commits } = await octokit.pulls.listCommits({
+    const commits = await octokit.paginate(octokit.pulls.listCommits, {
       ...ELECTRON_REPO_DATA,
       pull_number: prNumber,
     });
