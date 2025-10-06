@@ -91,7 +91,13 @@ program
       `Failed to checkout new branch "${manualBpBranch}"`,
     );
 
-    spawnSync(config, 'yarn', ['install'], gitOpts, `Failed to do "yarn install" on new branch`);
+    spawnSync(
+      config,
+      'yarn',
+      ['install', '--immutable'],
+      gitOpts,
+      `Failed to do "yarn install" on new branch`,
+    );
 
     const cherryPickResult = spawnSync(config, 'git', ['cherry-pick', pr.merge_commit_sha], {
       cwd: gitOpts.cwd,

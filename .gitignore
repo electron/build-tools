@@ -8,4 +8,6 @@ third_party
 .update
 .disable-auto-updates
 /*.yml
+!.yarnrc.yml
 generated.env.sh
+.yarn/install-state.gz
