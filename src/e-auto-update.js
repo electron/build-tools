@@ -122,8 +122,8 @@ function checkForUpdates() {
     if (headBefore === git(headCmd)) {
       console.log('build-tools is up-to-date');
     } else {
-      console.log(color.childExec('npx', ['yarn', '--prod', '--immutable'], execOpts));
-      cp.execSync('npx yarn --prod --immutable', execOpts);
+      console.log(color.childExec('npx', ['yarn', '--immutable'], execOpts));
+      cp.execSync('npx yarn --immutable', execOpts);
       console.log('build-tools updated to latest version!');
     }
   } catch (e) {
