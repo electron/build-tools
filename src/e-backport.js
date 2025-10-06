@@ -94,7 +94,7 @@ program
     spawnSync(
       config,
       'yarn',
-      ['install', '--immutable'],
+      ['install', '--prod'],
       gitOpts,
       `Failed to do "yarn install" on new branch`,
     );
