@@ -105,7 +105,14 @@ function maybeRemoveOldXcodes() {
 // Extract the SDK version from the toolchain file and normalize it.
 function extractSDKVersion(toolchainFile) {
   const contents = fs.readFileSync(toolchainFile, 'utf8');
-  const match = /macOS\s+(?:(\d+(?:\.\d+)?)\s+SDK|SDK\s+(\d+(?:\.\d+)?))/.exec(contents);
+  // Join all comments as single line to allow matching with line breaks
+  const commentsSingleLine = contents
+    .split('\n')
+    .filter((line) => line.startsWith('#'))
+    .map((line) => line.substring(1))
+    .join('');
+  // e.g. macOS 26.0 SDK
+  const match = /macOS\s+(?:(\d+(?:\.\d+)?)\s+SDK|SDK\s+(\d+(?:\.\d+)?))/.exec(commentsSingleLine);
 
   if (match?.[1]) return match[1].includes('.') ? match[1] : `${match[1]}.0`;
   if (match?.[2]) return match[2].includes('.') ? match[2] : `${match[2]}.0`;
