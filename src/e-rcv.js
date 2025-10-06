@@ -257,13 +257,7 @@ program
       `Failed to checkout new branch "${rcvBranch}"`,
     );
 
-    spawnSync(
-      config,
-      'yarn',
-      ['install', '--prod'],
-      spawnOpts,
-      'Failed to do "yarn install --prod" on new branch',
-    );
+    spawnSync(config, 'yarn', ['install'], spawnOpts, 'Failed to do "yarn install" on new branch');
 
     // Update the Chromium version in DEPS
     const regexToReplace = new RegExp(`(chromium_version':\n +').+?',`, 'gm');
