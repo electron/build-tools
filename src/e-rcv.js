@@ -260,9 +260,9 @@ program
     spawnSync(
       config,
       'yarn',
-      ['install', '--immutable'],
+      ['install', '--prod'],
       spawnOpts,
-      'Failed to do "yarn install --immutable" on new branch',
+      'Failed to do "yarn install --prod" on new branch',
     );
 
     // Update the Chromium version in DEPS
