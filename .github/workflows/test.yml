@@ -48,6 +48,6 @@ jobs:
         key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}-node-modules
     - name: Install
       if: steps.cache-node-modules.outputs.cache-hit != 'true'
-      run: yarn install
+      run: yarn install --immutable
     - name: Test
       run: yarn test
