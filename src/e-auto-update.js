@@ -123,8 +123,8 @@ function checkForUpdates() {
     if (headBefore === git(headCmd)) {
       console.log('build-tools is up-to-date');
     } else {
-      console.log(color.childExec('node', [yarnPath, '--immutable'], execOpts));
-      cp.spawnSync('node', [yarnPath, '--immutable'], execOpts);
+      console.log(color.childExec(process.execPath, [yarnPath, '--immutable'], execOpts));
+      cp.spawnSync(process.execPath, [yarnPath, '--immutable'], execOpts);
       console.log('build-tools updated to latest version!');
     }
   } catch (e) {
