@@ -43,6 +43,7 @@ program
     '--no-remote',
     'Build test runner components (e.g. electron:node_headers) without remote execution',
   )
+  .option('--disable-logging', "Don't add the --enable-logging flag for the spec runner")
   .addOption(
     new program.Option(
       '--runners <runner>',
@@ -62,6 +63,9 @@ program
       }
       if (options.electronVersion) {
         specRunnerArgs.push(`--electronVersion=${options.electronVersion}`);
+      }
+      if (!options.disableLogging) {
+        specRunnerArgs.push('--enable-logging');
       }
       let script = './script/spec-runner.js';
       if (options.node) {
