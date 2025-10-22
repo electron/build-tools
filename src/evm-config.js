@@ -206,13 +206,7 @@ function sanitizeConfig(name, config, overwrite = false) {
     changes.push(`removed ${color.config('onlySdk')} property`);
   }
 
-  const remoteExecGnArg = 'use_remoteexec = true';
   const useSisoGnArg = 'use_siso = true';
-  const hasRemoteExecGN = !(
-    !config.gen ||
-    !config.gen.args ||
-    !config.gen.args.find((arg) => /^use_remoteexec ?= ?true$/.test(arg))
-  );
   const hasUseSisoGN = !(
     !config.gen ||
     !config.gen.args ||
@@ -221,25 +215,26 @@ function sanitizeConfig(name, config, overwrite = false) {
 
   if (!config.remoteBuild) {
     if (config.reclient) {
-      config.remoteBuild = config.reclient === 'none' ? 'none' : 'reclient';
+      config.remoteBuild = config.reclient === 'none' ? 'none' : 'siso';
       changes.push(
-        `converted ${color.config('reclient')} setting ${color.config('remoteBuild')} property`,
+        `migrated unsupported ${color.config('reclient')} to ${color.config('remoteBuild')} (${config.remoteBuild})`,
       );
       delete config.reclient;
     } else {
       config.remoteBuild = 'none';
       changes.push(`added missing explicit ${color.config('remoteBuild')} property`);
     }
+  } else if (config.remoteBuild === 'reclient') {
+    config.remoteBuild = 'siso';
+    changes.push(
+      `migrated ${color.config('remoteBuild')} from unsupported 'reclient' to 'siso'`,
+    );
   }
 
-  if (config.remoteBuild !== 'none' && !hasRemoteExecGN) {
-    config.gen ??= {};
-    config.gen.args ??= [];
-    config.gen.args.push(remoteExecGnArg);
-    changes.push(`added gn arg ${color.cmd(remoteExecGnArg)} needed by remoteexec`);
-  } else if (config.remoteBuild === 'none' && hasRemoteExecGN) {
+  const hasRemoteExecGN = config.gen?.args?.some((arg) => /^use_remoteexec ?= ?true$/.test(arg));
+  if (hasRemoteExecGN) {
     config.gen.args = config.gen.args.filter((arg) => !/^use_remoteexec ?= ?true$/.test(arg));
-    changes.push(`removed gn arg ${color.cmd(remoteExecGnArg)} as remoteexec is disabled`);
+    changes.push(`removed unsupported gn arg ${color.cmd('use_remoteexec = true')}`);
   }
 
   if (config.remoteBuild === 'siso' && !hasUseSisoGN) {
