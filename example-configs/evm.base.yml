@@ -11,6 +11,7 @@ gen:
   args:
     # Enable siso remote builds
     - use_remoteexec = true
+    - use_reclient = false
     - use_siso = true
   out: Testing
 env:
