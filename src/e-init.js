@@ -32,6 +32,7 @@ function createConfig(options) {
   }
 
   if (options.remoteBuild === 'siso') {
+    gn_args.push('use_reclient = false');
     gn_args.push('use_siso = true');
   }
 
