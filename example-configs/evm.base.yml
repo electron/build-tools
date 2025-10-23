@@ -1,5 +1,5 @@
 root: /path/to/your/developer/folder
-remoteBuild: reclient
+remoteBuild: siso
 preserveSDK: 5
 remotes:
   electron:
@@ -9,8 +9,9 @@ remotes:
     origin: git@github.com:electron/electron.git
 gen:
   args:
-    # Enable reclient
+    # Enable siso remote builds
     - use_remoteexec = true
+    - use_siso = true
   out: Testing
 env:
   GIT_CACHE_PATH: /Users/user_name/.git_cache
