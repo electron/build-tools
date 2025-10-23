@@ -1,10 +1,12 @@
 root: /path/to/chromium/
-remoteBuild: reclient
+remoteBuild: siso
 defaultTarget: chrome
 execName: Chromium
 gen:
   args:
     - use_remoteexec = true
+    - use_reclient = false
+    - use_siso = true
     - is_debug = false
   out: Default
 env:

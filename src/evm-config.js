@@ -221,15 +221,18 @@ function sanitizeConfig(name, config, overwrite = false) {
 
   if (!config.remoteBuild) {
     if (config.reclient) {
-      config.remoteBuild = config.reclient === 'none' ? 'none' : 'reclient';
+      config.remoteBuild = config.reclient === 'none' ? 'none' : 'siso';
       changes.push(
-        `converted ${color.config('reclient')} setting ${color.config('remoteBuild')} property`,
+        `migrated unsupported ${color.config('reclient')} to ${color.config('remoteBuild')} (${config.remoteBuild})`,
       );
       delete config.reclient;
     } else {
       config.remoteBuild = 'none';
       changes.push(`added missing explicit ${color.config('remoteBuild')} property`);
     }
+  } else if (config.remoteBuild === 'reclient') {
+    config.remoteBuild = 'siso';
+    changes.push(`migrated ${color.config('remoteBuild')} from unsupported 'reclient' to 'siso'`);
   }
 
   if (config.remoteBuild !== 'none' && !hasRemoteExecGN) {

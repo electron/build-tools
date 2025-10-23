@@ -28,7 +28,12 @@ function createConfig(options) {
   const gn_args = [`import("//electron/build/args/${options.import}.gn")`];
 
   if (options.remoteBuild !== 'none') {
-    gn_args.push('use_remoteexec=true');
+    gn_args.push('use_remoteexec = true');
+  }
+
+  if (options.remoteBuild === 'siso') {
+    gn_args.push('use_reclient = false');
+    gn_args.push('use_siso = true');
   }
 
   if (options.asan) gn_args.push('is_asan=true');
@@ -138,10 +143,10 @@ program
   .addOption(
     new Option(
       '--remote-build <target>',
-      `Use Electron's RBE backend. The "reclient" and "siso" modes will fall back to cache-only depending on the auth provided`,
+      `Use Electron's RBE backend. The "siso" mode will fall back to cache-only depending on the auth provided`,
     )
-      .choices(['reclient', 'siso', 'none'])
-      .default('reclient'),
+      .choices(['siso', 'none'])
+      .default('siso'),
   )
   .option(
     '--use-https',
