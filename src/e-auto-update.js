@@ -12,6 +12,7 @@ const { color, fatal } = require('./utils/logging');
 const BUILD_TOOLS_INSTALLER_MIN_VERSION = '1.1.0';
 
 const markerFilePath = path.join(__dirname, '..', '.disable-auto-updates');
+const yarnPath = path.join(__dirname, '..', '.yarn', 'releases', 'yarn-4.10.3.cjs');
 
 program
   .description('Check for build-tools updates or enable/disable automatic updates')
@@ -122,8 +123,8 @@ function checkForUpdates() {
     if (headBefore === git(headCmd)) {
       console.log('build-tools is up-to-date');
     } else {
-      console.log(color.childExec('npx', ['yarn', '--prod'], execOpts));
-      cp.execSync('npx yarn --prod', execOpts);
+      console.log(color.childExec(process.execPath, [yarnPath, '--immutable'], execOpts));
+      cp.spawnSync(process.execPath, [yarnPath, '--immutable'], execOpts);
       console.log('build-tools updated to latest version!');
     }
   } catch (e) {
