@@ -8,6 +8,7 @@ const path = require('path');
 const os = require('os');
 const { Octokit } = require('@octokit/rest');
 
+const evmConfig = require('./evm-config');
 const { getGerritPatchDetailsFromURL } = require('./utils/gerrit');
 const { getGitHubAuthToken } = require('./utils/github-auth');
 const { fatal, color } = require('./utils/logging');
@@ -97,7 +98,7 @@ program
       const targetBranches = [targetBranch, ...additionalBranches];
 
       d(`Cloning electron/electron to ${tmp}`);
-      cp.execSync('git clone https://github.com/electron/electron', { cwd: tmp });
+      cp.execSync(`git clone ${evmConfig.current().remotes.electron.origin}`, { cwd: tmp });
 
       for (const target of targetBranches) {
         console.log(`${color.info} Cherry-picking ${shortCommit} into ${target}`);
