@@ -22,6 +22,9 @@ Please note that `build-tools` (due to nested dependencies) might not work prope
 npm i -g @electron/build-tools
 ```
 
+> [!NOTE]
+> The `@electron/build-tools` npm package is a thin wrapper for the actual `build-tools` scripts. Its code lives in the [electron/build-tools-installer](https://github.com/electron/build-tools-installer) repository.
+
 ## Getting the Code and Building Electron
 
 You can run a new Electron build with this command:
