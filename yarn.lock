@@ -1734,6 +1734,9 @@ __metadata:
     vscode-uri: "npm:^3.0.7"
     which: "npm:^2.0.2"
     yaml: "npm:^2.4.5"
+  dependenciesMeta:
+    sqlite3:
+      built: true
   languageName: unknown
   linkType: soft
 
