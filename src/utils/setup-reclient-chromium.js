@@ -20,9 +20,9 @@ const isReclientConfigured = () => {
 };
 
 function configureReclient() {
-  const { root, defaultTarget } = evmConfig.current();
+  const { root, remoteBuild } = evmConfig.current();
 
-  if (isReclientConfigured() || defaultTarget !== 'chrome') {
+  if (isReclientConfigured() || remoteBuild !== 'reclient') {
     return;
   }
 
