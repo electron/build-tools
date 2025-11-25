@@ -137,7 +137,7 @@ program
         d(`Committing changes`);
         const commitMsg = `chore: cherry-pick ${shortCommit} from ${patchDirName}`;
         cp.execSync(`git add ${patchPath}`, { cwd: electronPath });
-        cp.execSync(`git commit -m "${commitMsg}"`, {
+        cp.execSync(`git commit -S -m "${commitMsg}"`, {
           cwd: electronPath,
           stdio: 'ignore',
         });
