@@ -1716,6 +1716,7 @@ __metadata:
     chalk: "npm:^2.4.1"
     command-exists: "npm:^1.2.8"
     commander: "npm:^9.0.0"
+    debug: "npm:^4.3.1"
     extract-zip: "npm:^2.0.1"
     husky: "npm:^9.1.6"
     inquirer: "npm:^8.2.4"
