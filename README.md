@@ -18,6 +18,9 @@ Windows if you install them, or use built-in tools like Windows'
 Please note that `build-tools` (due to nested dependencies) might not work properly in powershell, please use `cmd` on Windows for optimum results.
 
 ```sh
+# Install yarn package globally:
+npm i -g yarn
+
 # Install build-tools package globally:
 npm i -g @electron/build-tools
 ```
