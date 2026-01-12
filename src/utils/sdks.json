@@ -1,0 +1,46 @@
+{
+  "26.1": {
+    "fileName": "MacOSX-26.1.sdk.zip",
+    "sha256": "e094959762d7e40ee6e63570098260ef3fd0f00af828b7ecc85961f2d15f7fc8"
+  },
+  "26.0": {
+    "fileName": "MacOSX-26.0.sdk.zip",
+    "sha256": "5a00d26cf7b6c743d822065d477b7e77728b8e107451ada20ba5e7f162c8a16b"
+  },
+  "15.5": {
+    "fileName": "MacOSX-15.5.sdk.zip",
+    "sha256": "778633418cc329d6c69e1f7b9999316fce1d330ec52afa684c29d5b7c769484b"
+  },
+  "15.4": {
+    "fileName": "MacOSX-15.4.sdk.zip",
+    "sha256": "7bb880365a1adb9f99f011f5bec32eefc2130d3df4d0460e090a65e1387af221"
+  },
+  "15.2": {
+    "fileName": "MacOSX-15.2.sdk.zip",
+    "sha256": "bae35c93206cc14304f7416e2412dfa3838fa908f2dac76114351e47c76a09c6"
+  },
+  "15.1": {
+    "fileName": "MacOSX-15.1.sdk.zip",
+    "sha256": "fa67911382aa7be63c7045286173120c4b7c687a3c209579d9d83b9822bbac59"
+  },
+  "15.0": {
+    "fileName": "MacOSX-15.0.sdk.zip",
+    "sha256": "03d6d8d9a06aebee886cf136168ccbdb8579b80f7193376a36075ddde06abd88"
+  },
+  "14.0": {
+    "fileName": "MacOSX-14.0.sdk.zip",
+    "sha256": "63c0e69c60c3e0f25b42726fc3a0f0f2902b5cac304d78456c33e13f9dd6d081"
+  },
+  "13.3": {
+    "fileName": "MacOSX-13.3.sdk.zip",
+    "sha256": "78b99db2e6f0fba2ffeef0d2dfb25e6b700483e3f18cdaf9a18a9a3f9ed10cfa"
+  },
+  "13.0": {
+    "fileName": "MacOSX-13.0.sdk.zip",
+    "sha256": "689ae09a4287d2711bd137e48a675635e0d66fdcfb3cf8a324c4b3f03c2cf883"
+  },
+  "12.3": {
+    "fileName": "MacOSX-12.3.sdk.zip",
+    "sha256": "4fb95f95d439f1d1eaf5c89e3e2b842ac746b96273908f8bf8d732a39597e78f"
+  }
+}
