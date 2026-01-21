@@ -103,7 +103,7 @@ program
         const changedFiles = spawnSync(
           config,
           'git',
-          ['diff', '--name-only'],
+          ['diff', '--name-only', '--diff-filter=d'],
           spawnOpts,
           'Failed to get list of changed files',
         );
@@ -150,7 +150,7 @@ program
         spawnSync(
           config,
           'git',
-          ['commit', '-m', os.platform() === 'win32' ? `"${commitMessage}"` : commitMessage],
+          ['commit', '-n', '-m', os.platform() === 'win32' ? `"${commitMessage}"` : commitMessage],
           spawnOpts,
           'Failed to commit patch changes',
         );
