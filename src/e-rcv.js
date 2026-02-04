@@ -21,7 +21,9 @@ const ELECTRON_REPO_DATA = {
   repo: 'electron',
 };
 const DEPS_REGEX = new RegExp(`chromium_version':\n +'(.+?)',`, 'm');
-const CL_REGEX = /https:\/\/chromium-review\.googlesource\.com\/c\/chromium\/src\/\+\/(\d+)/;
+const CHROMIUM_CL_REGEX =
+  /https:\/\/chromium-review\.googlesource\.com\/c\/chromium\/src\/\+\/(\d+)/;
+const V8_CL_REGEX = /https:\/\/chromium-review\.googlesource\.com\/c\/v8\/v8\/\+\/(\d+)/;
 
 async function getChromiumVersion(octokit, ref) {
   const { data } = await octokit.repos.getContent({
@@ -76,19 +78,19 @@ function gitCommit(config, commitMessage, opts, fatalMessage) {
   );
 }
 
-async function fetchChromiumCommit(commitSha) {
-  const { commits: chromiumCommits } = await fetch(
-    `https://chromiumdash.appspot.com/fetch_commits?commit=${commitSha}`,
-  ).then((resp) => resp.json());
-  if (chromiumCommits.length !== 1) {
-    fatal(`Expected to find exactly one commit for SHA "${commitSha}"`);
+async function fetchChromiumDashCommit(commitSha, repo) {
+  const resp = await fetch(
+    `https://chromiumdash.appspot.com/fetch_commit?commit=${commitSha}&repo=${repo}`,
+  );
+  if (!resp.ok) {
+    fatal(`Failed to fetch commit details for SHA "${commitSha}"`);
     return;
   }
 
-  // Grab the earliest Chromium version the CL was released in, and the merge time
-  const { earliest, time } = chromiumCommits[0];
+  // Grab the earliest Chromium version the CL was released in, relations, and the merge time
+  const { earliest, relations, time } = await resp.json();
 
-  return { earliest, time };
+  return { earliest, relations, time };
 }
 
 program
@@ -163,7 +165,10 @@ program
         }
       } else if (/^[0-9a-f]+$/.test(chromiumVersionOrCommitShaStr)) {
         // Assume it's a commit SHA, and verify it falls within the range
-        const { earliest } = await fetchChromiumCommit(chromiumVersionOrCommitShaStr);
+        const { earliest } = await fetchChromiumDashCommit(
+          chromiumVersionOrCommitShaStr,
+          'chromium',
+        );
 
         if (
           compareChromiumVersions(earliest, initialVersion) < 0 ||
@@ -305,37 +310,57 @@ program
     for (const commit of commits) {
       const shortSha = commit.sha.substring(0, 7);
       const message = commit.commit.message.split('\n')[0];
-      const clMatch = CL_REGEX.exec(commit.commit.message);
 
-      if (clMatch) {
-        const parsedUrl = new URL(clMatch[0]);
-        const { commitId: chromiumCommitSha } = await getGerritPatchDetailsFromURL(parsedUrl);
-        const { earliest, time } = await fetchChromiumCommit(chromiumCommitSha);
+      const chromiumCLMatch = CHROMIUM_CL_REGEX.exec(commit.commit.message);
+      const v8CLMatch = V8_CL_REGEX.exec(commit.commit.message);
 
-        let shouldCherryPick = false;
-
-        // Only cherry pick the commit if it is between the initial Chromium version and the user provided version/commit SHA
-        if (usingCommitSha && chromiumCommitLog.find((c) => c.commit === chromiumCommitSha)) {
-          shouldCherryPick = true;
-        } else if (
-          !usingCommitSha &&
-          compareChromiumVersions(earliest, chromiumVersionOrCommitShaStr) <= 0
-        ) {
-          shouldCherryPick = true;
-        }
-
-        if (shouldCherryPick) {
-          console.log(
-            `${color.success} Cherry-picking CL commit: ${chalk.yellow(shortSha)} ${message} (${chalk.greenBright(earliest)})`,
-          );
-          commitsToCherryPick.push({ sha: commit.sha, chromiumVersion: earliest, mergeTime: time });
-        } else {
-          console.info(
-            `${color.info} Skipping CL commit: ${chalk.yellow(shortSha)} ${message} (${chalk.greenBright(earliest)})`,
-          );
-        }
-      } else {
+      const clMatch = chromiumCLMatch || v8CLMatch;
+      if (!clMatch) {
         console.info(`${color.info} Skipping non-CL commit: ${chalk.yellow(shortSha)} ${message}`);
+        continue;
+      }
+
+      const isV8 = !!v8CLMatch;
+      const repo = isV8 ? 'v8' : 'chromium';
+      const label = isV8 ? chalk.cyan('V8') : chalk.magenta('Chromium');
+
+      const parsedUrl = new URL(clMatch[0]);
+
+      let clCommitSha, earliest, time;
+
+      try {
+        const { commitId } = await getGerritPatchDetailsFromURL(parsedUrl);
+        let relations;
+        ({ earliest, relations, time } = await fetchChromiumDashCommit(commitId, repo));
+        if (repo === 'chromium') {
+          clCommitSha = commitId;
+        } else {
+          const relation = relations.find((rel) => rel.from_commit === commitId);
+          if (!relation) {
+            console.info(`${color.err} Couldn't find Chromium commit for ${parsedUrl}`);
+            continue;
+          }
+          clCommitSha = relation.to_commit;
+        }
+      } catch {
+        console.info(`${color.err} Couldn't fetch commit details for ${parsedUrl}`);
+        continue;
+      }
+
+      // Only cherry pick the commit if it is between the initial Chromium version and the user provided version/commit SHA
+      const shouldCherryPick =
+        (usingCommitSha && chromiumCommitLog.find((c) => c.commit === clCommitSha)) ||
+        (!usingCommitSha && compareChromiumVersions(earliest, chromiumVersionOrCommitShaStr) <= 0);
+
+      if (shouldCherryPick) {
+        console.log(
+          `${color.success} Cherry-picking commit for ${label} CL: ${chalk.yellow(shortSha)} ${message} (${chalk.greenBright(earliest)})`,
+        );
+        commitsToCherryPick.push({ sha: commit.sha, chromiumVersion: earliest, mergeTime: time });
+      } else {
+        console.info(
+          `${color.info} Skipping commit for ${label} CL: ${chalk.yellow(shortSha)} ${message} (${chalk.greenBright(earliest)})`,
+        );
       }
     }
 
