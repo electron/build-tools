@@ -36,7 +36,7 @@
     "progress": "^2.0.3",
     "readline-sync": "^1.4.10",
     "semver": "^7.6.0",
-    "tar": "^6.2.1",
+    "tar": "^7.5.7",
     "vscode-uri": "^3.0.7",
     "which": "^2.0.2",
     "yaml": "^2.4.5"
