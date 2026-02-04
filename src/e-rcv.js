@@ -114,10 +114,6 @@ program
       ...ELECTRON_REPO_DATA,
       pull_number: prNumber,
     });
-    if (!pr.merge_commit_sha) {
-      fatal('No merge SHA available on PR');
-      return;
-    }
 
     const initialVersion = await getChromiumVersion(octokit, pr.base.sha);
     const newVersion = await getChromiumVersion(octokit, pr.head.sha);
@@ -227,6 +223,10 @@ program
     let targetSha = pr.base.sha;
 
     if (pr.merged) {
+      if (!pr.merge_commit_sha) {
+        fatal('No merge SHA available on PR');
+        return;
+      }
       const { data: mergeCommit } = await octokit.git.getCommit({
         ...ELECTRON_REPO_DATA,
         commit_sha: pr.merge_commit_sha,
