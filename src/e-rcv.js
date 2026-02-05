@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const { Octokit } = require('@octokit/rest');
-const chalk = require('chalk').default;
+const chalk = require('chalk');
 const program = require('commander');
 const fs = require('fs');
 const inquirer = require('inquirer');
