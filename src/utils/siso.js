@@ -34,7 +34,7 @@ function sisoFlags(config, hasExecute) {
     '-reapi_address',
     reclient.serviceAddress(config),
     '-load',
-    path.resolve(config.root, 'src/electron/build/siso/main.star'),
+    path.resolve(__dirname, '../../tools/main.star'),
   ];
 
   if (!hasExecute) {
@@ -47,19 +47,15 @@ function sisoFlags(config, hasExecute) {
 async function ensureBackendStarlark(config) {
   if (config.remoteBuild !== 'siso') return;
 
-  const backendConfig = path.resolve(config.root, 'src/electron/build/siso/backend.star');
-
-  if (!fs.existsSync(backendConfig)) {
+  const starlarkDir = path.resolve(config.root, 'src/build/config/siso/backend_config');
+  if (!fs.existsSync(starlarkDir)) {
     throw new Error(
-      `Missing SISO backend config at ${backendConfig}. Either disable siso in build-tools or ensure you are on a branch that supports it.`,
+      `Missing SISO backend config at ${starlarkDir}. Either disable siso in build-tools or ensure you are on a branch that supports it.`,
     );
   }
 
-  const starlarkPath = path.resolve(
-    config.root,
-    'src',
-    'build/config/siso/backend_config/backend.star',
-  );
+  const backendConfig = path.resolve(__dirname, '../../tools/backend.star');
+  const starlarkPath = path.resolve(starlarkDir, 'backend.star');
   let needsUpdate = true;
   if (fs.existsSync(starlarkPath)) {
     needsUpdate =
