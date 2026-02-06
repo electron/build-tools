@@ -6,17 +6,20 @@ on:
     - cron: '0 9 * * *'
   workflow_dispatch:
 
-permissions:
-  contents: read
-  issues: write
+permissions: {}
 
 jobs:
   check-sdk:
     name: Check for new macOS SDK
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     steps:
       - name: Checkout electron-build-tools
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # tag: v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238  # tag: v6.2.0
