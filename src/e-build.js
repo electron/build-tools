@@ -33,7 +33,7 @@ function getGNArgs(config) {
   return configArgs.join(os.EOL);
 }
 
-function runGNGen(config) {
+async function runGNGen(config) {
   depot.ensure();
   const gnBasename = os.platform() === 'win32' ? 'gn.bat' : 'gn';
   const gnPath = path.resolve(depot.path, gnBasename);
@@ -43,10 +43,10 @@ function runGNGen(config) {
   fs.writeFileSync(argsFile, gnArgs, { encoding: 'utf8' });
   const execArgs = ['gen', `out/${config.gen.out}`];
   const execOpts = { cwd: path.resolve(config.root, 'src') };
-  depot.spawnSync(config, gnPath, execArgs, execOpts);
+  await depot.spawn(config, gnPath, execArgs, execOpts);
 }
 
-function ensureGNGen(config) {
+async function ensureGNGen(config) {
   const buildfile = path.resolve(evmConfig.outDir(config), 'build.ninja');
   if (!fs.existsSync(buildfile)) return runGNGen(config);
   const argsFile = path.resolve(evmConfig.outDir(config), 'args.gn');
@@ -58,7 +58,7 @@ function ensureGNGen(config) {
   }
 }
 
-function runNinja(config, target, ninjaArgs) {
+async function runNinja(config, target, ninjaArgs) {
   if (reclient.usingRemote && config.remoteBuild !== 'none') {
     const hasExecute = reclient.auth(config);
 
@@ -79,7 +79,7 @@ function runNinja(config, target, ninjaArgs) {
   }
 
   depot.ensure(config);
-  ensureGNGen(config);
+  await ensureGNGen(config);
 
   // Using remoteexec means that we need autoninja so that reproxy is started + stopped
   // correctly
@@ -93,7 +93,7 @@ function runNinja(config, target, ninjaArgs) {
   if (!reclient.usingRemote && config.reclient !== 'none') {
     opts.env = { RBE_remote_disabled: true };
   }
-  const result = depot.spawnSync(config, exec, args, opts);
+  const result = await depot.spawn(config, exec, args, opts);
   return result.status ?? 1;
 }
 
@@ -127,12 +127,12 @@ program
       }
 
       if (options.onlyGen) {
-        runGNGen(config);
+        await runGNGen(config);
         return;
       }
 
       const buildTarget = options.target || evmConfig.getDefaultTarget();
-      const exitCode = runNinja(config, buildTarget, ninjaArgs);
+      const exitCode = await runNinja(config, buildTarget, ninjaArgs);
       process.exit(exitCode);
     } catch (e) {
       fatal(e);

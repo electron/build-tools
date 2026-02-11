@@ -135,6 +135,62 @@ function depotSpawnSync(config, cmd, args, opts_in, fatalMessage) {
   return result;
 }
 
+function depotSpawn(config, cmd, args, opts_in, fatalMessage) {
+  return new Promise((resolve, reject) => {
+    const opts = depotOpts(config, opts_in);
+    if (os.platform() === 'win32' && ['python', 'python3'].includes(cmd)) {
+      cmd = `${cmd}.bat`;
+    }
+    if (!process.env.ELECTRON_DEPOT_TOOLS_DISABLE_LOG) {
+      if (opts_in.msg) {
+        console.log(opts_in.msg);
+      } else {
+        console.log(color.childExec(cmd, args, opts));
+      }
+    }
+
+    const child = childProcess.spawn(cmd, args, opts);
+    let stdout = '';
+    let stderr = '';
+
+    // Collect stdout and stderr if not inheriting stdio
+    if (opts.stdio !== 'inherit') {
+      if (child.stdout) {
+        child.stdout.on('data', (data) => {
+          stdout += data;
+        });
+      }
+      if (child.stderr) {
+        child.stderr.on('data', (data) => {
+          stderr += data;
+        });
+      }
+    }
+
+    child.on('error', (error) => {
+      reject(error);
+    });
+
+    child.on('close', (code, signal) => {
+      const result = {
+        status: code,
+        signal,
+        stdout: opts.stdio === 'inherit' ? null : stdout,
+        stderr: opts.stdio === 'inherit' ? null : stderr,
+        pid: child.pid,
+        output: opts.stdio === 'inherit' ? null : [null, stdout, stderr],
+      };
+
+      if (fatalMessage !== undefined && result.status !== 0) {
+        fatal(fatalMessage);
+        return;
+      }
+
+      resolve(result);
+    });
+  });
+}
+
 function depotExecFileSync(config, exec, args, opts_in) {
   const opts = depotOpts(config, opts_in);
   if (['python', 'python3'].includes(exec) && !opts.cwd && !path.isAbsolute(args[0])) {
@@ -169,5 +225,6 @@ module.exports = {
   ensure: ensureDepotTools,
   execFileSync: depotExecFileSync,
   spawnSync: depotSpawnSync,
+  spawn: depotSpawn,
   setAutoUpdate,
 };
