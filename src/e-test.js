@@ -7,6 +7,7 @@ const program = require('commander');
 const evmConfig = require('./evm-config');
 const { ensureNodeHeaders } = require('./utils/headers');
 const { color, fatal } = require('./utils/logging');
+const { ensureTestPrereqs } = require('./utils/prereqs');
 
 function runSpecRunner(config, script, runnerArgs) {
   const exec = process.execPath;
@@ -52,6 +53,9 @@ program
   )
   .action((specRunnerArgs, options) => {
     try {
+      // Check for required Python modules on Linux before running tests
+      ensureTestPrereqs();
+
       const config = evmConfig.current();
       if (options.node && options.nan) {
         fatal(
