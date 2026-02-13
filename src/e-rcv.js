@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
+const inquirer = require('@inquirer/prompts');
 const { Octokit } = require('@octokit/rest');
 const chalk = require('chalk');
 const program = require('commander');
 const fs = require('fs');
-const inquirer = require('inquirer');
 const path = require('path');
 const os = require('os');
 
@@ -188,19 +188,19 @@ program
         return;
       }
     } else {
+      const choices = chromiumVersions
+        .filter(
+          (version) =>
+            compareChromiumVersions(version, initialVersion) > 0 &&
+            compareChromiumVersions(version, newVersion) < 0,
+        )
+        .map((version) => ({ value: version }));
+
       // User did not provide a Chromium version, so let them choose
-      const { version } = await inquirer.prompt([
-        {
-          type: 'list',
-          name: 'version',
-          message: 'Which Chromium version do you want to reconstruct?',
-          choices: chromiumVersions.filter(
-            (version) =>
-              compareChromiumVersions(version, initialVersion) > 0 &&
-              compareChromiumVersions(version, newVersion) < 0,
-          ),
-        },
-      ]);
+      const version = await inquirer.select({
+        message: 'Which Chromium version do you want to reconstruct?',
+        choices: [...choices, new inquirer.Separator()],
+      });
       chromiumVersionOrCommitShaStr = version;
     }
 
