@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
+const inquirer = require('@inquirer/prompts');
 const { Octokit } = require('@octokit/rest');
 const chalk = require('chalk');
 const program = require('commander');
-const inquirer = require('inquirer');
 const path = require('path');
 
 const evmConfig = require('./evm-config');
@@ -43,14 +43,10 @@ program
       return;
     }
 
-    const { branch: targetBranch } = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'branch',
-        message: 'Which branch do you want to backport this PR to?',
-        choices: targetBranches,
-      },
-    ]);
+    const targetBranch = await inquirer.select({
+      message: 'Which branch do you want to backport this PR to?',
+      choices: targetBranches.map((branch) => ({ value: branch })),
+    });
 
     const config = evmConfig.current();
     const gitOpts = {

@@ -12,8 +12,8 @@ const querystring = require('querystring');
 const semver = require('semver');
 const open = require('open');
 const program = require('commander');
+const inquirer = require('@inquirer/prompts');
 const { Octokit } = require('@octokit/rest');
-const inquirer = require('inquirer');
 
 const { progressStream } = require('./utils/download');
 const { getGitHubAuthToken } = require('./utils/github-auth');
@@ -245,19 +245,15 @@ program
 
     if (!options.skipConfirmation) {
       const isElectronRepo = pullRequest.head.repo.full_name !== 'electron/electron';
-      const { proceed } = await inquirer.prompt([
-        {
-          type: 'confirm',
-          default: false,
-          name: 'proceed',
-          message: `You are about to download artifacts from:
+      const proceed = await inquirer.confirm({
+        default: false,
+        message: `You are about to download artifacts from:
 
 “${pullRequest.title} (#${pullRequest.number})” by ${pullRequest.user.login}
 ${pullRequest.head.repo.html_url}${isElectronRepo ? ' (fork)' : ''}
 ${pullRequest.state !== 'open' ? '\n❗❗❗ The pull request is closed, only proceed if you trust the source ❗❗❗\n' : ''}
 Proceed?`,
-        },
-      ]);
+      });
 
       if (!proceed) return;
     }
