@@ -56,7 +56,7 @@ function runGClientSync(syncArgs, syncOpts) {
     ensureSDK();
   }
 
-  if (config.defaultTarget === 'chrome') {
+  if (config.remoteBuild === 'reclient') {
     configureReclient();
   }
 
