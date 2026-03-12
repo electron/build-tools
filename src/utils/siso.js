@@ -44,6 +44,12 @@ function sisoFlags(config, hasExecute) {
   return flags;
 }
 
+function sisoOfflineFlags(config) {
+  if (config.remoteBuild !== 'siso') return [];
+
+  return ['--offline', '-load', path.resolve(__dirname, '../../tools/main.star')];
+}
+
 async function ensureBackendStarlark(config) {
   if (config.remoteBuild !== 'siso') return;
 
@@ -72,5 +78,6 @@ async function ensureBackendStarlark(config) {
 module.exports = {
   env: sisoEnv,
   flags: sisoFlags,
+  offlineFlags: sisoOfflineFlags,
   ensureBackendStarlark,
 };

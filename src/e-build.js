@@ -76,6 +76,10 @@ async function runNinja(config, target, ninjaArgs) {
     }
   } else {
     console.info(`${color.info} Building ${target} with remote execution disabled`);
+
+    if (config.remoteBuild === 'siso') {
+      ninjaArgs.push(...siso.offlineFlags(config));
+    }
   }
 
   depot.ensure(config);
@@ -90,7 +94,7 @@ async function runNinja(config, target, ninjaArgs) {
   const opts = {
     cwd: evmConfig.outDir(config),
   };
-  if (!reclient.usingRemote && config.reclient !== 'none') {
+  if (!reclient.usingRemote && config.reclient !== 'none' && config.remoteBuild !== 'siso') {
     opts.env = { RBE_remote_disabled: true };
   }
   const result = await depot.spawn(config, exec, args, opts);
