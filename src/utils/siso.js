@@ -34,7 +34,7 @@ function sisoFlags(config, hasExecute) {
     '-reapi_address',
     reclient.serviceAddress(config),
     '-load',
-    path.resolve(__dirname, '../../tools/main.star'),
+    process.env.ELECTRON_BUILD_TOOLS_MAIN_STAR || path.resolve(__dirname, '../../tools/main.star'),
   ];
 
   if (!hasExecute) {
@@ -54,7 +54,9 @@ async function ensureBackendStarlark(config) {
     );
   }
 
-  const backendConfig = path.resolve(__dirname, '../../tools/backend.star');
+  const backendConfig =
+    process.env.ELECTRON_BUILD_TOOLS_BACKEND_STAR ||
+    path.resolve(__dirname, '../../tools/backend.star');
   const starlarkPath = path.resolve(starlarkDir, 'backend.star');
   let needsUpdate = true;
   if (fs.existsSync(starlarkPath)) {
