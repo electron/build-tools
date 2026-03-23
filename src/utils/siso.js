@@ -21,6 +21,13 @@ const sisoEnv = (config) => {
   return sisoEnv;
 };
 
+function getStarFile(envVar, filename) {
+  if (process.env[envVar] && fs.existsSync(process.env[envVar])) {
+    return process.env[envVar];
+  }
+  return path.resolve(__dirname, '../../tools', filename);
+}
+
 function sisoFlags(config, hasExecute) {
   if (config.remoteBuild !== 'siso') return [];
 
@@ -34,7 +41,7 @@ function sisoFlags(config, hasExecute) {
     '-reapi_address',
     reclient.serviceAddress(config),
     '-load',
-    process.env.ELECTRON_BUILD_TOOLS_MAIN_STAR || path.resolve(__dirname, '../../tools/main.star'),
+    getStarFile('ELECTRON_BUILD_TOOLS_MAIN_STAR', 'main.star'),
   ];
 
   if (!hasExecute) {
@@ -54,9 +61,7 @@ async function ensureBackendStarlark(config) {
     );
   }
 
-  const backendConfig =
-    process.env.ELECTRON_BUILD_TOOLS_BACKEND_STAR ||
-    path.resolve(__dirname, '../../tools/backend.star');
+  const backendConfig = getStarFile('ELECTRON_BUILD_TOOLS_BACKEND_STAR', 'backend.star');
   const starlarkPath = path.resolve(starlarkDir, 'backend.star');
   let needsUpdate = true;
   if (fs.existsSync(starlarkPath)) {
