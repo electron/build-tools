@@ -100,15 +100,19 @@ program
           encoding: 'utf8',
         };
 
-        const changedFiles = spawnSync(
+        const changedFilesOutput = spawnSync(
           config,
           'git',
           ['diff', '--name-only', '--diff-filter=d'],
           spawnOpts,
           'Failed to get list of changed files',
-        );
+        ).stdout.trim();
 
-        for (const filename of changedFiles.stdout.trim().split('\n')) {
+        if (changedFilesOutput.length === 0) {
+          return;
+        }
+
+        for (const filename of changedFilesOutput.split('\n')) {
           if (!filename.startsWith('patches/')) {
             console.error(`${color.err} Unexpectedly found non-patch file change: ${filename}`);
             return;
