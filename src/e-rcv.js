@@ -21,9 +21,14 @@ const ELECTRON_REPO_DATA = {
   repo: 'electron',
 };
 const DEPS_REGEX = new RegExp(`chromium_version':\n +'(.+?)',`, 'm');
-const CHROMIUM_CL_REGEX =
-  /https:\/\/chromium-review\.googlesource\.com\/c\/chromium\/src\/\+\/(\d+)/;
-const V8_CL_REGEX = /https:\/\/chromium-review\.googlesource\.com\/c\/v8\/v8\/\+\/(\d+)/;
+const CL_REGEX =
+  /https:\/\/chromium-review\.googlesource\.com\/c\/(chromium\/src|devtools\/devtools-frontend|v8\/v8)\/\+\/(\d+)(#\S+)?/;
+
+const REPO_LABELS = {
+  chromium: chalk.magenta('Chromium'),
+  devtools: chalk.blue('DevTools'),
+  v8: chalk.cyan('V8'),
+};
 
 async function getChromiumVersion(octokit, ref) {
   const { data } = await octokit.repos.getContent({
@@ -311,18 +316,15 @@ program
       const shortSha = commit.sha.substring(0, 7);
       const message = commit.commit.message.split('\n')[0];
 
-      const chromiumCLMatch = CHROMIUM_CL_REGEX.exec(commit.commit.message);
-      const v8CLMatch = V8_CL_REGEX.exec(commit.commit.message);
+      const clMatch = CL_REGEX.exec(commit.commit.message);
 
-      const clMatch = chromiumCLMatch || v8CLMatch;
       if (!clMatch) {
         console.info(`${color.info} Skipping non-CL commit: ${chalk.yellow(shortSha)} ${message}`);
         continue;
       }
 
-      const isV8 = !!v8CLMatch;
-      const repo = isV8 ? 'v8' : 'chromium';
-      const label = isV8 ? chalk.cyan('V8') : chalk.magenta('Chromium');
+      const repo = clMatch[1].split('/')[0];
+      const label = REPO_LABELS[repo];
 
       const parsedUrl = new URL(clMatch[0]);
 
