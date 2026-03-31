@@ -59,7 +59,7 @@ function checkForUpdates() {
 
     try {
       globalNodeModulesPaths.push(
-        path.join(cp.execSync('npx yarn global dir').toString('utf8').trim(), 'node_modules'),
+        path.join(cp.execSync('yarn global dir').toString('utf8').trim(), 'node_modules'),
       );
     } catch {}
 
