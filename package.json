@@ -2,16 +2,19 @@
   "name": "build-tools",
   "version": "0.2.0",
   "engines": {
-    "node": ">= 18.0.0"
+    "node": ">= 22.12.0"
   },
   "main": "null",
   "private": true,
   "scripts": {
+    "build": "tsc && npm run build:copy",
+    "build:copy": "node scripts/copy-assets.js",
+    "build:schema": "node dist/gen-schema.js",
     "lint:markdown": "electron-markdownlint \"**/*.md\"",
-    "lint:js": "prettier --check \"src/**/*.js\" \"tests/*.js\" \"src/e\"",
-    "lint": "npm run lint:js && npm run lint:markdown",
-    "prettier:write": "prettier --write \"src/**/*.js\" \"tests/*.js\" \"src/e\"",
-    "prepare": "husky",
+    "lint:ts": "prettier --check \"src/**/*.ts\" \"tests/*.js\" \"tests/*.mjs\"",
+    "lint": "npm run lint:ts && npm run lint:markdown",
+    "prettier:write": "prettier --write \"src/**/*.ts\" \"tests/*.js\" \"tests/*.mjs\"",
+    "prepare": "husky && npm run build",
     "test": "nyc --reporter=lcov --reporter=text-summary vitest run --reporter=verbose --exclude tests/bootstrap.spec.mjs",
     "test:all": "nyc --reporter=lcov --reporter=text-summary vitest run --reporter=verbose"
   },
@@ -19,41 +22,36 @@
   "author": "Electron Authors",
   "license": "MIT",
   "dependencies": {
+    "@inquirer/prompts": "^8.2.0",
     "@marshallofsound/chrome-cookies-secure": "^2.1.1",
     "@octokit/auth-oauth-device": "^3.1.1",
     "@octokit/rest": "^18.5.2",
-    "ajv": "^8.18.0",
-    "ajv-formats": "^2.1.1",
-    "chalk": "^4.1.2",
-    "command-exists": "^1.2.8",
     "commander": "^9.0.0",
-    "debug": "^4.3.1",
+    "debug": "^4.4.3",
     "extract-zip": "^2.0.1",
-    "node-gyp": "^10.0.1",
     "open": "^6.4.0",
-    "path-key": "^3.1.0",
     "progress": "^2.0.3",
     "readline-sync": "^1.4.10",
     "semver": "^7.6.0",
-    "tar": "^7.5.11",
-    "vscode-uri": "^3.0.7",
-    "which": "^2.0.2",
-    "yaml": "^2.4.5"
+    "yaml": "^2.4.5",
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@electron/lint-roller": "^1.13.0",
-    "@inquirer/prompts": "^8.2.0",
+    "@types/debug": "^4.1.13",
+    "@types/node": "^22.0.0",
+    "@types/progress": "^2.0.7",
+    "@types/readline-sync": "^1.4.8",
+    "@types/semver": "^7.5.0",
     "husky": "^9.1.6",
     "lint-staged": "^16.4.0",
     "nyc": "^17.1.0",
     "prettier": "^3.3.3",
+    "typescript": "^6.0.0",
     "vitest": "~3.0.6"
   },
   "lint-staged": {
-    "*.js": [
-      "prettier --write"
-    ],
-    "e": [
+    "*.ts": [
       "prettier --write"
     ]
   },

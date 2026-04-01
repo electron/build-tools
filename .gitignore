@@ -11,3 +11,5 @@ third_party
 generated.env.sh
 !.yarnrc.yml
 .yarn/install-state.gz
+dist/
+*.tsbuildinfo
