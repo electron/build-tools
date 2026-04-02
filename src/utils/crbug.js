@@ -91,4 +91,5 @@ async function getCveForBugNr(bugNr) {
 
 module.exports = {
   getCveForBugNr,
+  getPayload,
 };

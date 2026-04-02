@@ -16,8 +16,8 @@ const XcodeBaseURL = 'https://dev-cdn-experimental.electronjs.org/xcode/';
 
 const SDKs = require('./sdks.json');
 
-const fallbackSDK = () => {
-  const semverFallback = Object.keys(SDKs)
+const fallbackSDK = (knownSDKs = SDKs) => {
+  const semverFallback = Object.keys(knownSDKs)
     .map((v) => semver.valid(semver.coerce(v)))
     .sort(semver.rcompare)[0];
   return semverFallback.substring(0, semverFallback.length - 2);
@@ -276,4 +276,5 @@ module.exports = {
   ensureSDK,
   ensureSDKAndSymlink,
   extractSDKVersion,
+  fallbackSDK,
 };

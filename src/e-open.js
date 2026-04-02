@@ -108,5 +108,12 @@ program
   .option('--print', 'Print the URL instead of opening it', false)
   .action((name, options) => {
     doOpen({ object: name, print: options.print });
-  })
-  .parse(process.argv);
+  });
+
+if (require.main === module) {
+  program.parse(process.argv);
+}
+
+module.exports = {
+  getPullNumberFromSubject,
+};

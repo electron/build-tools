@@ -19,6 +19,12 @@ function runGhCliCommand(args) {
   return stdout;
 }
 
+function parseTokenScopes(authStatus) {
+  const regexMatch = authStatus.match(/^.*Token scopes: (.*)$/m);
+  if (!regexMatch) return null;
+  return regexMatch[1].split(',').map((item) => item.trim().replace(/^'(.*)'$/, '$1'));
+}
+
 async function getGitHubAuthToken(scopes = []) {
   if (process.env.ELECTRON_BUILD_TOOLS_GH_AUTH) {
     return process.env.ELECTRON_BUILD_TOOLS_GH_AUTH;
@@ -26,15 +32,9 @@ async function getGitHubAuthToken(scopes = []) {
 
   try {
     const authStatus = runGhCliCommand(['auth', 'status']);
+    const tokenScopes = parseTokenScopes(authStatus);
 
-    // Check that the scopes on the token include the requested scopes
-    const regexMatch = authStatus.match(/^.*Token scopes: (.*)$/m);
-
-    if (regexMatch) {
-      const tokenScopes = regexMatch[1]
-        .split(',')
-        .map((item) => item.trim().replace(/^'(.*)'$/, '$1'));
-
+    if (tokenScopes) {
       if (scopes.every((scope) => tokenScopes.includes(scope))) {
         return runGhCliCommand(['auth', 'token']).trim();
       } else {
@@ -75,4 +75,5 @@ async function createGitHubAuthToken(scopes = []) {
 module.exports = {
   createGitHubAuthToken,
   getGitHubAuthToken,
+  parseTokenScopes,
 };
