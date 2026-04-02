@@ -1,8 +1,6 @@
 const childProcess = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const tar = require('tar');
-
 const { color, fatal } = require('./logging');
 const { deleteDir } = require('./paths');
 
@@ -80,11 +78,13 @@ function downloadAndPrepareRBECredentialHelper(config) {
 
   fs.mkdirSync(reclientDir);
 
-  tar.x({
-    file: tmpDownload,
-    C: reclientDir,
-    sync: true,
+  const extract = childProcess.spawnSync('tar', ['-xzf', tmpDownload, '-C', reclientDir], {
+    stdio: 'inherit',
   });
+  if (extract.status !== 0) {
+    deleteDir(tmpDownload);
+    fatal('Failure while extracting reclient archive');
+  }
 
   if (process.platform === 'win32') {
     fs.renameSync(rbeHelperPath.replace(/\.exe$/, ''), rbeHelperPath);

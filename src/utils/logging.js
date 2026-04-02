@@ -1,10 +1,10 @@
-const chalk = require('chalk');
+const { styleText } = require('node:util');
 
 const color = {
-  cmd: (str) => `"${chalk.cyan(str)}"`,
-  config: (str) => `${chalk.blueBright(str)}`,
-  git: (str) => `${chalk.greenBright(str)}`,
-  path: (str) => `${chalk.magentaBright(str)}`,
+  cmd: (str) => `"${styleText('cyan', str)}"`,
+  config: (str) => `${styleText('blueBright', str)}`,
+  git: (str) => `${styleText('greenBright', str)}`,
+  path: (str) => `${styleText('magentaBright', str)}`,
   childExec: (cmd, args, opts) => {
     args = args || [];
     const cmdstr = [cmd, ...args].join(' ');
@@ -14,10 +14,10 @@ const color = {
     }
     return parts.join(' ');
   },
-  success: chalk.bgGreenBright.black('SUCCESS'),
-  err: chalk.bgRedBright.white('ERROR'),
-  info: chalk.bgBlueBright.white('INFO'),
-  warn: chalk.bgYellowBright.black('WARN'),
+  success: styleText(['bgGreenBright', 'black'], 'SUCCESS'),
+  err: styleText(['bgRedBright', 'white'], 'ERROR'),
+  info: styleText(['bgBlueBright', 'white'], 'INFO'),
+  warn: styleText(['bgYellowBright', 'black'], 'WARN'),
 };
 
 function logError(e) {

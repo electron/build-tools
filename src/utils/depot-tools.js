@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const childProcess = require('child_process');
-const pathKey = require('path-key');
+const { pathKey } = require('./path-key');
 
 const { color, fatal } = require('./logging');
 

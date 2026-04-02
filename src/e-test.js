@@ -17,14 +17,6 @@ function runSpecRunner(config, script, runnerArgs) {
     cwd: path.resolve(config.root, 'src', 'electron'),
     env: {
       ELECTRON_OUT_DIR: config.gen.out,
-      npm_config_node_gyp: path.resolve(
-        __dirname,
-        '..',
-        'node_modules',
-        'node-gyp',
-        'bin',
-        'node-gyp.js',
-      ),
       ...process.env,
       ...config.env,
     },

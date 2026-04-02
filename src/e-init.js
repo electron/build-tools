@@ -5,7 +5,7 @@ const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const { program, Option } = require('commander');
-const { URI } = require('vscode-uri');
+const { pathToFileURL } = require('node:url');
 
 const evmConfig = require('./evm-config');
 const { color, fatal } = require('./utils/logging');
@@ -62,7 +62,7 @@ function createConfig(options) {
   };
 
   return {
-    $schema: URI.file(path.resolve(__dirname, '..', 'evm-config.schema.json')).toString(),
+    $schema: pathToFileURL(path.resolve(__dirname, '..', 'evm-config.schema.json')).href,
     remoteBuild: options.remoteBuild,
     root,
     remotes: {
