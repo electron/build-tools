@@ -77,7 +77,7 @@ async function getPullURLs(ref: string): Promise<string[]> {
     return getPullURLsFromGitHub(sha1);
   }
 
-  const parsed = Number.parseInt(ref);
+  const parsed = Number.parseInt(ref, 10);
   if (Number.isSafeInteger(parsed)) {
     return [makeURL(parsed)];
   }

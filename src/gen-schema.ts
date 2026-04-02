@@ -20,7 +20,7 @@ const jsonSchema = z.toJSONSchema(evmConfigSchema, {
       ctx.jsonSchema['oneOf'] = [
         { required: ['extends'] },
         {
-          properties: { defaultTarget: { type: 'string', pattern: 'chrome' } },
+          properties: { defaultTarget: { type: 'string', pattern: '^chrome$' } },
           required: ['defaultTarget', 'env', 'root'],
         },
         { required: ['root', 'remotes', 'gen', 'env'] },

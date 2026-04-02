@@ -133,11 +133,17 @@ function checkForUpdates(): void {
       console.log('build-tools is up-to-date');
     } else {
       console.log(color.childExec(process.execPath, [yarnPath, '--immutable'], execOpts));
-      cp.spawnSync(process.execPath, [yarnPath, '--immutable'], execOpts);
+      const installResult = cp.spawnSync(process.execPath, [yarnPath, '--immutable'], execOpts);
+      if (installResult.status !== 0) {
+        fatal(`yarn install failed with exit code ${installResult.status}`);
+      }
       // Yarn Berry does not run `prepare` on install, so dist/ will not
       // recompile on its own after a pull. Run the build explicitly.
       console.log(color.childExec(process.execPath, [yarnPath, 'build'], execOpts));
-      cp.spawnSync(process.execPath, [yarnPath, 'build'], execOpts);
+      const buildResult = cp.spawnSync(process.execPath, [yarnPath, 'build'], execOpts);
+      if (buildResult.status !== 0) {
+        fatal(`yarn build failed with exit code ${buildResult.status}`);
+      }
       console.log('build-tools updated to latest version!');
     }
   } catch (e) {

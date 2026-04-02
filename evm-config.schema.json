@@ -166,7 +166,7 @@
       "properties": {
         "defaultTarget": {
           "type": "string",
-          "pattern": "chrome"
+          "pattern": "^chrome$"
         }
       },
       "required": [

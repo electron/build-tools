@@ -277,7 +277,11 @@ Proceed?`,
         event: 'pull_request',
         status: 'completed',
         per_page: 10,
-      });
+        // GitHub supports filtering by workflow name here but @octokit/openapi-types
+        // doesn't declare it. Without this filter, a PR with many concurrent
+        // workflows can push the Build run out of the first page of results.
+        name: 'Build',
+      } as Parameters<typeof octokit.actions.listWorkflowRunsForRepo>[0] & { name: string });
       workflowRuns = data.workflow_runs;
     } catch (error) {
       console.error(`Failed to list workflow runs: ${String(error)}`);
