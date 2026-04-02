@@ -1266,6 +1266,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tsconfig/node22@npm:^22.0.5":
+  version: 22.0.5
+  resolution: "@tsconfig/node22@npm:22.0.5"
+  checksum: 10c0/c64b1d51e1556da9212463799f5096289d2cc8561eaed10cd0a0a36c25790b4c6bed30c0f846afccf8da75b5750326fa281216a908c2b67ead7b55adaf3eda22
+  languageName: node
+  linkType: hard
+
 "@types/color-name@npm:^1.1.1":
   version: 1.1.1
   resolution: "@types/color-name@npm:1.1.1"
@@ -1918,6 +1925,7 @@ __metadata:
     "@marshallofsound/chrome-cookies-secure": "npm:^2.1.1"
     "@octokit/auth-oauth-device": "npm:^3.1.1"
     "@octokit/rest": "npm:^18.5.2"
+    "@tsconfig/node22": "npm:^22.0.5"
     "@types/debug": "npm:^4.1.13"
     "@types/node": "npm:^22.0.0"
     "@types/progress": "npm:^2.0.7"
