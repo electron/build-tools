@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolvePath } from '../src/utils/paths.js';
-import { pathKey } from '../src/utils/path-key.js';
-import { which, commandExists } from '../src/utils/which.js';
-import { getPayload } from '../src/utils/crbug.js';
-import { parseTokenScopes } from '../src/utils/github-auth.js';
-import { fallbackSDK } from '../src/utils/sdk.js';
-import { filenameToConfigName, mergeConfigs } from '../src/evm-config.js';
+import { resolvePath } from '../dist/utils/paths.js';
+import { pathKey } from '../dist/utils/path-key.js';
+import { which, commandExists } from '../dist/utils/which.js';
+import { getPayload } from '../dist/utils/crbug.js';
+import { parseTokenScopes } from '../dist/utils/github-auth.js';
+import { fallbackSDK } from '../dist/utils/sdk.js';
+import { filenameToConfigName, mergeConfigs } from '../dist/evm-config.js';
 
 import os from 'node:os';
 import path from 'node:path';

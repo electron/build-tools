@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { getPullNumberFromSubject } from '../src/e-open.js';
-import { findNoteInPRBody } from '../src/e-pr.js';
-import { compareChromiumVersions } from '../src/e-rcv.js';
+import { getPullNumberFromSubject } from '../dist/e-open.js';
+import { findNoteInPRBody } from '../dist/e-pr.js';
+import { compareChromiumVersions } from '../dist/e-rcv.js';
 
 describe('e-open.getPullNumberFromSubject', () => {
   it('extracts a trailing PR number', () => {
