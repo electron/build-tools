@@ -3,7 +3,7 @@ import path from 'path';
 
 import YAML from 'yaml';
 
-const { sanitizeConfig, validateConfig, fetchByName } = require('../dist/evm-config');
+const { sanitizeConfig, validateConfig, fetchByName } = require('../dist/evm-config.js');
 
 import { beforeAll, afterAll, describe, expect, it, vi } from 'vitest';
 
@@ -79,9 +79,6 @@ describe('example configs', () => {
 describe('invalid configs', () => {
   it('should not validate', () => {
     const validationErrors = validateConfig(invalidConfig);
-    expect(validationErrors).toBeTruthy();
-    // zod reports errors with path arrays rather than ajv's instancePath strings,
-    // so we just assert the remotes object is the subject of at least one error.
     expect(validationErrors).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -95,7 +92,7 @@ describe('invalid configs', () => {
 describe('configValidationLevel', () => {
   it('should default to strict', () => {
     const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const config = sanitizeConfig('foobar', { ...validConfig });
+    const config = sanitizeConfig('foobar', validConfig);
     expect(config.configValidationLevel).toEqual('strict');
     expect(spy).not.toHaveBeenCalled();
     spy.mockClear();

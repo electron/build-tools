@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { validateConfig } from '../dist/evm-config';
+import { validateConfig } from '../dist/evm-config.js';
 
 import createSandbox from './sandbox';
 
@@ -17,26 +17,26 @@ describe('e-init', () => {
   });
 
   describe('--root', () => {
-    it(
-      'creates a new directory with a .gclient file',
-      () => {
-        const root = path.resolve(sandbox.tmpdir, 'main');
-        const gclient_file = path.resolve(root, '.gclient');
+    it('creates a new directory with a .gclient file', () => {
+      const root = path.resolve(sandbox.tmpdir, 'main');
+      const gclient_file = path.resolve(root, '.gclient');
 
-        // confirm these files don't exist when the test starts
-        expect(!fs.existsSync(root)).toStrictEqual(true);
-        expect(!fs.existsSync(gclient_file)).toStrictEqual(true);
+      // confirm these files don't exist when the test starts
+      expect(!fs.existsSync(root)).toStrictEqual(true);
+      expect(!fs.existsSync(gclient_file)).toStrictEqual(true);
 
-        // run `e init` with a user-specified root
-        const result = sandbox.eInitRunner().root(root).name('name').run();
+      // run `e init` with a user-specified root
+      const result = sandbox
+        .eInitRunner()
+        .root(root)
+        .name('name')
+        .run();
 
-        // confirm that it worked
-        expect(result.exitCode).toStrictEqual(0);
-        expect(fs.statSync(root).isDirectory()).toStrictEqual(true);
-        expect(fs.statSync(gclient_file).isFile()).toStrictEqual(true);
-      },
-      { timeout: 600_000 },
-    );
+      // confirm that it worked
+      expect(result.exitCode).toStrictEqual(0);
+      expect(fs.statSync(root).isDirectory()).toStrictEqual(true);
+      expect(fs.statSync(gclient_file).isFile()).toStrictEqual(true);
+    }, { timeout: 600_000 });
 
     it('creates a config correctly reflecting options passed', () => {
       const root = path.resolve(sandbox.tmpdir, 'main');
@@ -82,8 +82,16 @@ describe('e-init', () => {
 
       // run `e init` twice on the same directory with two names
       let result;
-      result = sandbox.eInitRunner().root(root).name('name1').run();
-      result = sandbox.eInitRunner().root(root).name('name2').run();
+      result = sandbox
+        .eInitRunner()
+        .root(root)
+        .name('name1')
+        .run();
+      result = sandbox
+        .eInitRunner()
+        .root(root)
+        .name('name2')
+        .run();
 
       expect(result.exitCode).toStrictEqual(0);
       expect(result.stdout).toMatch('INFO');
@@ -98,7 +106,11 @@ describe('e-init', () => {
       fs.writeFileSync(path.resolve(existingDir, 'world.txt'), 'hello-exists-and-is-not-empty');
 
       // run `e init` with a nonempty root directory
-      const result = sandbox.eInitRunner().root(existingDir).name('name').run();
+      const result = sandbox
+        .eInitRunner()
+        .root(existingDir)
+        .name('name')
+        .run();
 
       // confirm that it failed
       expect(result.exitCode).not.toStrictEqual(0);
@@ -119,13 +131,26 @@ describe('e-init', () => {
     // confirm that `e init` with the same name twice doesn't work...
     const root = path.resolve(sandbox.tmpdir, 'main');
     let result;
-    result = sandbox.eInitRunner().root(`${root}1`).name('name').run();
-    result = sandbox.eInitRunner().root(`${root}2`).name('name').run();
+    result = sandbox
+      .eInitRunner()
+      .root(`${root}1`)
+      .name('name')
+      .run();
+    result = sandbox
+      .eInitRunner()
+      .root(`${root}2`)
+      .name('name')
+      .run();
     expect(result.exitCode).not.toStrictEqual(0);
     expect(result.stderr).toEqual(expect.stringContaining('ERR'));
 
     // ...unless you add '--force'
-    result = sandbox.eInitRunner().root(`${root}2`).name('name').force().run();
+    result = sandbox
+      .eInitRunner()
+      .root(`${root}2`)
+      .name('name')
+      .force()
+      .run();
     expect(result.exitCode).toStrictEqual(0);
   });
 
@@ -135,11 +160,17 @@ describe('e-init', () => {
     process.chdir(sandbox.tmpdir);
 
     // run `e init` without specifying a root
-    sandbox.eInitRunner().name('name').run();
+    sandbox
+      .eInitRunner()
+      .name('name')
+      .run();
 
     // confirm that $cwd/electron is the default root
     const expectedRoot = path.resolve(sandbox.tmpdir, 'electron');
-    const result = sandbox.eShowRunner().root().run();
+    const result = sandbox
+      .eShowRunner()
+      .root()
+      .run();
     expect(result.exitCode).toStrictEqual(0);
     expect(result.stdout).toStrictEqual(expectedRoot);
 
@@ -149,15 +180,28 @@ describe('e-init', () => {
 
   it('Defaults to an outdir that fits the import name', () => {
     const root = path.resolve(sandbox.tmpdir, 'main');
-    sandbox.eInitRunner().root(root).import('debug').name('name').run();
-    const result = sandbox.eShowRunner().out().run();
+    sandbox
+      .eInitRunner()
+      .root(root)
+      .import('debug')
+      .name('name')
+      .run();
+    const result = sandbox
+      .eShowRunner()
+      .out()
+      .run();
     expect(result.exitCode).toStrictEqual(0);
     expect(result.stdout).toStrictEqual('Debug');
   });
 
   it('ensureSDK is called on macOS', () => {
     const root = path.resolve(sandbox.tmpdir, 'main');
-    const result = sandbox.eInitRunner().root(root).import('debug').name('name').run();
+    const result = sandbox
+      .eInitRunner()
+      .root(root)
+      .import('debug')
+      .name('name')
+      .run();
 
     expect(result.exitCode).toStrictEqual(0);
     const output = expect.stringContaining('TEST: ensureSDK called');

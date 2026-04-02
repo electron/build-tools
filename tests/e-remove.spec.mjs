@@ -19,7 +19,10 @@ describe('e-remove', () => {
   });
 
   it(`fails if a build configuration name doesn't exist or is not specified`, () => {
-    const result = sandbox.eRemoveRunner().name(name).run();
+    const result = sandbox
+      .eRemoveRunner()
+      .name(name)
+      .run();
     expect(result.exitCode).toStrictEqual(1);
     expect(result.stderr).toMatch(/ERR/);
     expect(result.stderr).toMatch(/not found/);
@@ -27,9 +30,16 @@ describe('e-remove', () => {
 
   it('fails if trying to remove a configuration that is currently in use', () => {
     const configNameToRemove = 'remove-me';
-    sandbox.eInitRunner().root(root).name(configNameToRemove).run();
+    sandbox
+      .eInitRunner()
+      .root(root)
+      .name(configNameToRemove)
+      .run();
 
-    const result = sandbox.eRemoveRunner().name(configNameToRemove).run();
+    const result = sandbox
+      .eRemoveRunner()
+      .name(configNameToRemove)
+      .run();
 
     expect(result.exitCode).toStrictEqual(1);
     expect(result.stderr).toMatch(/ERR/);
@@ -38,12 +48,23 @@ describe('e-remove', () => {
 
   it('removes the specified configuration from our list', () => {
     const configNameToRemove = 'remove-me';
-    sandbox.eInitRunner().root(root).name(configNameToRemove).run();
+    sandbox
+      .eInitRunner()
+      .root(root)
+      .name(configNameToRemove)
+      .run();
 
     // Create secondary config to ensure first one is not in use.
-    sandbox.eInitRunner().root(root).name(name).run();
+    sandbox
+      .eInitRunner()
+      .root(root)
+      .name(name)
+      .run();
 
-    const result = sandbox.eRemoveRunner().name(configNameToRemove).run();
+    const result = sandbox
+      .eRemoveRunner()
+      .name(configNameToRemove)
+      .run();
     expect(result.exitCode).toStrictEqual(0);
     expect(result.stdout.toLowerCase()).toMatch(/removed/);
   });

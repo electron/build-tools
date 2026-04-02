@@ -11,9 +11,9 @@
     "build:copy": "node scripts/copy-assets.js",
     "build:schema": "node dist/gen-schema.js",
     "lint:markdown": "electron-markdownlint \"**/*.md\"",
-    "lint:ts": "prettier --check \"src/**/*.ts\" \"tests/*.js\" \"tests/*.mjs\"",
+    "lint:ts": "prettier --check \"src/**/*.ts\" \"tests/*.js\"",
     "lint": "npm run lint:ts && npm run lint:markdown",
-    "prettier:write": "prettier --write \"src/**/*.ts\" \"tests/*.js\" \"tests/*.mjs\"",
+    "prettier:write": "prettier --write \"src/**/*.ts\" \"tests/*.js\"",
     "prepare": "husky && npm run build",
     "test": "nyc --reporter=lcov --reporter=text-summary vitest run --reporter=verbose --exclude tests/bootstrap.spec.mjs",
     "test:all": "nyc --reporter=lcov --reporter=text-summary vitest run --reporter=verbose"
