@@ -2,7 +2,7 @@
   "name": "build-tools",
   "version": "0.2.0",
   "engines": {
-    "node": ">= 18.0.0"
+    "node": ">= 22.13.0"
   },
   "main": "null",
   "private": true,
