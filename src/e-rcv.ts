@@ -235,7 +235,7 @@ program
       const config = evmConfig.current();
       const spawnOpts = {
         cwd: path.resolve(config.root, 'src', 'electron'),
-        stdio: 'pipe' as const,
+        stdio: 'pipe',
         env: {
           ...process.env,
           GIT_AUTHOR_EMAIL: ELECTRON_BOT_EMAIL,
@@ -243,7 +243,7 @@ program
           GIT_COMMITTER_EMAIL: ELECTRON_BOT_EMAIL,
           GIT_COMMITTER_NAME: ELECTRON_BOT_NAME,
         },
-      };
+      } satisfies Partial<DepotOpts>;
       const gitStatusResult = spawnSync(config, 'git', ['status', '--porcelain'], spawnOpts);
       if (gitStatusResult.status !== 0 || gitStatusResult.stdout.toString().trim().length !== 0) {
         fatal(

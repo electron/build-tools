@@ -213,7 +213,7 @@ program
 
       // `e use` the new config
       const e = path.resolve(__dirname, 'e');
-      const opts = { stdio: 'inherit' as const };
+      const opts: childProcess.ExecFileSyncOptions = { stdio: 'inherit' };
       childProcess.execFileSync(process.execPath, [e, 'use', name], opts);
 
       // ensure macOS SDKs are loaded

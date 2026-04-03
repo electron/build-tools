@@ -100,7 +100,7 @@ program
         fatal(`Could not find Electron executable at ${color.path(exec)}`);
       }
 
-      const opts = { stdio: 'inherit' as const };
+      const opts: cp.ExecFileSyncOptions = { stdio: 'inherit' };
       console.log(color.childExec(exec, args, opts));
       cp.execFileSync(exec, args, opts);
     } catch (e) {
@@ -123,9 +123,9 @@ program
   .action((args: string[]) => {
     try {
       const exec = evmConfig.execOf(evmConfig.current());
-      const opts = {
+      const opts: cp.ExecFileSyncOptions = {
         env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
-        stdio: 'inherit' as const,
+        stdio: 'inherit',
       };
       console.log(color.childExec(exec, args, opts));
       cp.execFileSync(exec, args, opts);

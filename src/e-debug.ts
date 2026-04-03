@@ -10,9 +10,9 @@ import { fatal } from './utils/logging';
 import { commandExists } from './utils/which';
 import type { SanitizedConfig } from './types';
 
-const opts = {
-  encoding: 'utf8' as const,
-  stdio: 'inherit' as const,
+const opts: childProcess.ExecFileSyncOptionsWithStringEncoding = {
+  encoding: 'utf8',
+  stdio: 'inherit',
 };
 
 program.description('Run the Electron build with a debugger (gdb or lldb)').action(debug);

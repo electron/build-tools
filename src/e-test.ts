@@ -13,9 +13,9 @@ import type { SanitizedConfig } from './types';
 function runSpecRunner(config: SanitizedConfig, script: string, runnerArgs: string[]): void {
   const exec = process.execPath;
   const args = [script, ...runnerArgs];
-  const opts = {
-    stdio: 'inherit' as const,
-    encoding: 'utf8' as const,
+  const opts: childProcess.ExecFileSyncOptionsWithStringEncoding = {
+    stdio: 'inherit',
+    encoding: 'utf8',
     cwd: path.resolve(config.root, 'src', 'electron'),
     env: {
       ELECTRON_OUT_DIR: config.gen.out,

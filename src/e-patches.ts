@@ -7,7 +7,7 @@ import * as os from 'node:os';
 import { program } from 'commander';
 
 import * as evmConfig from './evm-config';
-import { execFileSync, spawnSync } from './utils/depot-tools';
+import { execFileSync, spawnSync, type DepotOpts } from './utils/depot-tools';
 import { color, fatal } from './utils/logging';
 
 interface PatchTarget {
@@ -87,10 +87,10 @@ program
       } else if (target && targets[target]) {
         const targetConfig = targets[target];
         const script = path.resolve(srcdir, 'electron', 'script', 'git-export-patches');
-        const opts = {
+        const opts: Partial<DepotOpts> = {
           cwd: path.resolve(config.root, targetConfig.repo),
-          stdio: 'inherit' as const,
-          encoding: 'utf8' as const,
+          stdio: 'inherit',
+          encoding: 'utf8',
         };
         const args = [script, '--output', path.resolve(config.root, targetConfig.patch_dir)];
         if (targetConfig.grep) args.push('--grep', targetConfig.grep);
@@ -107,10 +107,10 @@ program
       }
 
       if (options.commitUpdates) {
-        const spawnOpts = {
+        const spawnOpts: Partial<DepotOpts> = {
           cwd: path.resolve(config.root, 'src', 'electron'),
-          stdio: 'pipe' as const,
-          encoding: 'utf8' as const,
+          stdio: 'pipe',
+          encoding: 'utf8',
         };
 
         const changedFilesOutput = spawnSync(

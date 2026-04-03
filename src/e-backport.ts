@@ -8,7 +8,7 @@ import { Octokit } from '@octokit/rest';
 import { program } from 'commander';
 
 import * as evmConfig from './evm-config';
-import { spawnSync } from './utils/depot-tools';
+import { spawnSync, type DepotOpts } from './utils/depot-tools';
 import { getGitHubAuthToken } from './utils/github-auth';
 import { fatal } from './utils/logging';
 
@@ -48,9 +48,9 @@ program
     });
 
     const config = evmConfig.current();
-    const gitOpts = {
+    const gitOpts: Partial<DepotOpts> = {
       cwd: path.resolve(config.root, 'src', 'electron'),
-      stdio: 'pipe' as const,
+      stdio: 'pipe',
     };
     const result = spawnSync(config, 'git', ['status', '--porcelain'], gitOpts);
     if (result.status !== 0 || result.stdout.toString().trim().length !== 0) {

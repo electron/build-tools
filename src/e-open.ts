@@ -23,12 +23,10 @@ function getCommitInfo(object: string): { pullNumber: number | null; sha1: strin
 
   const cmd = 'git';
   const args = ['show', '--no-patch', '--pretty=format:%H%n%s', object];
-  const opts = {
+  const result = cp.spawnSync(cmd, args, {
     cwd: path.resolve(evmConfig.current().root, 'src', 'electron'),
-    encoding: 'utf8' as const,
-  };
-
-  const result = cp.spawnSync(cmd, args, opts);
+    encoding: 'utf8',
+  });
   if (result.status === 0) {
     const lines = result.stdout.split('\n');
     sha1 = lines[0] ?? null;

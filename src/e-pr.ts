@@ -112,10 +112,9 @@ function guessPRSource(config: SanitizedConfig): string {
   const command = 'git rev-parse --abbrev-ref HEAD';
 
   const cwd = path.resolve(config.root, 'src', 'electron');
-  const options = { cwd, encoding: 'utf8' as const };
 
   try {
-    return childProcess.execSync(command, options).trim();
+    return childProcess.execSync(command, { cwd, encoding: 'utf8' }).trim();
   } catch {
     return 'main';
   }
@@ -132,8 +131,7 @@ function pullRequestSource(source: string): string {
   if (config.remotes.electron.fork) {
     const command = 'git remote get-url fork';
     const cwd = path.resolve(config.root, 'src', 'electron');
-    const options = { cwd, encoding: 'utf8' as const };
-    const remoteUrl = childProcess.execSync(command, options).trim();
+    const remoteUrl = childProcess.execSync(command, { cwd, encoding: 'utf8' }).trim();
 
     for (const regex of regexes) {
       const m = regex.exec(remoteUrl);

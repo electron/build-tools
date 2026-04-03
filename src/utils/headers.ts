@@ -27,8 +27,7 @@ export function ensureNodeHeaders(config: SanitizedConfig, useRemote: boolean): 
     const args = [path.resolve(__dirname, '..', 'e'), 'build', 'electron:node_headers'];
     if (!useRemote) args.push('--no-remote');
 
-    const opts = { stdio: 'inherit' as const, encoding: 'utf8' as const };
-    childProcess.execFileSync(exec, args, opts);
+    childProcess.execFileSync(exec, args, { stdio: 'inherit', encoding: 'utf8' });
   }
 
   if (process.platform === 'win32') {

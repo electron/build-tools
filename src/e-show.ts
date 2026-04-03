@@ -13,10 +13,10 @@ import type { SanitizedConfig } from './types';
 
 function gitStatus(config: SanitizedConfig): string {
   const exec = 'git';
-  const opts = {
+  const opts: childProcess.ExecFileSyncOptionsWithStringEncoding = {
     cwd: path.resolve(config.root, 'src', 'electron'),
-    encoding: 'utf8' as const,
-    stdio: ['ignore', 'pipe', 'ignore'] satisfies childProcess.StdioOptions,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore'],
   };
   const switches = [
     ['describe', '--tags', '--exact-match'], // tag
