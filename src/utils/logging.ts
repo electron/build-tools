@@ -1,14 +1,10 @@
 import { styleText } from 'node:util';
 
-type Style = Parameters<typeof styleText>[0];
-
-const style = (fmt: Style, str: string): string => styleText(fmt, str);
-
 export const color = {
-  cmd: (str: string): string => `"${style('cyan', str)}"`,
-  config: (str: string): string => style('blueBright', str),
-  git: (str: string): string => style('greenBright', str),
-  path: (str: string): string => style('magentaBright', str),
+  cmd: (str: string): string => `"${styleText('cyan', str)}"`,
+  config: (str: string): string => styleText('blueBright', str),
+  git: (str: string): string => styleText('greenBright', str),
+  path: (str: string): string => styleText('magentaBright', str),
   childExec: (cmd: string, args?: readonly string[] | null, opts?: unknown): string => {
     const cmdstr = [cmd, ...(args ?? [])].join(' ');
     const parts = ['Running', color.cmd(cmdstr)];
@@ -18,10 +14,10 @@ export const color = {
     }
     return parts.join(' ');
   },
-  success: style(['bgGreenBright', 'black'], 'SUCCESS'),
-  err: style(['bgRedBright', 'white'], 'ERROR'),
-  info: style(['bgBlueBright', 'white'], 'INFO'),
-  warn: style(['bgYellowBright', 'black'], 'WARN'),
+  success: styleText(['bgGreenBright', 'black'], 'SUCCESS'),
+  err: styleText(['bgRedBright', 'white'], 'ERROR'),
+  info: styleText(['bgBlueBright', 'white'], 'INFO'),
+  warn: styleText(['bgYellowBright', 'black'], 'WARN'),
 };
 
 export function logError(e: unknown): void {

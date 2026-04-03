@@ -5,7 +5,7 @@ import * as semver from 'semver';
 import { fatal } from './logging';
 
 const MINIMUM_PYTHON_VERSION = '3.9.0';
-const MINIMUM_NODEJS_VERSION = '22.12.0';
+const MINIMUM_NODEJS_VERSION = '22.13.0';
 
 function checkPythonVersion(): boolean {
   const pythonCommands = ['python3', 'python'];
