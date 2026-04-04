@@ -420,4 +420,10 @@ Proceed?`,
     }
   });
 
-program.parse(process.argv);
+if (require.main === module) {
+  program.parse(process.argv);
+}
+
+module.exports = {
+  findNoteInPRBody,
+};

@@ -341,6 +341,8 @@ module.exports = {
   currentName,
   execOf,
   fetchByName: (name) => sanitizeConfigWithName(name),
+  filenameToConfigName,
+  mergeConfigs,
   names,
   outDir,
   pathOf,
