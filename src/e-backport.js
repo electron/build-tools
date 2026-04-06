@@ -2,7 +2,7 @@
 
 const inquirer = require('@inquirer/prompts');
 const { Octokit } = require('@octokit/rest');
-const chalk = require('chalk');
+const { styleText } = require('node:util');
 const program = require('commander');
 const path = require('path');
 
@@ -93,9 +93,12 @@ program
       cwd: gitOpts.cwd,
     });
 
-    const pushCommand = chalk.yellow(!!config.remotes.electron.fork ? 'git push fork' : 'git push');
-    const cherryPickCommand = chalk.yellow('git cherry-pick --continue');
-    const prCommand = chalk.yellow(`e pr --backport ${prNumber}`);
+    const pushCommand = styleText(
+      'yellow',
+      !!config.remotes.electron.fork ? 'git push fork' : 'git push',
+    );
+    const cherryPickCommand = styleText('yellow', 'git cherry-pick --continue');
+    const prCommand = styleText('yellow', `e pr --backport ${prNumber}`);
 
     const followupMessage =
       cherryPickResult.status !== 0
@@ -104,7 +107,10 @@ program
 
     console.info(
       '\n',
-      chalk.cyan(`${followupMessage} and finally "${prCommand}" to create your new pull request`),
+      styleText(
+        'cyan',
+        `${followupMessage} and finally "${prCommand}" to create your new pull request`,
+      ),
     );
   });
 

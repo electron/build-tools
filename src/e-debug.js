@@ -3,7 +3,7 @@
 const childProcess = require('child_process');
 const path = require('path');
 
-const { sync: commandExistsSync } = require('command-exists');
+const { commandExists } = require('./utils/which');
 const program = require('commander');
 
 const evmConfig = require('./evm-config');
@@ -42,7 +42,7 @@ function debug() {
       { exec: 'lldb', runner: run_lldb },
     ];
 
-    const choice = choices.find((choice) => commandExistsSync(choice.exec));
+    const choice = choices.find((choice) => commandExists(choice.exec));
     if (choice) {
       choice.runner(evmConfig.current());
     } else {

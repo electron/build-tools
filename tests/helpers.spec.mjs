@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { resolvePath } from '../src/utils/paths.js';
+import { pathKey } from '../src/utils/path-key.js';
+import { which, commandExists } from '../src/utils/which.js';
 import { getPayload } from '../src/utils/crbug.js';
 import { parseTokenScopes } from '../src/utils/github-auth.js';
 import { fallbackSDK } from '../src/utils/sdk.js';
@@ -21,6 +23,37 @@ describe('paths.resolvePath', () => {
 
   it('resolves relative paths against cwd', () => {
     expect(resolvePath('foo/bar')).toBe(path.resolve(process.cwd(), 'foo/bar'));
+  });
+});
+
+describe('path-key.pathKey', () => {
+  it('returns PATH on non-Windows', () => {
+    if (process.platform === 'win32') return;
+    expect(pathKey()).toBe('PATH');
+  });
+
+  it('finds the PATH key case-insensitively on Windows from a provided env', () => {
+    if (process.platform !== 'win32') return;
+    expect(pathKey({ Path: 'foo' })).toBe('Path');
+    expect(pathKey({ PATH: 'foo' })).toBe('PATH');
+  });
+});
+
+describe('which', () => {
+  it('locates node on PATH', () => {
+    // Whatever binary is running this test exists on PATH.
+    const found = which('node');
+    expect(found).not.toBeNull();
+    expect(found).toContain('node');
+  });
+
+  it('returns null for a binary that does not exist', () => {
+    expect(which('this-binary-definitely-does-not-exist-xyz')).toBeNull();
+  });
+
+  it('commandExists mirrors which', () => {
+    expect(commandExists('node')).toBe(true);
+    expect(commandExists('this-binary-definitely-does-not-exist-xyz')).toBe(false);
   });
 });
 

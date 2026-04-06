@@ -4,10 +4,8 @@ const os = require('os');
 const path = require('path');
 const { deleteDir } = require('../src/utils/paths');
 
-// Get the PATH environment variable key cross-platform
-// It's usually PATH, but on Windows it can be any casing like Path...
-// https://github.com/sindresorhus/path-key
-const pathKey = require('path-key')();
+const { pathKey: pathKeyFn } = require('../src/utils/path-key');
+const pathKey = pathKeyFn();
 
 // execFileSync() wrapper that adds exec'ed scripts to code coverage.
 // Returns { exitCode:number, stderr:string, stdout:string }

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const chalk = require('chalk');
+const { styleText } = require('node:util');
 const cp = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -80,7 +80,8 @@ function checkForUpdates() {
 
       if (semver.lt(packageJson.version, BUILD_TOOLS_INSTALLER_MIN_VERSION)) {
         console.log(
-          `\n${chalk.bgWhite.black('NOTE')} Please update ${chalk.greenBright(
+          `\n${styleText(['bgWhite', 'black'], 'NOTE')} Please update ${styleText(
+            'greenBright',
             '@electron/build-tools',
           )}\n`,
         );

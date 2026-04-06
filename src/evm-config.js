@@ -3,7 +3,7 @@ const os = require('os');
 const path = require('path');
 const Ajv = require('ajv');
 const YAML = require('yaml');
-const { URI } = require('vscode-uri');
+const { pathToFileURL } = require('node:url');
 const { color, fatal } = require('./utils/logging');
 const { ensureDir } = require('./utils/paths');
 
@@ -187,7 +187,7 @@ function sanitizeConfig(name, config, overwrite = false) {
   }
 
   if (!('$schema' in config)) {
-    config.$schema = URI.file(path.resolve(__dirname, '..', 'evm-config.schema.json')).toString();
+    config.$schema = pathToFileURL(path.resolve(__dirname, '..', 'evm-config.schema.json')).href;
     changes.push(`added missing property ${color.config('$schema')}`);
   }
 

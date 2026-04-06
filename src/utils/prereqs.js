@@ -3,7 +3,7 @@ const { fatal } = require('./logging');
 const semver = require('semver');
 
 const MINIMUM_PYTHON_VERSION = '3.9.0';
-const MINIMUM_NODEJS_VERSION = '22.12.0';
+const MINIMUM_NODEJS_VERSION = '22.13.0';
 
 /**
  * Check if Python is installed and meets minimum version requirements

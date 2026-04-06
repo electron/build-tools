@@ -2,7 +2,7 @@
 
 const inquirer = require('@inquirer/prompts');
 const { Octokit } = require('@octokit/rest');
-const chalk = require('chalk');
+const { styleText } = require('node:util');
 const program = require('commander');
 const fs = require('fs');
 const path = require('path');
@@ -25,9 +25,9 @@ const CL_REGEX =
   /https:\/\/chromium-review\.googlesource\.com\/c\/(chromium\/src|devtools\/devtools-frontend|v8\/v8)\/\+\/(\d+)(#\S+)?/;
 
 const REPO_LABELS = {
-  chromium: chalk.magenta('Chromium'),
-  devtools: chalk.blue('DevTools'),
-  v8: chalk.cyan('V8'),
+  chromium: styleText('magenta', 'Chromium'),
+  devtools: styleText('blue', 'DevTools'),
+  v8: styleText('cyan', 'V8'),
 };
 
 async function getChromiumVersion(octokit, ref) {
@@ -156,7 +156,7 @@ program
           compareChromiumVersions(chromiumVersionOrCommitShaStr, newVersion) > 0
         ) {
           fatal(
-            `Chromium version ${chalk.blueBright(chromiumVersionOrCommitShaStr)} is not between ${chalk.blueBright(initialVersion)} and ${chalk.blueBright(newVersion)}`,
+            `Chromium version ${styleText('blueBright', chromiumVersionOrCommitShaStr)} is not between ${styleText('blueBright', initialVersion)} and ${styleText('blueBright', newVersion)}`,
           );
           return;
         }
@@ -164,7 +164,7 @@ program
         // Confirm chromiumVersionOrCommitShaStr is a tagged Chromium version
         if (!chromiumVersions.includes(chromiumVersionOrCommitShaStr)) {
           fatal(
-            `Version ${chalk.blueBright(chromiumVersionOrCommitShaStr)} is not a tagged Chromium version`,
+            `Version ${styleText('blueBright', chromiumVersionOrCommitShaStr)} is not a tagged Chromium version`,
           );
           return;
         }
@@ -180,7 +180,7 @@ program
           compareChromiumVersions(earliest, newVersion) > 0
         ) {
           fatal(
-            `Chromium commit ${chalk.blueBright(chromiumVersionOrCommitShaStr)} is not between ${chalk.blueBright(initialVersion)} and ${chalk.blueBright(newVersion)}`,
+            `Chromium commit ${styleText('blueBright', chromiumVersionOrCommitShaStr)} is not between ${styleText('blueBright', initialVersion)} and ${styleText('blueBright', newVersion)}`,
           );
           return;
         }
@@ -188,7 +188,7 @@ program
         usingCommitSha = true;
       } else {
         fatal(
-          `Provided value ${chalk.blueBright(chromiumVersionOrCommitShaStr)} does not appear to be a valid Chromium version or commit SHA`,
+          `Provided value ${styleText('blueBright', chromiumVersionOrCommitShaStr)} does not appear to be a valid Chromium version or commit SHA`,
         );
         return;
       }
@@ -319,7 +319,9 @@ program
       const clMatch = CL_REGEX.exec(commit.commit.message);
 
       if (!clMatch) {
-        console.info(`${color.info} Skipping non-CL commit: ${chalk.yellow(shortSha)} ${message}`);
+        console.info(
+          `${color.info} Skipping non-CL commit: ${styleText('yellow', shortSha)} ${message}`,
+        );
         continue;
       }
 
@@ -356,12 +358,12 @@ program
 
       if (shouldCherryPick) {
         console.log(
-          `${color.success} Cherry-picking commit for ${label} CL: ${chalk.yellow(shortSha)} ${message} (${chalk.greenBright(earliest)})`,
+          `${color.success} Cherry-picking commit for ${label} CL: ${styleText('yellow', shortSha)} ${message} (${styleText('greenBright', earliest)})`,
         );
         commitsToCherryPick.push({ sha: commit.sha, chromiumVersion: earliest, mergeTime: time });
       } else {
         console.info(
-          `${color.info} Skipping commit for ${label} CL: ${chalk.yellow(shortSha)} ${message} (${chalk.greenBright(earliest)})`,
+          `${color.info} Skipping commit for ${label} CL: ${styleText('yellow', shortSha)} ${message} (${styleText('greenBright', earliest)})`,
         );
       }
     }
