@@ -83,6 +83,10 @@ program.description('Electron build tool').usage('<command> [commandArgs...]');
 program
   .command('init [options] <name>', 'Create a new build config')
   .alias('new')
+  .command(
+    'worktree <subcommand>',
+    'Manage gclient working directories that share git objects with an existing checkout',
+  )
   .command('sync [gclientArgs...]', 'Get or update source code')
   .command('build [options]', 'Build Electron and other things')
   .alias('make')
