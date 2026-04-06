@@ -1,5 +1,4 @@
 {
-  "title": "JSON schema for EVM configuration files",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
@@ -8,150 +7,155 @@
       "format": "uri-reference"
     },
     "defaultTarget": {
-      "description": "Default build target",
       "type": "string",
+      "description": "Default build target",
       "default": "electron"
     },
     "preserveSDK": {
-      "description": "Preserve the N most recent Xcode SDK versions",
       "type": "integer",
-      "default": 5,
-      "minimum": 1
+      "minimum": 1,
+      "maximum": 9007199254740991,
+      "description": "Preserve the N most recent Xcode SDK versions",
+      "default": 5
     },
     "execName": {
-      "description": "Name of the built executable to run",
       "type": "string",
-      "default": "Electron",
-      "minLength": 1
+      "minLength": 1,
+      "description": "Name of the built executable to run",
+      "default": "Electron"
     },
     "extends": {
-      "description": "Name of base config to extend",
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "description": "Name of base config to extend"
     },
     "remoteBuild": {
-      "description": "Whether to use remote builds and what system to use",
       "type": "string",
       "enum": [
         "reclient",
         "siso",
         "none"
-      ]
+      ],
+      "description": "Whether to use remote builds and what system to use"
     },
     "rbeHelperPath": {
-      "description": "Path to alternative reclient credential helper",
-      "type": "string"
+      "type": "string",
+      "description": "Path to alternative reclient credential helper"
     },
     "rbeServiceAddress": {
-      "description": "Alternative RBE cluster address",
-      "type": "string"
+      "type": "string",
+      "description": "Alternative RBE cluster address"
     },
     "root": {
-      "description": "Path of the top directory. Home of the .gclient file",
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "description": "Path of the top directory. Home of the .gclient file"
     },
     "remotes": {
-      "description": "Remotes for Git checkouts",
       "type": "object",
       "properties": {
         "electron": {
-          "description": "Remotes for the Electron repo",
           "type": "object",
           "properties": {
-            "fork": {
-              "description": "Fork remote",
-              "type": "string",
-              "anyOf": [
-                {
-                  "format": "uri"
-                },
-                {
-                  "pattern": "^git@.+$"
-                }
-              ],
-              "minLength": 1
-            },
             "origin": {
-              "description": "Origin remote",
-              "type": "string",
               "anyOf": [
                 {
+                  "type": "string",
                   "format": "uri"
                 },
                 {
+                  "type": "string",
                   "pattern": "^git@.+$"
                 }
               ],
-              "minLength": 1
+              "description": "Origin remote"
+            },
+            "fork": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^git@.+$"
+                }
+              ],
+              "description": "Fork remote"
             }
           },
-          "additionalProperties": false,
           "required": [
             "origin"
-          ]
+          ],
+          "additionalProperties": false,
+          "description": "Remotes for the Electron repo"
         }
       },
-      "additionalProperties": false,
       "required": [
         "electron"
-      ]
+      ],
+      "additionalProperties": false,
+      "description": "Remotes for Git checkouts"
     },
     "gen": {
-      "description": "Configuration for GN",
       "type": "object",
       "properties": {
         "args": {
-          "description": "Extra arguments for GN",
           "type": "array",
           "items": {
             "type": "string",
             "minLength": 1
-          }
+          },
+          "description": "Extra arguments for GN"
         },
         "out": {
-          "description": "Output directory",
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Output directory"
         }
       },
-      "additionalProperties": false,
       "required": [
         "args",
         "out"
-      ]
+      ],
+      "additionalProperties": false,
+      "description": "Configuration for GN"
     },
     "env": {
-      "description": "Environment variables set when building Electron",
       "type": "object",
       "properties": {
-        "GIT_CACHE_PATH": {
-          "description": "Path to use as git cache for gclient",
-          "type": "string",
-          "minLength": 1
-        },
         "CHROMIUM_BUILDTOOLS_PATH": {
-          "description": "Path of Chromium buildtools in the checkout",
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Path of Chromium buildtools in the checkout"
+        },
+        "GIT_CACHE_PATH": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to use as git cache for gclient"
         }
       },
       "required": [
         "CHROMIUM_BUILDTOOLS_PATH"
-      ]
+      ],
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Environment variables set when building Electron"
     },
     "configValidationLevel": {
-      "description": "Validation level for this configuration",
       "type": "string",
       "enum": [
         "strict",
         "warn",
         "none"
       ],
+      "description": "Validation level for this configuration",
       "default": "strict"
     }
   },
   "additionalProperties": false,
+  "title": "JSON schema for EVM configuration files",
   "oneOf": [
     {
       "required": [
@@ -162,7 +166,7 @@
       "properties": {
         "defaultTarget": {
           "type": "string",
-          "pattern": "chrome"
+          "pattern": "^chrome$"
         }
       },
       "required": [

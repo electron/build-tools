@@ -2,10 +2,10 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { deleteDir } = require('../src/utils/paths');
+const { deleteDir } = require('../dist/utils/paths');
+const { pathKey } = require('../dist/utils/path-key');
 
-const { pathKey: pathKeyFn } = require('../src/utils/path-key');
-const pathKey = pathKeyFn();
+const PATH_KEY = pathKey();
 
 // execFileSync() wrapper that adds exec'ed scripts to code coverage.
 // Returns { exitCode:number, stderr:string, stdout:string }
@@ -48,7 +48,7 @@ function runSync(args, options) {
   return ret;
 }
 
-const buildToolsSrcDir = path.resolve(__dirname, '..', 'src');
+const buildToolsDistDir = path.resolve(__dirname, '..', 'dist');
 
 // An `e init` helper.
 // Example use: result = eInitRunner().root('~/electron-src')
@@ -56,7 +56,7 @@ const buildToolsSrcDir = path.resolve(__dirname, '..', 'src');
 // Returns { exitCode:number, stderr:string, stdout:string }
 function eInitRunner(execOptions) {
   const stdio = 'pipe';
-  const cmd = path.resolve(buildToolsSrcDir, 'e-init.js');
+  const cmd = path.resolve(buildToolsDistDir, 'e-init.js');
   const args = [];
 
   const o = {
@@ -105,7 +105,7 @@ function eInitRunner(execOptions) {
 // Returns { exitCode:number, stderr:string, stdout:string }
 function eMakeRunner(execOptions) {
   let stdio = 'inherit'; // runs a really long time, so dump output to parent
-  const cmd = path.resolve(buildToolsSrcDir, 'e-build.js');
+  const cmd = path.resolve(buildToolsDistDir, 'e-build.js');
   const args = [];
 
   const o = {
@@ -131,7 +131,7 @@ function eMakeRunner(execOptions) {
 // Returns { exitCode:number, stderr:string, stdout:string }
 function eShowRunner(execOptions) {
   const stdio = 'pipe';
-  const cmd = path.resolve(buildToolsSrcDir, 'e-show.js');
+  const cmd = path.resolve(buildToolsDistDir, 'e-show.js');
   const args = [];
 
   const o = {
@@ -189,7 +189,7 @@ function eShowRunner(execOptions) {
 // Returns { exitCode:number, stderr:string, stdout:string }
 function eSyncRunner(execOptions) {
   let stdio = 'inherit'; // runs a really long time, so dump output to parent
-  const cmd = path.resolve(buildToolsSrcDir, 'e-sync.js');
+  const cmd = path.resolve(buildToolsDistDir, 'e-sync.js');
   const args = [];
 
   const o = {
@@ -206,7 +206,7 @@ function eSyncRunner(execOptions) {
 // Returns { exitCode:number, stderr:string, stdout:string }
 function eRemoveRunner(execOptions) {
   const stdio = 'pipe';
-  const cmd = path.resolve(buildToolsSrcDir, 'e');
+  const cmd = path.resolve(buildToolsDistDir, 'e.js');
   const args = ['remove'];
 
   const o = {
@@ -237,7 +237,7 @@ function createSandbox() {
       EVM_CONFIG: evm_config_dir,
       // we want to detect vitest
       __VITEST__: 1,
-      [pathKey]: process.env[pathKey],
+      [PATH_KEY]: process.env[PATH_KEY],
     },
   };
 

@@ -1,0 +1,115 @@
+#!/usr/bin/env node
+
+import * as path from 'node:path';
+import { styleText } from 'node:util';
+
+import * as inquirer from '@inquirer/prompts';
+import { Octokit } from '@octokit/rest';
+import { program } from 'commander';
+
+import * as evmConfig from './evm-config';
+import { spawnSync, type DepotOpts } from './utils/depot-tools';
+import { getGitHubAuthToken } from './utils/github-auth';
+import { fatal } from './utils/logging';
+
+program
+  .arguments('[pr]')
+  .description('Assists with manual backport processes')
+  .action(async (prNumberStr: string | undefined) => {
+    const prNumber = parseInt(prNumberStr ?? '', 10);
+    if (isNaN(prNumber) || `${prNumber}` !== prNumberStr) {
+      fatal(`backport requires a number, "${prNumberStr}" was provided`);
+    }
+
+    const octokit = new Octokit({
+      auth: await getGitHubAuthToken(['repo']),
+    });
+    const { data: user } = await octokit.users.getAuthenticated();
+    const { data: pr } = await octokit.pulls.get({
+      owner: 'electron',
+      repo: 'electron',
+      pull_number: prNumber,
+    });
+    if (!pr.merge_commit_sha) {
+      fatal('No merge SHA available on PR');
+    }
+
+    const targetBranches = pr.labels
+      .map((label) => label.name)
+      .filter((name): name is string => name?.startsWith('needs-manual-bp/') ?? false)
+      .map((name) => name.substring(16));
+    if (targetBranches.length === 0) {
+      fatal('The given pull request is not needing any manual backports yet');
+    }
+
+    const targetBranch = await inquirer.select({
+      message: 'Which branch do you want to backport this PR to?',
+      choices: targetBranches.map((branch) => ({ value: branch })),
+    });
+
+    const config = evmConfig.current();
+    const gitOpts: Partial<DepotOpts> = {
+      cwd: path.resolve(config.root, 'src', 'electron'),
+      stdio: 'pipe',
+    };
+    const result = spawnSync(config, 'git', ['status', '--porcelain'], gitOpts);
+    if (result.status !== 0 || result.stdout.toString().trim().length !== 0) {
+      fatal(
+        "Your current git working directory is not clean, we won't erase your local changes. Clean it up and try again",
+      );
+    }
+
+    spawnSync(config, 'git', ['checkout', targetBranch], gitOpts, 'Failed to checkout base branch');
+    spawnSync(
+      config,
+      'git',
+      ['pull', 'origin', targetBranch],
+      gitOpts,
+      'Failed to update base branch',
+    );
+    spawnSync(
+      config,
+      'git',
+      ['fetch', 'origin', pr.base.ref],
+      gitOpts,
+      'Failed to fetch latest upstream',
+    );
+
+    const manualBpBranch = `manual-bp/${user.login}/pr/${prNumber}/branch/${targetBranch}`;
+    spawnSync(config, 'git', ['branch', '-D', manualBpBranch], gitOpts);
+    spawnSync(
+      config,
+      'git',
+      ['checkout', '-b', manualBpBranch],
+      gitOpts,
+      `Failed to checkout new branch "${manualBpBranch}"`,
+    );
+
+    spawnSync(config, 'yarn', ['install'], gitOpts, `Failed to do "yarn install" on new branch`);
+
+    const cherryPickResult = spawnSync(config, 'git', ['cherry-pick', pr.merge_commit_sha], {
+      cwd: gitOpts.cwd,
+    });
+
+    const pushCommand = styleText(
+      'yellow',
+      config.remotes.electron.fork ? 'git push fork' : 'git push',
+    );
+    const cherryPickCommand = styleText('yellow', 'git cherry-pick --continue');
+    const prCommand = styleText('yellow', `e pr --backport ${prNumber}`);
+
+    const followupMessage =
+      cherryPickResult.status !== 0
+        ? `Cherry pick complete, fix conflicts locally and then run the following commands: "${cherryPickCommand}", "${pushCommand}"`
+        : `Cherry pick succeeded, run "${pushCommand}"`;
+
+    console.info(
+      '\n',
+      styleText(
+        'cyan',
+        `${followupMessage} and finally "${prCommand}" to create your new pull request`,
+      ),
+    );
+  });
+
+program.parse(process.argv);

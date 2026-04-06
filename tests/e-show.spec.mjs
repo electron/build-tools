@@ -1,6 +1,6 @@
 import os from 'os';
 import path from 'path';
-import { pathKey } from '../src/utils/path-key.js';
+import { pathKey } from '../dist/utils/path-key.js';
 import createSandbox from './sandbox';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';

@@ -3,7 +3,7 @@ import path from 'path';
 
 import YAML from 'yaml';
 
-const { sanitizeConfig, validateConfig, fetchByName } = require('../src/evm-config');
+const { sanitizeConfig, validateConfig, fetchByName } = require('../dist/evm-config.js');
 
 import { beforeAll, afterAll, describe, expect, it, vi } from 'vitest';
 
@@ -82,10 +82,7 @@ describe('invalid configs', () => {
     expect(validationErrors).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          instancePath: '/remotes',
-          params: {
-            missingProperty: 'electron',
-          },
+          path: expect.arrayContaining(['remotes']),
         }),
       ]),
     );
