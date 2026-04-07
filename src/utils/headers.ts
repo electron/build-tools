@@ -2,9 +2,9 @@ import * as childProcess from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import * as evmConfig from '../evm-config';
-import type { SanitizedConfig } from '../types';
-import { ensureDir } from './paths';
+import * as evmConfig from '../evm-config.js';
+import type { SanitizedConfig } from '../types.js';
+import { ensureDir } from './paths.js';
 
 export function ensureNodeHeaders(config: SanitizedConfig, useRemote: boolean): void {
   const src_dir = path.resolve(config.root, 'src');
@@ -24,7 +24,7 @@ export function ensureNodeHeaders(config: SanitizedConfig, useRemote: boolean): 
 
   if (needs_build) {
     const exec = process.execPath;
-    const args = [path.resolve(__dirname, '..', 'e'), 'build', 'electron:node_headers'];
+    const args = [path.resolve(import.meta.dirname, '..', 'e'), 'build', 'electron:node_headers'];
     if (!useRemote) args.push('--no-remote');
 
     childProcess.execFileSync(exec, args, { stdio: 'inherit', encoding: 'utf8' });

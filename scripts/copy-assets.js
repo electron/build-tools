@@ -2,10 +2,10 @@
 // Copy non-TS assets that tsc doesn't emit into dist/.
 // Kept out of src/ so tsc ignores it and the build doesn't depend on its own output.
 
-const fs = require('node:fs');
-const path = require('node:path');
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
-const root = path.resolve(__dirname, '..');
+const root = path.resolve(import.meta.dirname, '..');
 const srcUtils = path.join(root, 'src', 'utils');
 const distUtils = path.join(root, 'dist', 'utils');
 

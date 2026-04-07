@@ -6,11 +6,11 @@ import * as path from 'node:path';
 
 import { program } from 'commander';
 
-import * as evmConfig from './evm-config';
-import { color, fatal } from './utils/logging';
-import * as depot from './utils/depot-tools';
-import { refreshPathVariable } from './utils/refresh-path';
-import { ensureSDK } from './utils/sdk';
+import * as evmConfig from './evm-config.js';
+import { color, fatal } from './utils/logging.js';
+import * as depot from './utils/depot-tools.js';
+import { refreshPathVariable } from './utils/refresh-path.js';
+import { ensureSDK } from './utils/sdk.js';
 
 // Refresh the PATH variable at the top of this shell so that retries in the same shell get the latest PATH variable
 refreshPathVariable();
@@ -21,7 +21,7 @@ function maybeCheckForUpdates(): void {
   // NB: send updater's stdout to stderr so its log messages are visible
   // but don't pollute stdout. For example, calling `FOO="$(e show exec)"`
   // should not get a FOO that includes "Checking for build-tools updates".
-  const disableAutoUpdatesFile = path.resolve(__dirname, '..', '.disable-auto-updates');
+  const disableAutoUpdatesFile = path.resolve(import.meta.dirname, '..', '.disable-auto-updates');
   if (fs.existsSync(disableAutoUpdatesFile)) {
     console.error(`${color.info} Auto-updates disabled - skipping update check`);
     return;
@@ -37,7 +37,7 @@ function maybeCheckForUpdates(): void {
 
   // Don't check if we already checked recently
   const intervalHours = 4;
-  const updateCheckTSFile = path.resolve(__dirname, '..', '.update');
+  const updateCheckTSFile = path.resolve(import.meta.dirname, '..', '.update');
   const lastCheckEpochMsec = fs.existsSync(updateCheckTSFile)
     ? parseInt(fs.readFileSync(updateCheckTSFile, 'utf8'), 10)
     : 0;
@@ -52,7 +52,7 @@ function maybeCheckForUpdates(): void {
   // but don't pollute stdout. For example, calling `FOO="$(e show exec)"`
   // should not get a FOO that includes "Checking for build-tools updates".
   cp.spawnSync(process.execPath, ['e-auto-update.js'], {
-    cwd: __dirname,
+    cwd: import.meta.dirname,
     stdio: [0, 2, 2],
   });
 
@@ -275,5 +275,5 @@ program.on('--help', () => {
 See https://github.com/electron/build-tools/blob/main/README.md for usage.`);
 });
 
-program.executableDir(__dirname);
+program.executableDir(import.meta.dirname);
 program.parse(process.argv);

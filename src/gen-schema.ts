@@ -8,7 +8,7 @@ import * as path from 'node:path';
 
 import { z } from 'zod';
 
-import { evmConfigSchema } from './types';
+import { evmConfigSchema } from './types.js';
 
 const jsonSchema = z.toJSONSchema(evmConfigSchema, {
   target: 'draft-7',
@@ -29,6 +29,6 @@ const jsonSchema = z.toJSONSchema(evmConfigSchema, {
   },
 });
 
-const outPath = path.resolve(__dirname, '..', 'evm-config.schema.json');
+const outPath = path.resolve(import.meta.dirname, '..', 'evm-config.schema.json');
 fs.writeFileSync(outPath, JSON.stringify(jsonSchema, null, 2) + '\n');
 console.log(`Wrote ${outPath}`);

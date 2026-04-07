@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-import { color } from './logging';
+import { color } from './logging.js';
 
 export function resolvePath(p: string): string {
   if (path.isAbsolute(p)) return p;

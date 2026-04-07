@@ -6,14 +6,14 @@ import * as path from 'node:path';
 
 import { program } from 'commander';
 
-import * as evmConfig from './evm-config';
-import { color, fatal } from './utils/logging';
-import * as depot from './utils/depot-tools';
-import { ensureDir } from './utils/paths';
-import * as reclient from './utils/reclient';
-import * as siso from './utils/siso';
-import { ensureSDK, ensureSDKAndSymlink } from './utils/sdk';
-import type { SanitizedConfig } from './types';
+import * as evmConfig from './evm-config.js';
+import { color, fatal } from './utils/logging.js';
+import * as depot from './utils/depot-tools.js';
+import { ensureDir } from './utils/paths.js';
+import * as reclient from './utils/reclient.js';
+import * as siso from './utils/siso.js';
+import { ensureSDK, ensureSDKAndSymlink } from './utils/sdk.js';
+import type { SanitizedConfig } from './types.js';
 
 function getGNArgs(config: SanitizedConfig): string {
   const configArgs = config.gen.args;

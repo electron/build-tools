@@ -2,9 +2,9 @@ import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import * as path from 'node:path';
 
-import { color, fatal } from './logging';
-import { spawnSync } from './depot-tools';
-import * as evmConfig from '../evm-config';
+import { color, fatal } from './logging.js';
+import { spawnSync } from './depot-tools.js';
+import * as evmConfig from '../evm-config.js';
 
 function execFileSyncWithLog(
   cmd: string,
@@ -56,7 +56,7 @@ export function configureReclient(): void {
     });
 
     const reclientConfigPatchPath = path.resolve(
-      __dirname,
+      import.meta.dirname,
       '..',
       '..',
       'tools',

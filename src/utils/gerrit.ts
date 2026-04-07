@@ -1,6 +1,6 @@
 import debug from 'debug';
-import { getCveForBugNr } from './crbug';
-import { fatal, color } from './logging';
+import { getCveForBugNr } from './crbug.js';
+import { fatal, color } from './logging.js';
 
 const d = debug('build-tools:gerrit');
 

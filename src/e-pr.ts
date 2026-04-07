@@ -15,12 +15,12 @@ import * as inquirer from '@inquirer/prompts';
 import { Octokit } from '@octokit/rest';
 
 import debug from 'debug';
-import { progressStream } from './utils/download';
-import { getGitHubAuthToken } from './utils/github-auth';
+import { progressStream } from './utils/download.js';
+import { getGitHubAuthToken } from './utils/github-auth.js';
 import open from 'open';
-import { current } from './evm-config';
-import { color, fatal, logError } from './utils/logging';
-import type { SanitizedConfig } from './types';
+import { current } from './evm-config.js';
+import { color, fatal, logError } from './utils/logging.js';
+import type { SanitizedConfig } from './types.js';
 
 const d = debug('build-tools:pr');
 
@@ -323,7 +323,7 @@ Proceed?`,
         fatal(`The output directory '${options.output}' does not exist`);
       }
     } else {
-      const artifactsDir = path.resolve(__dirname, '..', 'artifacts');
+      const artifactsDir = path.resolve(import.meta.dirname, '..', 'artifacts');
       const defaultDir = path.resolve(
         artifactsDir,
         `pr_${pullRequest.number}_${shortCommitHash}_${options.platform}_${options.arch}`,

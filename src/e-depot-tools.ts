@@ -4,10 +4,10 @@ import * as os from 'node:os';
 
 import { program } from 'commander';
 
-import * as evmConfig from './evm-config';
-import { fatal } from './utils/logging';
-import * as depot from './utils/depot-tools';
-import * as reclient from './utils/reclient';
+import * as evmConfig from './evm-config.js';
+import { fatal } from './utils/logging.js';
+import * as depot from './utils/depot-tools.js';
+import * as reclient from './utils/reclient.js';
 
 program
   .command('depot-tools')

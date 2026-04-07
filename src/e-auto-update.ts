@@ -8,12 +8,12 @@ import { styleText } from 'node:util';
 import { program } from 'commander';
 import * as semver from 'semver';
 
-import { color, fatal } from './utils/logging';
+import { color, fatal } from './utils/logging.js';
 
 const BUILD_TOOLS_INSTALLER_MIN_VERSION = '1.1.0';
 
-const markerFilePath = path.join(__dirname, '..', '.disable-auto-updates');
-const yarnPath = path.join(__dirname, '..', '.yarn', 'releases', 'yarn-4.10.3.cjs');
+const markerFilePath = path.join(import.meta.dirname, '..', '.disable-auto-updates');
+const yarnPath = path.join(import.meta.dirname, '..', '.yarn', 'releases', 'yarn-4.10.3.cjs');
 
 program
   .description('Check for build-tools updates or enable/disable automatic updates')
@@ -96,7 +96,7 @@ function checkForUpdates(): void {
       break;
     }
 
-    const execOpts = { cwd: path.resolve(__dirname, '..') };
+    const execOpts = { cwd: path.resolve(import.meta.dirname, '..') };
     const git = (args: string): string =>
       cp.execSync(`git ${args}`, execOpts).toString('utf8').trim();
 

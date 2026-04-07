@@ -1,8 +1,8 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import * as reclient from './reclient';
-import type { SanitizedConfig } from '../types';
+import * as reclient from './reclient.js';
+import type { SanitizedConfig } from '../types.js';
 
 const SISO_REAPI_INSTANCE = 'projects/electron-rbe/instances/default_instance';
 const SISO_PROJECT = SISO_REAPI_INSTANCE.split('/')[1] ?? '';
@@ -30,7 +30,7 @@ function getStarFile(envVar: string, filename: string): string {
   if (envVal && fs.existsSync(envVal)) {
     return envVal;
   }
-  return path.resolve(__dirname, '../../tools', filename);
+  return path.resolve(import.meta.dirname, '../../tools', filename);
 }
 
 export function flags(config: ConfigLike, hasExecute: boolean): (string | number)[] {

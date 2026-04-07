@@ -5,8 +5,8 @@ import * as path from 'node:path';
 
 import { program } from 'commander';
 
-import * as evmConfig from './evm-config';
-import { color, fatal } from './utils/logging';
+import * as evmConfig from './evm-config.js';
+import { color, fatal } from './utils/logging.js';
 import open from 'open';
 
 // 'feat: added foo (#1234)' --> 1234

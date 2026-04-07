@@ -2,11 +2,11 @@ import * as childProcess from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { color, fatal } from './logging';
-import { deleteDir } from './paths';
-import type { SanitizedConfig } from '../types';
+import { color, fatal } from './logging.js';
+import { deleteDir } from './paths.js';
+import type { SanitizedConfig } from '../types.js';
 
-const reclientDir = path.resolve(__dirname, '..', '..', 'third_party', 'reclient');
+const reclientDir = path.resolve(import.meta.dirname, '..', '..', 'third_party', 'reclient');
 const reclientTagFile = path.resolve(reclientDir, '.tag');
 const rbeHelperPath = path.resolve(
   reclientDir,
@@ -73,7 +73,7 @@ export function downloadAndPrepareRBECredentialHelper(config: ConfigLike): void 
   console.log(`Downloading ${color.cmd(downloadURL)} into ${color.path(tmpDownload)}`);
   const { status } = childProcess.spawnSync(
     process.execPath,
-    [path.resolve(__dirname, '..', 'download.js'), downloadURL, tmpDownload],
+    [path.resolve(import.meta.dirname, '..', 'download.js'), downloadURL, tmpDownload],
     {
       stdio: 'inherit',
     },

@@ -5,13 +5,13 @@ import { styleText } from 'node:util';
 
 import * as semver from 'semver';
 
-import { ensureDir, deleteDir } from './paths';
-import * as evmConfig from '../evm-config';
-import type { SanitizedConfig } from '../types';
-import { color, fatal } from './logging';
-import SDKs from './sdks.json';
+import { ensureDir, deleteDir } from './paths.js';
+import * as evmConfig from '../evm-config.js';
+import type { SanitizedConfig } from '../types.js';
+import { color, fatal } from './logging.js';
+import SDKs from './sdks.json' with { type: 'json' };
 
-const SDKDir = path.resolve(__dirname, '..', '..', 'third_party', 'SDKs');
+const SDKDir = path.resolve(import.meta.dirname, '..', '..', 'third_party', 'SDKs');
 const SDKZip = path.resolve(SDKDir, 'MacOSX.sdk.zip');
 
 const XcodeBaseURL = 'https://dev-cdn-experimental.electronjs.org/xcode/';
@@ -61,7 +61,7 @@ function removeUnusedSDKs(): void {
 
 // Potentially remove unused Xcode versions.
 function maybeRemoveOldXcodes(): void {
-  const XcodeDir = path.resolve(__dirname, '..', '..', 'third_party', 'Xcode');
+  const XcodeDir = path.resolve(import.meta.dirname, '..', '..', 'third_party', 'Xcode');
   if (fs.existsSync(XcodeDir)) {
     deleteDir(XcodeDir);
   }
@@ -223,7 +223,7 @@ export function ensureSDK(version?: string): string {
         console.log(`Downloading ${color.cmd(sdkURL)} into ${color.path(SDKZip)}`);
         const { status } = cp.spawnSync(
           process.execPath,
-          [path.resolve(__dirname, '..', 'download.js'), sdkURL, SDKZip],
+          [path.resolve(import.meta.dirname, '..', 'download.js'), sdkURL, SDKZip],
           {
             stdio: 'inherit',
           },

@@ -8,13 +8,13 @@ import { pathToFileURL } from 'node:url';
 
 import { program, Option } from 'commander';
 
-import * as evmConfig from './evm-config';
-import { color, fatal } from './utils/logging';
-import { resolvePath, ensureDir } from './utils/paths';
-import * as depot from './utils/depot-tools';
-import { checkGlobalGitConfig } from './utils/git';
-import { ensureSDK } from './utils/sdk';
-import type { EvmConfig, RemoteBuild } from './types';
+import * as evmConfig from './evm-config.js';
+import { color, fatal } from './utils/logging.js';
+import { resolvePath, ensureDir } from './utils/paths.js';
+import * as depot from './utils/depot-tools.js';
+import { checkGlobalGitConfig } from './utils/git.js';
+import { ensureSDK } from './utils/sdk.js';
+import type { EvmConfig, RemoteBuild } from './types.js';
 
 // https://gn.googlesource.com/gn/+/main/docs/reference.md?pli=1#var_target_cpu
 const archOption = new Option(
@@ -83,7 +83,7 @@ function createConfig(options: InitOptions): EvmConfig {
   const gitCachePath = process.env['GIT_CACHE_PATH'];
 
   return {
-    $schema: pathToFileURL(path.resolve(__dirname, '..', 'evm-config.schema.json')).href,
+    $schema: pathToFileURL(path.resolve(import.meta.dirname, '..', 'evm-config.schema.json')).href,
     remoteBuild: options.remoteBuild,
     root,
     remotes: {
@@ -212,7 +212,7 @@ program
       console.log(`New build config ${color.config(name)} created in ${color.path(filename)}`);
 
       // `e use` the new config
-      const e = path.resolve(__dirname, 'e');
+      const e = path.resolve(import.meta.dirname, 'e');
       const opts: childProcess.ExecFileSyncOptions = { stdio: 'inherit' };
       childProcess.execFileSync(process.execPath, [e, 'use', name], opts);
 

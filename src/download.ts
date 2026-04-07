@@ -2,8 +2,8 @@ import * as fs from 'node:fs';
 import * as stream from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
-import { fatal } from './utils/logging';
-import { progressStream } from './utils/download';
+import { fatal } from './utils/logging.js';
+import { progressStream } from './utils/download.js';
 
 const outPath = process.argv[3];
 if (!outPath) {

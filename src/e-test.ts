@@ -5,10 +5,10 @@ import * as path from 'node:path';
 
 import { program, Option } from 'commander';
 
-import * as evmConfig from './evm-config';
-import { ensureNodeHeaders } from './utils/headers';
-import { color, fatal } from './utils/logging';
-import type { SanitizedConfig } from './types';
+import * as evmConfig from './evm-config.js';
+import { ensureNodeHeaders } from './utils/headers.js';
+import { color, fatal } from './utils/logging.js';
+import type { SanitizedConfig } from './types.js';
 
 function runSpecRunner(config: SanitizedConfig, script: string, runnerArgs: string[]): void {
   const exec = process.execPath;

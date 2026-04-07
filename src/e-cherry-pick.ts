@@ -8,11 +8,11 @@ import * as os from 'node:os';
 import { program } from 'commander';
 import { Octokit } from '@octokit/rest';
 
-import * as evmConfig from './evm-config';
+import * as evmConfig from './evm-config.js';
 import debug from 'debug';
-import { getGerritPatchDetailsFromURL } from './utils/gerrit';
-import { getGitHubAuthToken } from './utils/github-auth';
-import { fatal, color } from './utils/logging';
+import { getGerritPatchDetailsFromURL } from './utils/gerrit.js';
+import { getGitHubAuthToken } from './utils/github-auth.js';
+import { fatal, color } from './utils/logging.js';
 
 const d = debug('build-tools:cherry-pick');
 

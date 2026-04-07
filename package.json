@@ -1,6 +1,7 @@
 {
   "name": "build-tools",
   "version": "0.2.0",
+  "type": "module",
   "engines": {
     "node": ">= 22.13.0"
   },
@@ -23,8 +24,8 @@
   "license": "MIT",
   "dependencies": {
     "@inquirer/prompts": "^8.2.0",
-    "@octokit/auth-oauth-device": "^3.1.1",
-    "@octokit/rest": "^18.5.2",
+    "@octokit/auth-oauth-device": "^8.0.3",
+    "@octokit/rest": "^22.0.1",
     "commander": "^9.0.0",
     "debug": "^4.4.3",
     "extract-zip": "^2.0.1",

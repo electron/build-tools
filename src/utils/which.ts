@@ -1,10 +1,10 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { maybeAutoFix } from './maybe-auto-fix';
-import { refreshPathVariable } from './refresh-path';
-import { fatal } from './logging';
-import { pathKey } from './path-key';
+import { maybeAutoFix } from './maybe-auto-fix.js';
+import { refreshPathVariable } from './refresh-path.js';
+import { fatal } from './logging.js';
+import { pathKey } from './path-key.js';
 
 const isWindows = process.platform === 'win32';
 
