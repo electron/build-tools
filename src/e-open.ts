@@ -2,6 +2,7 @@
 
 import * as cp from 'node:child_process';
 import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { program } from 'commander';
 
@@ -109,6 +110,6 @@ program
     void doOpen({ object: name, print: options.print });
   });
 
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   program.parse(process.argv);
 }

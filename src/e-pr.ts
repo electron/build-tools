@@ -7,6 +7,7 @@ import * as path from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import * as querystring from 'node:querystring';
+import { fileURLToPath } from 'node:url';
 
 import extractZip from 'extract-zip';
 import * as semver from 'semver';
@@ -435,6 +436,6 @@ Proceed?`,
     }
   });
 
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   program.parse(process.argv);
 }
