@@ -1,7 +1,7 @@
-// @ts-expect-error — no types published for this package.
-import chrome from '@marshallofsound/chrome-cookies-secure';
+import { borrowCookieViaCDP } from './cookie-cdp-borrow';
 
 const BASE_URL = 'https://issues.chromium.org';
+const ISSUES_HOST = 'issues.chromium.org';
 
 /** Extract a delimited slice from a larger string. Exported for testing. */
 export function getPayload(html: string, start: string, end: string): string {
@@ -34,14 +34,7 @@ async function getXsrfToken(osid: string): Promise<string | null> {
 type IssueData = unknown[];
 
 async function getBugInfo(bugNr: string): Promise<IssueData> {
-  const profile = process.env['CHROME_SECURITY_PROFILE'] ?? 'Profile 1';
-  const cookies: Record<string, string> = await chrome.getCookiesPromised(
-    BASE_URL,
-    'object',
-    profile,
-  );
-  const OSID = cookies['OSID'];
-  if (!OSID) throw new Error('No OSID cookie found');
+  const OSID = await borrowCookieViaCDP(ISSUES_HOST, 'OSID');
 
   const xsrfToken = await getXsrfToken(OSID);
 
