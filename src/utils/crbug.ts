@@ -1,4 +1,4 @@
-import { borrowCookieViaCDP } from './cookie-cdp-borrow';
+import { borrowCookieViaCDP } from './cookie-cdp-borrow.js';
 
 const BASE_URL = 'https://issues.chromium.org';
 const ISSUES_HOST = 'issues.chromium.org';

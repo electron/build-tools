@@ -2,8 +2,8 @@
 
 import { program } from 'commander';
 
-import { createGitHubAuthToken } from './utils/github-auth';
-import { fatal } from './utils/logging';
+import { createGitHubAuthToken } from './utils/github-auth.js';
+import { fatal } from './utils/logging.js';
 
 program
   .description('Generates a device auth token for the electron org that build-tools can use')

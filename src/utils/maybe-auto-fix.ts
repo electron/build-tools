@@ -1,6 +1,6 @@
 import * as readlineSync from 'readline-sync';
 
-import { color } from './logging';
+import { color } from './logging.js';
 
 export function maybeAutoFix(fn: () => void, err: Error): void {
   if (process.env['ELECTRON_BUILD_TOOLS_AUTO_FIX']) return fn();

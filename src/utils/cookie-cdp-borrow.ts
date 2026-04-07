@@ -4,7 +4,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { input } from '@inquirer/prompts';
 import open from 'open';
 
-import { color } from './logging';
+import { color } from './logging.js';
 
 const CDP_HOST = '127.0.0.1';
 const CDP_PORT = 9222;

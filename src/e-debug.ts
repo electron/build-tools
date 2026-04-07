@@ -5,10 +5,10 @@ import * as path from 'node:path';
 
 import { program } from 'commander';
 
-import * as evmConfig from './evm-config';
-import { fatal } from './utils/logging';
-import { commandExists } from './utils/which';
-import type { SanitizedConfig } from './types';
+import * as evmConfig from './evm-config.js';
+import { fatal } from './utils/logging.js';
+import { commandExists } from './utils/which.js';
+import type { SanitizedConfig } from './types.js';
 
 const opts: childProcess.ExecFileSyncOptionsWithStringEncoding = {
   encoding: 'utf8',

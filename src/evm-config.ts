@@ -6,12 +6,12 @@ import { pathToFileURL } from 'node:url';
 import * as YAML from 'yaml';
 import type { z } from 'zod';
 
-import { color, fatal } from './utils/logging';
-import { ensureDir } from './utils/paths';
-import { evmConfigSchema, type EvmConfig, type SanitizedConfig } from './types';
+import { color, fatal } from './utils/logging.js';
+import { ensureDir } from './utils/paths.js';
+import { evmConfigSchema, type EvmConfig, type SanitizedConfig } from './types.js';
 
 const configRoot = (): string =>
-  process.env['EVM_CONFIG'] ?? path.resolve(__dirname, '..', 'configs');
+  process.env['EVM_CONFIG'] ?? path.resolve(import.meta.dirname, '..', 'configs');
 
 let shouldWarn = true;
 
@@ -206,7 +206,9 @@ export function sanitizeConfig(
   }
 
   if (!('$schema' in config)) {
-    config.$schema = pathToFileURL(path.resolve(__dirname, '..', 'evm-config.schema.json')).href;
+    config.$schema = pathToFileURL(
+      path.resolve(import.meta.dirname, '..', 'evm-config.schema.json'),
+    ).href;
     changes.push(`added missing property ${color.config('$schema')}`);
   }
 

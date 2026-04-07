@@ -5,8 +5,8 @@ import * as path from 'node:path';
 
 import { program } from 'commander';
 
-import * as evmConfig from './evm-config';
-import { color, fatal } from './utils/logging';
+import * as evmConfig from './evm-config.js';
+import { color, fatal } from './utils/logging.js';
 import open from 'open';
 
 // 'feat: added foo (#1234)' --> 1234
@@ -109,6 +109,6 @@ program
     void doOpen({ object: name, print: options.print });
   });
 
-if (require.main === module) {
+if (import.meta.main) {
   program.parse(process.argv);
 }

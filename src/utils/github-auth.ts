@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 
 import { createOAuthDeviceAuth } from '@octokit/auth-oauth-device';
 
-import { color } from './logging';
+import { color } from './logging.js';
 
 const ELECTRON_BUILD_TOOLS_GITHUB_CLIENT_ID = '03581ca0d21228704ab3';
 

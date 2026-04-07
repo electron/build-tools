@@ -5,14 +5,14 @@ import * as path from 'node:path';
 
 import { program } from 'commander';
 
-import * as evmConfig from './evm-config';
-import { fatal } from './utils/logging';
-import { ensureDir } from './utils/paths';
-import * as depot from './utils/depot-tools';
-import { configureReclient } from './utils/setup-reclient-chromium';
-import { ensureSDK } from './utils/sdk';
-import { ensurePrereqs } from './utils/prereqs';
-import type { ElectronRemotes } from './types';
+import * as evmConfig from './evm-config.js';
+import { fatal } from './utils/logging.js';
+import { ensureDir } from './utils/paths.js';
+import * as depot from './utils/depot-tools.js';
+import { configureReclient } from './utils/setup-reclient-chromium.js';
+import { ensureSDK } from './utils/sdk.js';
+import { ensurePrereqs } from './utils/prereqs.js';
+import type { ElectronRemotes } from './types.js';
 
 function setRemotes(cwd: string, repo: ElectronRemotes): void {
   // Confirm that cwd is the git root

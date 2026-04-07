@@ -7,10 +7,10 @@ import * as inquirer from '@inquirer/prompts';
 import { Octokit } from '@octokit/rest';
 import { program } from 'commander';
 
-import * as evmConfig from './evm-config';
-import { spawnSync, type DepotOpts } from './utils/depot-tools';
-import { getGitHubAuthToken } from './utils/github-auth';
-import { fatal } from './utils/logging';
+import * as evmConfig from './evm-config.js';
+import { spawnSync, type DepotOpts } from './utils/depot-tools.js';
+import { getGitHubAuthToken } from './utils/github-auth.js';
+import { fatal } from './utils/logging.js';
 
 program
   .arguments('[pr]')

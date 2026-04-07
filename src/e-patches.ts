@@ -6,9 +6,9 @@ import * as os from 'node:os';
 
 import { program } from 'commander';
 
-import * as evmConfig from './evm-config';
-import { execFileSync, spawnSync, type DepotOpts } from './utils/depot-tools';
-import { color, fatal } from './utils/logging';
+import * as evmConfig from './evm-config.js';
+import { execFileSync, spawnSync, type DepotOpts } from './utils/depot-tools.js';
+import { color, fatal } from './utils/logging.js';
 
 interface PatchTarget {
   patch_dir: string;

@@ -3,13 +3,19 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import * as childProcess from 'node:child_process';
 
-import { color, fatal } from './logging';
-import { pathKey } from './path-key';
-import * as reclient from './reclient';
-import * as siso from './siso';
-import type { SanitizedConfig, SpawnResult } from '../types';
+import { color, fatal } from './logging.js';
+import { pathKey } from './path-key.js';
+import * as reclient from './reclient.js';
+import * as siso from './siso.js';
+import type { SanitizedConfig, SpawnResult } from '../types.js';
 
-const defaultDepotPath = path.resolve(__dirname, '..', '..', 'third_party', 'depot_tools');
+const defaultDepotPath = path.resolve(
+  import.meta.dirname,
+  '..',
+  '..',
+  'third_party',
+  'depot_tools',
+);
 export const DEPOT_TOOLS_DIR = process.env['DEPOT_TOOLS_DIR'] ?? defaultDepotPath;
 
 const markerFilePath = path.join(DEPOT_TOOLS_DIR, '.disable_auto_update');

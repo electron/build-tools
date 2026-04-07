@@ -1,7 +1,7 @@
 import * as cp from 'node:child_process';
 
-import { maybeAutoFix } from './maybe-auto-fix';
-import { color } from './logging';
+import { maybeAutoFix } from './maybe-auto-fix.js';
+import { color } from './logging.js';
 
 function spawnSyncWithLog(cmd: string, args: string[]): cp.SpawnSyncReturns<Buffer> {
   console.log(color.childExec(cmd, args, {}));

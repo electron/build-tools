@@ -9,12 +9,12 @@ import * as inquirer from '@inquirer/prompts';
 import { Octokit } from '@octokit/rest';
 import { program } from 'commander';
 
-import * as evmConfig from './evm-config';
-import { spawnSync, type DepotOpts } from './utils/depot-tools';
-import { getGerritPatchDetailsFromURL } from './utils/gerrit';
-import { getGitHubAuthToken } from './utils/github-auth';
-import { color, fatal } from './utils/logging';
-import type { SanitizedConfig } from './types';
+import * as evmConfig from './evm-config.js';
+import { spawnSync, type DepotOpts } from './utils/depot-tools.js';
+import { getGerritPatchDetailsFromURL } from './utils/gerrit.js';
+import { getGitHubAuthToken } from './utils/github-auth.js';
+import { color, fatal } from './utils/logging.js';
+import type { SanitizedConfig } from './types.js';
 
 const ELECTRON_BOT_EMAIL = 'electron-bot@users.noreply.github.com';
 const ELECTRON_BOT_NAME = 'Electron Bot';
@@ -506,6 +506,6 @@ program
     },
   );
 
-if (require.main === module) {
+if (import.meta.main) {
   program.parse(process.argv);
 }

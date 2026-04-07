@@ -6,10 +6,10 @@ import * as path from 'node:path';
 
 import { program } from 'commander';
 
-import * as evmConfig from './evm-config';
-import { color, fatal } from './utils/logging';
-import * as depot from './utils/depot-tools';
-import type { SanitizedConfig } from './types';
+import * as evmConfig from './evm-config.js';
+import { color, fatal } from './utils/logging.js';
+import * as depot from './utils/depot-tools.js';
+import type { SanitizedConfig } from './types.js';
 
 function gitStatus(config: SanitizedConfig): string {
   const exec = 'git';
