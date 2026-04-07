@@ -4,7 +4,6 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { styleText } from 'node:util';
-import { fileURLToPath } from 'node:url';
 
 import * as inquirer from '@inquirer/prompts';
 import { Octokit } from '@octokit/rest';
@@ -507,6 +506,6 @@ program
     },
   );
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (import.meta.main) {
   program.parse(process.argv);
 }
