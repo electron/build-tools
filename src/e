@@ -25,4 +25,9 @@ if (!fs.existsSync(distEntry)) {
   }
 }
 
-await import(pathToFileURL(distEntry).href);
+// The global @electron/build-tools wrapper loads this file via require(), so
+// avoid top-level await — Node's require(esm) rejects graphs containing TLA.
+import(pathToFileURL(distEntry).href).catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
