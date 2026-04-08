@@ -29,13 +29,16 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Build
+        run: yarn build
+
       - name: Fetch Chromium mac_toolchain.py
         run: |
           curl -sSL "https://chromium.googlesource.com/chromium/src/+/main/build/mac_toolchain.py?format=TEXT" | base64 -d > mac_toolchain.py
 
       - name: Check for new SDK version
         id: check-sdk
-        run: node .github/workflows/scripts/check-sdk-version.js mac_toolchain.py
+        run: node .github/workflows/scripts/check-sdk-version.mjs mac_toolchain.py
 
       - name: Create issue for new SDK
         if: steps.check-sdk.outputs.new-sdk == 'true'

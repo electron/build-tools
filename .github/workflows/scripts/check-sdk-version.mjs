@@ -1,14 +1,9 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const { extractSDKVersion } = require('../../../src/utils/sdk');
+import * as fs from 'node:fs';
 
-function getKnownSDKs() {
-  const sdkPath = path.resolve(__dirname, '../../../src/utils/sdks.json');
-  const sdks = JSON.parse(fs.readFileSync(sdkPath, 'utf8'));
-  return Object.keys(sdks);
-}
+import { extractSDKVersion } from '../../../dist/utils/sdk.js';
+import SDKs from '../../../src/utils/sdks.json' with { type: 'json' };
 
 function isNewerVersion(v1, v2) {
   const [major1, minor1] = v1.split('.').map(Number);
@@ -26,7 +21,7 @@ function main() {
 
     if (!macToolchainPath || !fs.existsSync(macToolchainPath)) {
       console.error(`Error: Could not find ${macToolchainPath || 'mac_toolchain.py'}`);
-      console.error('Usage: node check-sdk-version.js <path-to-mac_toolchain.py>');
+      console.error('Usage: node check-sdk-version.mjs <path-to-mac_toolchain.py>');
       process.exit(1);
     }
 
@@ -38,7 +33,7 @@ function main() {
       process.exit(1);
     }
 
-    const knownSDKs = getKnownSDKs();
+    const knownSDKs = Object.keys(SDKs);
     console.log(`Known SDK versions: ${knownSDKs.join(', ')}`);
 
     if (knownSDKs.includes(chromiumSDK)) {
