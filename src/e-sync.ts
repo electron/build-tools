@@ -11,7 +11,6 @@ import { ensureDir } from './utils/paths.js';
 import * as depot from './utils/depot-tools.js';
 import { configureReclient } from './utils/setup-reclient-chromium.js';
 import { ensureSDK } from './utils/sdk.js';
-import { ensurePrereqs } from './utils/prereqs.js';
 import type { ElectronRemotes } from './types.js';
 
 function setRemotes(cwd: string, repo: ElectronRemotes): void {
@@ -49,8 +48,6 @@ function setRemotes(cwd: string, repo: ElectronRemotes): void {
 }
 
 function runGClientSync(syncArgs: string[], syncOpts: { threeWay?: boolean }): void {
-  ensurePrereqs();
-
   const config = evmConfig.current();
   const srcdir = path.resolve(config.root, 'src');
   ensureDir(srcdir);

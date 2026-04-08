@@ -9,11 +9,15 @@ import { program } from 'commander';
 import * as evmConfig from './evm-config.js';
 import { color, fatal } from './utils/logging.js';
 import * as depot from './utils/depot-tools.js';
+import { ensurePrereqs } from './utils/prereqs.js';
 import { refreshPathVariable } from './utils/refresh-path.js';
 import { ensureSDK } from './utils/sdk.js';
 
 // Refresh the PATH variable at the top of this shell so that retries in the same shell get the latest PATH variable
 refreshPathVariable();
+
+// Fail fast on unsupported Node.js / Python runtimes before doing any work.
+ensurePrereqs();
 
 function maybeCheckForUpdates(): void {
   // skip auto-update check if disabled
