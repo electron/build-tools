@@ -22,6 +22,13 @@ const archOption = new Option(
   'Set the desired architecture for the build',
 ).choices(['x86', 'x64', 'arm', 'arm64']);
 
+// https://gn.googlesource.com/gn/+/main/docs/reference.md?pli=1#var_target_os
+const osOption = new Option('--target-os <os>', 'Set the target OS for cross-compilation').choices([
+  'win',
+  'linux',
+  'mac',
+]);
+
 interface InitOptions {
   root: string;
   import: string;
@@ -33,6 +40,7 @@ interface InitOptions {
   lsan: boolean;
   mas: boolean;
   targetCpu?: string;
+  targetOs?: string;
   bootstrap?: boolean;
   remoteBuild: RemoteBuild;
   useHttps: boolean;
@@ -68,6 +76,15 @@ function createConfig(options: InitOptions): EvmConfig {
   }
 
   if (options.targetCpu) gn_args.push(`target_cpu="${options.targetCpu}"`);
+  if (options.targetOs) {
+    gn_args.push(`target_os="${options.targetOs}"`);
+    // Chromium disables use_v8_context_snapshot for win cross-compiles by
+    // default (see tools/v8_context_snapshot/v8_context_snapshot.gni).
+    // Override it to match native Windows builds.
+    if (options.targetOs === 'win') {
+      gn_args.push('use_v8_context_snapshot=true');
+    }
+  }
 
   const electron = {
     origin: options.useHttps
@@ -122,6 +139,20 @@ function runGClientConfig(config: EvmConfig): void {
   depot.spawnSync(config, exec, args, opts, 'gclient config failed');
 }
 
+function setGClientTargetOs(config: EvmConfig, targetOs: string): void {
+  const { root } = config;
+  if (!root) fatal('Config is missing root');
+
+  const gclientPath = path.resolve(root, '.gclient');
+  if (!fs.existsSync(gclientPath)) return;
+
+  let content = fs.readFileSync(gclientPath, 'utf8');
+  content = content.replace(/^target_os\s*=.*\n?/gm, '');
+  // TODO: install host toolchain separately and set target_os_only to speed up builds.
+  content += `target_os = ['${targetOs}']\n`;
+  fs.writeFileSync(gclientPath, content);
+}
+
 function ensureRoot(config: EvmConfig, force: boolean): void {
   const { root } = config;
   if (!root) fatal('Config is missing root');
@@ -162,6 +193,7 @@ program
   .option('--lsan', `When building, enable clang's leak sanitizer`, false)
   .option('--mas', 'Build for the macOS App Store', false)
   .addOption(archOption)
+  .addOption(osOption)
   .option('--bootstrap', 'Run `e sync` and `e build` after creating the build config.')
   .addOption(
     new Option(
@@ -222,6 +254,10 @@ program
       }
 
       ensureRoot(config, !!options.force);
+
+      if (options.targetOs) {
+        setGClientTargetOs(config, options.targetOs);
+      }
 
       // (maybe) run sync to ensure external binaries are downloaded
       if (options.bootstrap) {
