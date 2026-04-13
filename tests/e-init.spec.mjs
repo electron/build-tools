@@ -17,7 +17,7 @@ describe('e-init', () => {
   });
 
   describe('--root', () => {
-    it('creates a new directory with a .gclient file', () => {
+    it('creates a new directory with a .gclient file', { timeout: 600_000 }, () => {
       const root = path.resolve(sandbox.tmpdir, 'main');
       const gclient_file = path.resolve(root, '.gclient');
 
@@ -36,7 +36,7 @@ describe('e-init', () => {
       expect(result.exitCode).toStrictEqual(0);
       expect(fs.statSync(root).isDirectory()).toStrictEqual(true);
       expect(fs.statSync(gclient_file).isFile()).toStrictEqual(true);
-    }, { timeout: 600_000 });
+    });
 
     it('creates a config correctly reflecting options passed', () => {
       const root = path.resolve(sandbox.tmpdir, 'main');
