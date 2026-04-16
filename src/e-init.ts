@@ -81,6 +81,16 @@ function createConfig(options: InitOptions): EvmConfig {
   };
 
   const gitCachePath = process.env['GIT_CACHE_PATH'];
+  const gen = {
+    args: gn_args,
+    out: options.out ?? 'Testing',
+  };
+  const env = {
+    CHROMIUM_BUILDTOOLS_PATH: path.resolve(root, 'src', 'buildtools'),
+    GIT_CACHE_PATH: gitCachePath ? resolvePath(gitCachePath) : path.resolve(homedir, '.git_cache'),
+  };
+
+  evmConfig.ensureAsanOptions({ gen, env });
 
   return {
     $schema: pathToFileURL(path.resolve(import.meta.dirname, '..', 'evm-config.schema.json')).href,
@@ -89,17 +99,9 @@ function createConfig(options: InitOptions): EvmConfig {
     remotes: {
       electron,
     },
-    gen: {
-      args: gn_args,
-      out: options.out ?? 'Testing',
-    },
+    gen,
     preserveSDK: 5,
-    env: {
-      CHROMIUM_BUILDTOOLS_PATH: path.resolve(root, 'src', 'buildtools'),
-      GIT_CACHE_PATH: gitCachePath
-        ? resolvePath(gitCachePath)
-        : path.resolve(homedir, '.git_cache'),
-    },
+    env,
   };
 }
 
