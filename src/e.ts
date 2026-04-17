@@ -2,6 +2,7 @@
 
 import * as cp from 'node:child_process';
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 import * as path from 'node:path';
 
 import { program } from 'commander';
@@ -218,6 +219,35 @@ program
     } catch (e) {
       fatal(e);
     }
+  });
+
+program
+  .command('env')
+  .description('Run a command with the active build-tools environment')
+  .allowUnknownOption()
+  .helpOption('\0')
+  .action(() => {
+    const args = process.argv.slice(3);
+    if (args[0] === '--') args.shift();
+    const cmd = args[0];
+    if (!cmd) fatal(`Must provide a command to 'e env'`);
+
+    const { status, error } = depot.spawnSync(evmConfig.current(), cmd, args.slice(1), {
+      stdio: 'inherit',
+      shell: os.platform() === 'win32',
+    });
+
+    if (error) fatal(`Failed to run command:\n ${error}`, status ?? 1);
+
+    process.exit(status ?? 0);
+  })
+  .on('--help', () => {
+    console.log('');
+    console.log('Examples:');
+    console.log('');
+    console.log('  $ e env git commit');
+    console.log('  $ e env yarn run lint:cpp');
+    console.log('  $ e env mycommand.sh arg1 arg2');
   });
 
 program

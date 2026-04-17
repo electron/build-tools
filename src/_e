@@ -23,7 +23,7 @@ _e () {
   local line
 
   _arguments -C \
-    "1: :(build debug help init make new node patches pr run show start sync test use)"
+    "1: :(build debug env help init make new node patches pr run show start sync test use)"\
     "*::arg:->args"
 
   local completion_func="_e__${line[1]}"

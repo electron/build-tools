@@ -201,6 +201,27 @@ function eSyncRunner(execOptions) {
   return o;
 }
 
+// A top-level `e` helper.
+// Example use: result = eRunner().args('env', 'node', '--version').run();
+// Returns { exitCode:number, stderr:string, stdout:string }
+function eRunner(execOptions) {
+  const stdio = 'pipe';
+  const cmd = path.resolve(buildToolsDistDir, 'e.js');
+  const args = [];
+
+  const o = {
+    args: (...vals) => {
+      args.push(...vals);
+      return o;
+    },
+    run: () => {
+      return runSync([cmd, ...args], { ...execOptions, stdio });
+    },
+  };
+
+  return o;
+}
+
 // An `e remove` helper.
 // Example use: result = eRemoveRunner().name('test').run();
 // Returns { exitCode:number, stderr:string, stdout:string }
@@ -261,6 +282,9 @@ function createSandbox() {
     },
     eSyncRunner: () => {
       return eSyncRunner(execOptions);
+    },
+    eRunner: () => {
+      return eRunner(execOptions);
     },
     eRemoveRunner: () => {
       return eRemoveRunner(execOptions);

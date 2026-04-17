@@ -465,6 +465,20 @@ $ e shell
 # Running "/bin/zsh"
 ```
 
+### `e env <command> [args...]`
+
+`e env` runs any command with the active build-tools environment variables applied.
+
+This is useful for using build-tools' configuration for command-line Electron scripts
+that require `CHROMIUM_BULDTOOLS_PATH` to be set and for `PATH` to include depot_tools,
+such as `git commit` and `yarn run lint`.
+
+```sh
+$ e env git commit
+$ e env yarn run lint
+$ e env mycommand.sh arg1 arg2
+```
+
 ### `e backport <PR>`
 
 `e backport <PR>` assists with manual backport processes on the specified pull request.
