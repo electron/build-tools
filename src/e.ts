@@ -188,8 +188,8 @@ program
   .command('auto-update', 'Check for build-tools updates or enable/disable automatic updates')
   .alias('check-for-updates')
   .command(
-    'cherry-pick <patch-url> <target-branch> [additionalBranches...]',
-    'Opens a PR to electron/electron that backport the given CL into our patches folder',
+    'cherry-pick <patch-url> <target-branch> [additionalBranchesOrUrls...]',
+    'Opens a PR to electron/electron that backports the given CL(s) into our patches folder',
   )
   .alias('auto-cherry-pick')
   .command('gh-auth', 'Generates a device oauth token')

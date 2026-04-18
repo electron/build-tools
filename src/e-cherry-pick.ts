@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import * as cp from 'node:child_process';
+import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
@@ -29,10 +30,16 @@ interface PatchDetails {
   cve?: string;
 }
 
-async function getPatchDetailsFromURL(urlStr: string, security: boolean): Promise<PatchDetails> {
+async function getPatchDetailsFromURL(
+  urlStr: string,
+  security: boolean,
+  cveLookup: boolean,
+): Promise<PatchDetails> {
   const parsedUrl = new URL(urlStr);
   if (parsedUrl.host.endsWith('.googlesource.com')) {
-    return getGerritPatchDetailsFromURL(parsedUrl, security);
+    // gerrit's `security` flag only gates the issues.chromium.org CVE lookup,
+    // so suppress it when --no-cve-lookup is passed.
+    return getGerritPatchDetailsFromURL(parsedUrl, security && cveLookup);
   }
   if (parsedUrl.host === 'github.com') {
     return getGitHubPatchDetailsFromURL(parsedUrl, security);
@@ -70,23 +77,43 @@ async function getGitHubPatchDetailsFromURL(
   };
 }
 
+function isUrl(arg: string) {
+  return arg.startsWith('https://') || arg.startsWith('http://');
+}
+
+function commitSubject(patch: string) {
+  return /Subject: \[PATCH\] (.+?)$/m.exec(patch)?.[1]?.trim() ?? '';
+}
+
 program
-  .arguments('<patch-url> <target-branch> [additionalBranches...]')
+  .arguments('<patch-url> <target-branch> [additionalBranchesOrUrls...]')
   .option('--security', 'Whether this backport is for security reasons')
-  .description('Opens a PR to electron/electron that backport the given CL into our patches folder')
+  .option(
+    '--no-cve-lookup',
+    'Skip the issues.chromium.org CVE lookup (and the interactive Chrome cookie borrow it requires)',
+  )
+  .description(
+    'Opens a PR to electron/electron that backports the given CL(s) into our patches folder',
+  )
   .allowExcessArguments(false)
   .action(
     async (
       patchUrlStr: string,
       targetBranch: string,
-      additionalBranches: string[],
-      { security }: { security?: boolean },
+      rest: string[],
+      { security, cveLookup }: { security?: boolean; cveLookup: boolean },
     ) => {
-      if (targetBranch.startsWith('https://')) {
+      if (isUrl(targetBranch)) {
         const tmp = patchUrlStr;
         patchUrlStr = targetBranch;
         targetBranch = tmp;
       }
+
+      // Any positional argument that looks like a URL is treated as an
+      // additional patch to include in the same PR; everything else is an
+      // additional target branch to also raise a PR against.
+      const patchUrls = [patchUrlStr, ...rest.filter(isUrl)];
+      const targetBranches = [targetBranch, ...rest.filter((a) => !isUrl(a))];
 
       const octokit = new Octokit({
         auth: await getGitHubAuthToken(['repo']),
@@ -107,81 +134,128 @@ program
           );
         }
 
-        const { patchDirName, shortCommit, patch, bugNumber, cve } = await getPatchDetailsFromURL(
-          patchUrlStr,
-          !!security,
-        );
+        d(`Fetching ${patchUrls.length} patch(es) from upstream`);
+        const patches: PatchDetails[] = [];
+        for (const url of patchUrls) {
+          patches.push(await getPatchDetailsFromURL(url, !!security, cveLookup));
+        }
 
-        const patchName = `cherry-pick-${shortCommit}.patch`;
-        const commitMatch = /Subject: \[PATCH\] (.+?)^---$/ms.exec(patch);
-        const commitMessage = commitMatch?.[1] ?? '';
-        const patchPath = `patches/${patchDirName}`;
-        const targetBranches = [targetBranch, ...additionalBranches];
+        const isBatch = patches.length > 1;
+        const patchDirNames = [...new Set(patches.map((p) => p.patchDirName))];
+        const batchId = crypto
+          .createHash('sha256')
+          .update(patchUrls.join('\n'))
+          .digest('hex')
+          .slice(0, 12);
 
         d(`Cloning electron/electron to ${tmp}`);
         cp.execSync(`git clone ${evmConfig.current().remotes.electron.origin}`, { cwd: tmp });
 
         for (const target of targetBranches) {
-          console.log(`${color.info} Cherry-picking ${shortCommit} into ${target}`);
+          const first = patches[0]!;
+          const branchName = isBatch
+            ? `cherry-pick/${target}/batch-${batchId}`
+            : `cherry-pick/${target}/${first.patchDirName}/${first.shortCommit}`;
 
-          const branchName = `cherry-pick/${target}/${patchDirName}/${shortCommit}`;
+          console.log(
+            `${color.info} Cherry-picking ${patches.length} change(s) into ${target} (${branchName})`,
+          );
 
-          // Check out the target branch and create a new branch for the cherry-pick.
           d(`Checking out new branch from ${target}: ${branchName}`);
           cp.execSync(`git checkout ${target}`, { cwd: electronPath, stdio: 'ignore' });
           cp.execSync(`git checkout -b ${branchName}`, { cwd: electronPath, stdio: 'ignore' });
 
-          // Ensure the patches directory exists.
-          if (!fs.existsSync(`${electronPath}/${patchPath}`)) {
-            console.warn(
-              `${color.warn} No patches existing for ${patchDirName} in ${target} added a dir under patches/ but you'll need to manually edit patches/config.json`,
-            );
-            fs.mkdirSync(`${electronPath}/${patchPath}`);
+          let appliedAny = false;
+          for (const details of patches) {
+            const { patchDirName, shortCommit, patch } = details;
+            const patchName = `cherry-pick-${shortCommit}.patch`;
+            const patchPath = `patches/${patchDirName}`;
+
+            if (!fs.existsSync(`${electronPath}/${patchPath}`)) {
+              console.warn(
+                `${color.warn} No patches existing for ${patchDirName} in ${target} added a dir under patches/ but you'll need to manually edit patches/config.json`,
+              );
+              fs.mkdirSync(`${electronPath}/${patchPath}`);
+              fs.writeFileSync(`${electronPath}/${patchPath}/.patches`, '');
+            }
+
+            if (fs.existsSync(`${electronPath}/${patchPath}/${patchName}`)) {
+              console.info(
+                `${color.info} Patch ${patchName} already exists in ${patchDirName} in ${target} - skipping`,
+              );
+              continue;
+            }
+
+            const patchList = fs.readFileSync(`${electronPath}/${patchPath}/.patches`, 'utf8');
+            const newPatchList = patchList + `${patchName}\n`;
+
+            d(`Writing patch to ${patchPath}/${patchName} and updating .patches`);
+            fs.writeFileSync(`${electronPath}/${patchPath}/${patchName}`, patch);
+            fs.writeFileSync(`${electronPath}/${patchPath}/.patches`, newPatchList);
+
+            d(`Committing ${patchName}`);
+            const commitMsg = `chore: cherry-pick ${shortCommit} from ${patchDirName}`;
+            cp.execSync(`git add ${patchPath}`, { cwd: electronPath });
+            cp.execSync(`git commit -S -m "${commitMsg}"`, {
+              cwd: electronPath,
+              stdio: 'ignore',
+            });
+            appliedAny = true;
           }
 
-          // Check whether the patch already exists in the target branch.
-          if (fs.existsSync(`${electronPath}/${patchPath}/${patchName}`)) {
+          if (!appliedAny) {
             console.info(
-              `${color.info} Patch ${patchName} already exists in ${patchDirName} in ${target} - aborting cherry-pick`,
+              `${color.info} All requested patches already exist in ${target} - aborting cherry-pick`,
             );
             continue;
           }
 
-          // Write the patch to the patches directory and update the .patches file.
-          const patchList = fs.readFileSync(`${electronPath}/${patchPath}/.patches`, 'utf8');
-          const newPatchList = patchList + `${patchName}\n`;
-
-          d(`Writing patch to ${patchPath}/${patchName} and updating .patches`);
-          fs.writeFileSync(`${electronPath}/${patchPath}/${patchName}`, patch);
-          fs.writeFileSync(`${electronPath}/${patchPath}/.patches`, newPatchList);
-
-          d(`Committing changes`);
-          const commitMsg = `chore: cherry-pick ${shortCommit} from ${patchDirName}`;
-          cp.execSync(`git add ${patchPath}`, { cwd: electronPath });
-          cp.execSync(`git commit -S -m "${commitMsg}"`, {
-            cwd: electronPath,
-            stdio: 'ignore',
-          });
-
-          // Push the changes to the remote.
           cp.execSync(`git push origin ${branchName}`, {
             cwd: electronPath,
             stdio: 'ignore',
           });
+
+          let title: string;
+          let body: string;
+          if (isBatch) {
+            title = `chore: cherry-pick ${patches.length} changes from ${patchDirNames.join(', ')}`;
+            const lines = patches.map((p) => {
+              const ref = p.cve || p.bugNumber || p.shortCommit;
+              return `* ${p.shortCommit} from ${p.patchDirName} — ${commitSubject(p.patch)} (${ref})`;
+            });
+            const notes = patches
+              .map((p) => p.cve || p.bugNumber)
+              .filter(Boolean)
+              .join(', ');
+            body =
+              `Backports the following changes:\n\n${lines.join('\n')}\n\n` +
+              `Notes: ${
+                notes
+                  ? security
+                    ? `Security: backported fixes for ${notes}.`
+                    : `Backported fixes for ${notes}.`
+                  : `<!-- couldn't find bug numbers -->`
+              }`;
+          } else {
+            const { shortCommit, patchDirName, patch, bugNumber, cve } = first;
+            title = `chore: cherry-pick ${shortCommit} from ${patchDirName}`;
+            const commitMessage = /Subject: \[PATCH\] (.+?)^---$/ms.exec(patch)?.[1] ?? '';
+            body = `${commitMessage}\n\nNotes: ${
+              bugNumber
+                ? security
+                  ? `Security: backported fix for ${cve || bugNumber}.`
+                  : `Backported fix for ${bugNumber}.`
+                : `<!-- couldn't find bug number -->`
+            }`;
+          }
 
           d(`Creating PR for ${branchName}`);
           const { data: pr } = await octokit.pulls.create({
             ...ELECTRON_REPO_DATA,
             head: `electron:${branchName}`,
             base: target,
-            title: commitMsg,
-            body: `${commitMessage}\n\nNotes: ${
-              bugNumber
-                ? security
-                  ? `Security: backported fix for ${cve || bugNumber}.`
-                  : `Backported fix for ${bugNumber}.`
-                : `<!-- couldn't find bug number -->`
-            }`,
+            title,
+            body,
             maintainer_can_modify: true,
           });
 
@@ -199,7 +273,6 @@ program
 
           console.log(`${color.success} Created cherry-pick PR to ${target}: ${pr.html_url}`);
 
-          // Clean up the working tree between cherry-picks.
           d(`Cleaning up working tree between cherry-picks`);
           cp.execSync('git clean -fdx', { cwd: electronPath });
         }

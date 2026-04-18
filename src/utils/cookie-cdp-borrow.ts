@@ -70,6 +70,12 @@ function fetchCookieViaCDP(host: string, name: string): Promise<string | null> {
  * requested cookie over CDP, then block until the debugger is disabled again.
  */
 export async function borrowCookieViaCDP(host: string, name: string): Promise<string> {
+  if (!process.stdin.isTTY && !(await isDebuggerListening())) {
+    throw new Error(
+      `Cannot borrow ${host} cookie: no TTY for the interactive remote-debugger flow and no debugger already listening on ${CDP_HOST}:${CDP_PORT}.`,
+    );
+  }
+
   if (await isDebuggerListening()) {
     console.log(
       `${color.info} Chrome's remote debugger is already enabled on ${CDP_HOST}:${CDP_PORT}; reading your ${host} session cookie.`,
