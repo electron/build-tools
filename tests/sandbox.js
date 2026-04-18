@@ -201,6 +201,27 @@ function eSyncRunner(execOptions) {
   return o;
 }
 
+// A generic `e` helper that invokes the top-level dispatcher with raw args.
+// Example use: result = eRunner().args('--config=foo', 'show', 'current').run();
+// Returns { exitCode:number, stderr:string, stdout:string }
+function eRunner(execOptions) {
+  const stdio = 'pipe';
+  const cmd = path.resolve(buildToolsDistDir, 'e.js');
+  let args = [];
+
+  const o = {
+    args: (...a) => {
+      args = a;
+      return o;
+    },
+    run: () => {
+      return runSync([cmd, ...args], { ...execOptions, stdio });
+    },
+  };
+
+  return o;
+}
+
 // An `e remove` helper.
 // Example use: result = eRemoveRunner().name('test').run();
 // Returns { exitCode:number, stderr:string, stdout:string }
@@ -264,6 +285,9 @@ function createSandbox() {
     },
     eRemoveRunner: () => {
       return eRemoveRunner(execOptions);
+    },
+    eRunner: () => {
+      return eRunner(execOptions);
     },
     randomString: () => Math.random().toString(36).substring(2, 15),
     tmpdir,

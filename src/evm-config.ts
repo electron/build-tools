@@ -112,6 +112,10 @@ export function names(): string[] {
 }
 
 function getCurrentFileName(): string | null {
+  // One-off override from `e --config=<name> ...`.
+  const override = process.env['EVM_CURRENT'];
+  if (override) return override;
+
   return currentFiles().reduce<string | null>((name, filename) => {
     try {
       // `||` (not `??`) is deliberate: an empty file — e.g. the fresh
