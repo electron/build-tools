@@ -67,6 +67,14 @@ have multiple build configurations and manage them in a way similar to nvm:
 | nvm current          | e show current     | Show which configuration is currently in use   |
 | nvm use &lt;name&gt; | e use &lt;name&gt; | Change which configuration is currently in use |
 
+To run a single command against a config other than the current one without
+switching, pass `--config=<name>` as the first argument:
+
+```sh
+$ e --config=my-release build
+$ e --config=main-debug show root
+```
+
 Getting the source code is a lot more than cloning `electron/electron`.
 Electron is built on top of Chromium (with Electron patches) and Node
 (with more Electron patches). A source tree needs to have all of the

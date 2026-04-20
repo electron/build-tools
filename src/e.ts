@@ -78,7 +78,27 @@ function maybeCheckForUpdates(): void {
 maybeCheckForUpdates();
 evmConfig.resetShouldWarn();
 
-program.description('Electron build tool').usage('<command> [commandArgs...]');
+// Allow `e --config=<name> <command>` to override the active build config for
+// this invocation only. Commander's executable subcommands run in child
+// processes, so the override is passed via EVM_CURRENT which evm-config reads.
+{
+  const first = process.argv[2];
+  let override: string | undefined;
+  if (first?.startsWith('--config=')) {
+    override = first.slice('--config='.length);
+    process.argv.splice(2, 1);
+  } else if (first === '--config') {
+    override = process.argv[3];
+    process.argv.splice(2, 2);
+  }
+  if (override) {
+    process.env['EVM_CURRENT'] = override;
+  } else if (override === '') {
+    fatal(`${color.cmd('--config')} requires a build config name`);
+  }
+}
+
+program.description('Electron build tool').usage('[--config=<name>] <command> [commandArgs...]');
 
 program
   .command('init [options] <name>', 'Create a new build config')

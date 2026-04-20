@@ -99,6 +99,47 @@ describe('e-show', () => {
     expect(result.stdout).toEqual(path.resolve(root, 'src', srcdir));
   });
 
+  it('honors --config=<name> for a single invocation', () => {
+    const otherRoot = path.join(sandbox.tmpdir, sandbox.randomString());
+    const otherName = sandbox.randomString();
+    sandbox
+      .eInitRunner()
+      .root(otherRoot)
+      .name(otherName)
+      .run();
+    sandbox
+      .eInitRunner()
+      .root(root)
+      .name(name)
+      .run();
+
+    // Active config is `name`.
+    expect(
+      sandbox
+        .eShowRunner()
+        .current()
+        .run().stdout,
+    ).toEqual(name);
+
+    // `--config` overrides it for this call only (both = and space forms).
+    for (const flagArgs of [[`--config=${otherName}`], ['--config', otherName]]) {
+      const result = sandbox
+        .eRunner()
+        .args(...flagArgs, 'show', 'current')
+        .run();
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toEqual(otherName);
+    }
+
+    // Persistent current is untouched afterwards.
+    expect(
+      sandbox
+        .eShowRunner()
+        .current()
+        .run().stdout,
+    ).toEqual(name);
+  });
+
   it('shows all configs', () => {
     sandbox
       .eInitRunner()
