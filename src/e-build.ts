@@ -53,20 +53,13 @@ type GenMode = 'on' | 'off' | 'only';
 async function ensureGNGen(config: SanitizedConfig, genMode: GenMode): Promise<void> {
   const buildfile = path.resolve(evmConfig.outDir(config), 'build.ninja');
 
-  if (genMode === 'only') {
-    return runGNGen(config);
-  }
+  if (genMode === 'only') return runGNGen(config);
 
   if (genMode === 'off') {
-    if (!fs.existsSync(buildfile)) {
-      fatal(
-        `Cannot skip \`gn gen\` because ${color.path(buildfile)} does not exist. Run ${color.cmd(
-          'e build',
-        )} with ${color.cmd('--gen on')} or ${color.cmd('--gen only')} first.`,
-      );
-    }
+    if (!fs.existsSync(buildfile))
+      fatal(`Cannot skip \`gn gen\` because ${color.path(buildfile)} does not exist.`);
     console.info(
-      `${color.info} Reusing existing generated build files in ${color.path(buildfile)}`,
+      `${color.info} Using pre-existing generated build files in ${color.path(buildfile)}`,
     );
     return;
   }
@@ -136,11 +129,7 @@ interface BuildOptions {
 program
   .arguments('[ninjaArgs...]')
   .description('Build Electron and other targets.')
-  .option(
-    '--gen <mode>',
-    'Control when to run `gn gen`: on (default), off, or only',
-    'on',
-  )
+  .option('--gen <mode>', 'Control when to run `gn gen`: on (default), off, or only', 'on')
   .option('--only-gen', 'Alias for `--gen only`', false)
   .option('--skip-gn-gen', 'Alias for `--gen off`', false)
   .option('-t|--target [target]', 'Build a specific ninja target')
