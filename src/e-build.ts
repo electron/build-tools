@@ -48,7 +48,7 @@ async function runGNGen(config: SanitizedConfig): Promise<void> {
   await depot.spawn(config, gnPath, execArgs, execOpts);
 }
 
-type GenMode = 'skip' | 'include' | 'only';
+type GenMode = 'on' | 'off' | 'only';
 
 async function ensureGNGen(config: SanitizedConfig, genMode: GenMode): Promise<void> {
   const buildfile = path.resolve(evmConfig.outDir(config), 'build.ninja');
@@ -57,12 +57,12 @@ async function ensureGNGen(config: SanitizedConfig, genMode: GenMode): Promise<v
     return runGNGen(config);
   }
 
-  if (genMode === 'skip') {
+  if (genMode === 'off') {
     if (!fs.existsSync(buildfile)) {
       fatal(
         `Cannot skip \`gn gen\` because ${color.path(buildfile)} does not exist. Run ${color.cmd(
           'e build',
-        )} with ${color.cmd('--gen include')} or ${color.cmd('--gen only')} first.`,
+        )} with ${color.cmd('--gen on')} or ${color.cmd('--gen only')} first.`,
       );
     }
     console.info(
@@ -138,11 +138,11 @@ program
   .description('Build Electron and other targets.')
   .option(
     '--gen <mode>',
-    'Control when to run `gn gen`: include (default), skip, or only',
-    'include',
+    'Control when to run `gn gen`: on (default), off, or only',
+    'on',
   )
   .option('--only-gen', 'Alias for `--gen only`', false)
-  .option('--skip-gn-gen', 'Alias for `--gen skip`', false)
+  .option('--skip-gn-gen', 'Alias for `--gen off`', false)
   .option('-t|--target [target]', 'Build a specific ninja target')
   .option('--no-remote', 'Build without remote execution (entirely locally)')
   .allowUnknownOption()
@@ -170,21 +170,21 @@ program
 
       const genMode = (() => {
         const fromOption = options.gen as GenMode;
-        if (!['skip', 'include', 'only'].includes(fromOption)) {
+        if (!['off', 'on', 'only'].includes(fromOption)) {
           fatal(
-            `Invalid value for ${color.cmd('--gen')}: ${fromOption}. Expected one of skip, include, or only.`,
+            `Invalid value for ${color.cmd('--gen')}: ${fromOption}. Expected one of on, off, or only.`,
           );
         }
 
-        if (options.onlyGen && fromOption === 'skip') {
-          fatal(`Cannot combine ${color.cmd('--only-gen')} with ${color.cmd('--gen skip')}`);
+        if (options.onlyGen && fromOption === 'off') {
+          fatal(`Cannot combine ${color.cmd('--only-gen')} with ${color.cmd('--gen off')}`);
         }
         if (options.skipGnGen && fromOption === 'only') {
           fatal(`Cannot combine ${color.cmd('--skip-gn-gen')} with ${color.cmd('--gen only')}`);
         }
 
         if (options.onlyGen) return 'only';
-        if (options.skipGnGen) return 'skip';
+        if (options.skipGnGen) return 'off';
         return fromOption;
       })();
 
