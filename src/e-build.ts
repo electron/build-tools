@@ -48,8 +48,27 @@ async function runGNGen(config: SanitizedConfig): Promise<void> {
   await depot.spawn(config, gnPath, execArgs, execOpts);
 }
 
-async function ensureGNGen(config: SanitizedConfig): Promise<void> {
+type GenMode = 'skip' | 'include' | 'only';
+
+async function ensureGNGen(config: SanitizedConfig, genMode: GenMode): Promise<void> {
   const buildfile = path.resolve(evmConfig.outDir(config), 'build.ninja');
+
+  if (genMode === 'only') {
+    return runGNGen(config);
+  }
+
+  if (genMode === 'skip') {
+    if (!fs.existsSync(buildfile)) {
+      fatal(
+        `Cannot skip \`gn gen\` because ${color.path(buildfile)} does not exist. Run ${color.cmd(
+          'e build',
+        )} with ${color.cmd('--gen include')} or ${color.cmd('--gen only')} first.`,
+      );
+    }
+    console.info(`${color.info} Reusing existing generated build files in ${color.path(buildfile)}`);
+    return;
+  }
+
   if (!fs.existsSync(buildfile)) return runGNGen(config);
   const argsFile = path.resolve(evmConfig.outDir(config), 'args.gn');
   if (!fs.existsSync(argsFile)) return runGNGen(config);
@@ -64,6 +83,7 @@ async function runNinja(
   config: SanitizedConfig,
   target: string,
   ninjaArgs: string[],
+  genMode: GenMode,
 ): Promise<number> {
   if (reclient.usingRemote && config.remoteBuild !== 'none') {
     const hasExecute = reclient.auth(config);
@@ -85,7 +105,7 @@ async function runNinja(
   }
 
   depot.ensure();
-  await ensureGNGen(config);
+  await ensureGNGen(config, genMode);
 
   // Using remoteexec means that we need autoninja so that reproxy is started + stopped
   // correctly
@@ -104,7 +124,9 @@ async function runNinja(
 }
 
 interface BuildOptions {
+  gen: GenMode;
   onlyGen: boolean;
+  skipGnGen: boolean;
   target?: string;
   remote: boolean;
 }
@@ -112,7 +134,9 @@ interface BuildOptions {
 program
   .arguments('[ninjaArgs...]')
   .description('Build Electron and other targets.')
-  .option('--only-gen', 'Only run `gn gen`', false)
+  .option('--gen <mode>', 'Control when to run `gn gen`: include (default), skip, or only', 'include')
+  .option('--only-gen', 'Alias for `--gen only`', false)
+  .option('--skip-gn-gen', 'Alias for `--gen skip`', false)
   .option('-t|--target [target]', 'Build a specific ninja target')
   .option('--no-remote', 'Build without remote execution (entirely locally)')
   .allowUnknownOption()
@@ -138,13 +162,33 @@ program
         ensureSDK();
       }
 
-      if (options.onlyGen) {
+      const genMode = (() => {
+        const fromOption = options.gen as GenMode;
+        if (!['skip', 'include', 'only'].includes(fromOption)) {
+          fatal(
+            `Invalid value for ${color.cmd('--gen')}: ${fromOption}. Expected one of skip, include, or only.`,
+          );
+        }
+
+        if (options.onlyGen && fromOption === 'skip') {
+          fatal(`Cannot combine ${color.cmd('--only-gen')} with ${color.cmd('--gen skip')}`);
+        }
+        if (options.skipGnGen && fromOption === 'only') {
+          fatal(`Cannot combine ${color.cmd('--skip-gn-gen')} with ${color.cmd('--gen only')}`);
+        }
+
+        if (options.onlyGen) return 'only';
+        if (options.skipGnGen) return 'skip';
+        return fromOption;
+      })();
+
+      if (genMode === 'only') {
         await runGNGen(config);
         return;
       }
 
       const buildTarget = options.target ?? evmConfig.getDefaultTarget();
-      const exitCode = await runNinja(config, buildTarget, ninjaArgs);
+      const exitCode = await runNinja(config, buildTarget, ninjaArgs, genMode);
       process.exit(exitCode);
     } catch (e) {
       fatal(e);
