@@ -58,9 +58,7 @@ async function ensureGNGen(config: SanitizedConfig, genMode: GenMode): Promise<v
   if (genMode === 'off') {
     if (!fs.existsSync(buildfile))
       fatal(`Cannot skip \`gn gen\` because ${color.path(buildfile)} does not exist.`);
-    console.info(
-      `${color.info} Using pre-existing generated build files in ${color.path(buildfile)}`,
-    );
+    console.info(`${color.info} Using pre-existing build files in ${color.path(buildfile)}`);
     return;
   }
 
@@ -121,7 +119,6 @@ async function runNinja(
 interface BuildOptions {
   gen: GenMode;
   onlyGen: boolean;
-  skipGnGen: boolean;
   target?: string;
   remote: boolean;
 }
@@ -131,7 +128,6 @@ program
   .description('Build Electron and other targets.')
   .option('--gen <mode>', 'Control when to run `gn gen`: on (default), off, or only', 'on')
   .option('--only-gen', 'Alias for `--gen only`', false)
-  .option('--skip-gn-gen', 'Alias for `--gen off`', false)
   .option('-t|--target [target]', 'Build a specific ninja target')
   .option('--no-remote', 'Build without remote execution (entirely locally)')
   .allowUnknownOption()
@@ -159,22 +155,11 @@ program
 
       const genMode = (() => {
         const fromOption = options.gen as GenMode;
-        if (!['off', 'on', 'only'].includes(fromOption)) {
-          fatal(
-            `Invalid value for ${color.cmd('--gen')}: ${fromOption}. Expected one of on, off, or only.`,
-          );
-        }
-
-        if (options.onlyGen && fromOption === 'off') {
-          fatal(`Cannot combine ${color.cmd('--only-gen')} with ${color.cmd('--gen off')}`);
-        }
-        if (options.skipGnGen && fromOption === 'only') {
-          fatal(`Cannot combine ${color.cmd('--skip-gn-gen')} with ${color.cmd('--gen only')}`);
-        }
-
-        if (options.onlyGen) return 'only';
-        if (options.skipGnGen) return 'off';
-        return fromOption;
+        if (!['off', 'on', 'only'].includes(fromOption))
+          fatal(`Invalid ${color.cmd('--gen')} value. Expected 'on', 'off', or 'only'.`);
+        if (options.onlyGen && fromOption !== 'only')
+          fatal(`Cannot combine ${color.cmd('--only-gen')} with ${color.cmd('--gen')}`);
+        return options.onlyGen ? 'only' : fromOption;
       })();
 
       if (genMode === 'only') {
