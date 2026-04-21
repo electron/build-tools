@@ -65,7 +65,9 @@ async function ensureGNGen(config: SanitizedConfig, genMode: GenMode): Promise<v
         )} with ${color.cmd('--gen include')} or ${color.cmd('--gen only')} first.`,
       );
     }
-    console.info(`${color.info} Reusing existing generated build files in ${color.path(buildfile)}`);
+    console.info(
+      `${color.info} Reusing existing generated build files in ${color.path(buildfile)}`,
+    );
     return;
   }
 
@@ -134,7 +136,11 @@ interface BuildOptions {
 program
   .arguments('[ninjaArgs...]')
   .description('Build Electron and other targets.')
-  .option('--gen <mode>', 'Control when to run `gn gen`: include (default), skip, or only', 'include')
+  .option(
+    '--gen <mode>',
+    'Control when to run `gn gen`: include (default), skip, or only',
+    'include',
+  )
   .option('--only-gen', 'Alias for `--gen only`', false)
   .option('--skip-gn-gen', 'Alias for `--gen skip`', false)
   .option('-t|--target [target]', 'Build a specific ninja target')
