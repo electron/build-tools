@@ -118,7 +118,6 @@ async function runNinja(
 
 interface BuildOptions {
   gen: GenMode;
-  onlyGen: boolean;
   target?: string;
   remote: boolean;
 }
@@ -127,7 +126,6 @@ program
   .arguments('[ninjaArgs...]')
   .description('Build Electron and other targets.')
   .option('--gen <mode>', 'Control when to run `gn gen`: on (default), off, or only', 'on')
-  .option('--only-gen', 'Alias for `--gen only`', false)
   .option('-t|--target [target]', 'Build a specific ninja target')
   .option('--no-remote', 'Build without remote execution (entirely locally)')
   .allowUnknownOption()
@@ -157,9 +155,7 @@ program
         const fromOption = options.gen as GenMode;
         if (!['off', 'on', 'only'].includes(fromOption))
           fatal(`Invalid ${color.cmd('--gen')} value. Expected 'on', 'off', or 'only'.`);
-        if (options.onlyGen && fromOption !== 'only')
-          fatal(`Cannot combine ${color.cmd('--only-gen')} with ${color.cmd('--gen')}`);
-        return options.onlyGen ? 'only' : fromOption;
+        return fromOption;
       })();
 
       if (genMode === 'only') {
