@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+
+// This file just aliases `e` to the long name `electron-build-tools` as
+// well. This alias already exists in `@electron/build-tools`, but some
+// users of this repo may add a checkout directly to their PATH and not
+// go through `@electron/build-tools`, as that approach does not require
+// installing `@electron/build-tools` when switching Node.js versions with
+// nvm, for example. This alias is so that `electron/electron` can find us.
+
+import { existsSync, realpathSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const ePath = resolve('./e');
+
+// Remap this filename to the regular `e` entry point since this is just an alias
+process.argv = process.argv.map((arg) => {
+  if (existsSync(arg)) {
+    return realpathSync(arg) === realpathSync(import.meta.filename) ? ePath : arg;
+  }
+  return arg;
+});
+
+import('./e').catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
