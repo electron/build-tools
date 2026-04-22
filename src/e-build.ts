@@ -48,8 +48,20 @@ async function runGNGen(config: SanitizedConfig): Promise<void> {
   await depot.spawn(config, gnPath, execArgs, execOpts);
 }
 
-async function ensureGNGen(config: SanitizedConfig): Promise<void> {
+type GenMode = 'on' | 'off' | 'only';
+
+async function ensureGNGen(config: SanitizedConfig, genMode: GenMode): Promise<void> {
   const buildfile = path.resolve(evmConfig.outDir(config), 'build.ninja');
+
+  if (genMode === 'only') return runGNGen(config);
+
+  if (genMode === 'off') {
+    if (!fs.existsSync(buildfile))
+      fatal(`Cannot skip \`gn gen\` because ${color.path(buildfile)} does not exist.`);
+    console.info(`${color.info} Using pre-existing build files in ${color.path(buildfile)}`);
+    return;
+  }
+
   if (!fs.existsSync(buildfile)) return runGNGen(config);
   const argsFile = path.resolve(evmConfig.outDir(config), 'args.gn');
   if (!fs.existsSync(argsFile)) return runGNGen(config);
@@ -64,6 +76,7 @@ async function runNinja(
   config: SanitizedConfig,
   target: string,
   ninjaArgs: string[],
+  genMode: GenMode,
 ): Promise<number> {
   if (reclient.usingRemote && config.remoteBuild !== 'none') {
     const hasExecute = reclient.auth(config);
@@ -85,7 +98,7 @@ async function runNinja(
   }
 
   depot.ensure();
-  await ensureGNGen(config);
+  await ensureGNGen(config, genMode);
 
   // Using remoteexec means that we need autoninja so that reproxy is started + stopped
   // correctly
@@ -104,7 +117,7 @@ async function runNinja(
 }
 
 interface BuildOptions {
-  onlyGen: boolean;
+  gen: GenMode;
   target?: string;
   remote: boolean;
 }
@@ -112,7 +125,7 @@ interface BuildOptions {
 program
   .arguments('[ninjaArgs...]')
   .description('Build Electron and other targets.')
-  .option('--only-gen', 'Only run `gn gen`', false)
+  .option('--gen <mode>', 'Control when to run `gn gen`: on (default), off, or only', 'on')
   .option('-t|--target [target]', 'Build a specific ninja target')
   .option('--no-remote', 'Build without remote execution (entirely locally)')
   .allowUnknownOption()
@@ -138,13 +151,20 @@ program
         ensureSDK();
       }
 
-      if (options.onlyGen) {
+      const genMode = (() => {
+        const fromOption = options.gen as GenMode;
+        if (!['off', 'on', 'only'].includes(fromOption))
+          fatal(`Invalid ${color.cmd('--gen')} value. Expected 'on', 'off', or 'only'.`);
+        return fromOption;
+      })();
+
+      if (genMode === 'only') {
         await runGNGen(config);
         return;
       }
 
       const buildTarget = options.target ?? evmConfig.getDefaultTarget();
-      const exitCode = await runNinja(config, buildTarget, ninjaArgs);
+      const exitCode = await runNinja(config, buildTarget, ninjaArgs, genMode);
       process.exit(exitCode);
     } catch (e) {
       fatal(e);
