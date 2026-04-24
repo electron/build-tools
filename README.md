@@ -550,3 +550,13 @@ Regardless of whether automatic updates are enabled, you can manually call the f
 ```sh
 $ e auto-update check
 ```
+
+### Cross-compilation
+
+You can build Electron for other platforms by using `e init` with `--target-os`.
+Building the Windows version on a Linux host is the only tested configuration
+and requires the `fuse2` package (or `fuse` + `fuse-libs`) to be installed.
+
+```sh
+$ e init win-testing -i testing --root=~/electron-win --target-os=win
+```
