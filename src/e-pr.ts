@@ -10,11 +10,13 @@ import * as querystring from 'node:querystring';
 
 import extractZip from 'extract-zip';
 import * as semver from 'semver';
-import { program } from 'commander';
+import { Command } from 'commander';
 import * as inquirer from '@inquirer/prompts';
 import { Octokit } from '@octokit/rest';
 
 import debug from 'debug';
+
+const program = new Command();
 import { progressStream } from './utils/download.js';
 import { getGitHubAuthToken } from './utils/github-auth.js';
 import open from 'open';

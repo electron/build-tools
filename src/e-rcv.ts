@@ -7,7 +7,9 @@ import { styleText } from 'node:util';
 
 import * as inquirer from '@inquirer/prompts';
 import { Octokit } from '@octokit/rest';
-import { program } from 'commander';
+import { Command } from 'commander';
+
+const program = new Command();
 
 import * as evmConfig from './evm-config.js';
 import { spawnSync, type DepotOpts } from './utils/depot-tools.js';

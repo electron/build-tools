@@ -6,8 +6,10 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 
-import { program } from 'commander';
+import { Command } from 'commander';
 import { Octokit } from '@octokit/rest';
+
+const program = new Command();
 
 import * as evmConfig from './evm-config.js';
 import debug from 'debug';
