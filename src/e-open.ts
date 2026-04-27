@@ -3,9 +3,11 @@
 import * as cp from 'node:child_process';
 import * as path from 'node:path';
 
-import { program } from 'commander';
+import { Command } from 'commander';
 
 import * as evmConfig from './evm-config.js';
+
+const program = new Command();
 import { color, fatal } from './utils/logging.js';
 import open from 'open';
 

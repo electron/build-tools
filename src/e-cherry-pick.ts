@@ -6,8 +6,10 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 
-import { program } from 'commander';
+import { Command } from 'commander';
 import { Octokit } from '@octokit/rest';
+
+const program = new Command();
 
 import * as evmConfig from './evm-config.js';
 import debug from 'debug';
@@ -22,7 +24,7 @@ const ELECTRON_REPO_DATA = {
   repo: 'electron',
 };
 
-interface PatchDetails {
+export interface PatchDetails {
   patchDirName: string;
   shortCommit: string;
   patch: string;
@@ -77,12 +79,82 @@ async function getGitHubPatchDetailsFromURL(
   };
 }
 
-function isUrl(arg: string) {
+export function isUrl(arg: string) {
   return arg.startsWith('https://') || arg.startsWith('http://');
 }
 
-function commitSubject(patch: string) {
+export function commitSubject(patch: string) {
   return /Subject: \[PATCH\] (.+?)$/m.exec(patch)?.[1]?.trim() ?? '';
+}
+
+// The first positional argument is expected to be a patch URL and the second a
+// target branch, but users frequently transpose them — accept either order.
+// Any remaining positional that looks like a URL is another patch to include
+// in the same PR; everything else is another target branch.
+export function splitPositionalArgs(
+  patchUrlStr: string,
+  targetBranch: string,
+  rest: string[],
+): { patchUrls: string[]; targetBranches: string[] } {
+  if (isUrl(targetBranch)) {
+    const tmp = patchUrlStr;
+    patchUrlStr = targetBranch;
+    targetBranch = tmp;
+  }
+
+  const patchUrls = [patchUrlStr, ...rest.filter(isUrl)];
+  const targetBranches = [targetBranch, ...rest.filter((a) => !isUrl(a))];
+  return { patchUrls, targetBranches };
+}
+
+export function computeBatchId(patchUrls: string[]): string {
+  return crypto.createHash('sha256').update(patchUrls.join('\n')).digest('hex').slice(0, 12);
+}
+
+export function formatPRTitleAndBody({
+  patches,
+  security,
+}: {
+  patches: PatchDetails[];
+  security: boolean;
+}): { title: string; body: string } {
+  const isBatch = patches.length > 1;
+  const first = patches[0]!;
+
+  if (isBatch) {
+    const patchDirNames = [...new Set(patches.map((p) => p.patchDirName))];
+    const title = `chore: cherry-pick ${patches.length} changes from ${patchDirNames.join(', ')}`;
+    const lines = patches.map((p) => {
+      const ref = p.cve || p.bugNumber || p.shortCommit;
+      return `* ${p.shortCommit} from ${p.patchDirName} — ${commitSubject(p.patch)} (${ref})`;
+    });
+    const notes = patches
+      .map((p) => p.cve || p.bugNumber)
+      .filter(Boolean)
+      .join(', ');
+    const body =
+      `Backports the following changes:\n\n${lines.join('\n')}\n\n` +
+      `Notes: ${
+        notes
+          ? security
+            ? `Security: backported fixes for ${notes}.`
+            : `Backported fixes for ${notes}.`
+          : `<!-- couldn't find bug numbers -->`
+      }`;
+    return { title, body };
+  }
+
+  const { shortCommit, patchDirName, patch, bugNumber, cve } = first;
+  const title = `chore: cherry-pick ${shortCommit} from ${patchDirName}`;
+  const commitMessage = /Subject: \[PATCH\] (.+?)^---$/ms.exec(patch)?.[1] ?? '';
+  const body = `${commitMessage}\n\nNotes: ${
+    bugNumber
+      ? security
+        ? `Security: backported fix for ${cve || bugNumber}.`
+        : `Backported fix for ${bugNumber}.`
+      : `<!-- couldn't find bug number -->`
+  }`;
+  return { title, body };
 }
 
 program
@@ -103,17 +175,7 @@ program
       rest: string[],
       { security, cveLookup }: { security?: boolean; cveLookup: boolean },
     ) => {
-      if (isUrl(targetBranch)) {
-        const tmp = patchUrlStr;
-        patchUrlStr = targetBranch;
-        targetBranch = tmp;
-      }
-
-      // Any positional argument that looks like a URL is treated as an
-      // additional patch to include in the same PR; everything else is an
-      // additional target branch to also raise a PR against.
-      const patchUrls = [patchUrlStr, ...rest.filter(isUrl)];
-      const targetBranches = [targetBranch, ...rest.filter((a) => !isUrl(a))];
+      const { patchUrls, targetBranches } = splitPositionalArgs(patchUrlStr, targetBranch, rest);
 
       const octokit = new Octokit({
         auth: await getGitHubAuthToken(['repo']),
@@ -141,12 +203,7 @@ program
         }
 
         const isBatch = patches.length > 1;
-        const patchDirNames = [...new Set(patches.map((p) => p.patchDirName))];
-        const batchId = crypto
-          .createHash('sha256')
-          .update(patchUrls.join('\n'))
-          .digest('hex')
-          .slice(0, 12);
+        const batchId = computeBatchId(patchUrls);
 
         d(`Cloning electron/electron to ${tmp}`);
         cp.execSync(`git clone ${evmConfig.current().remotes.electron.origin}`, { cwd: tmp });
@@ -215,39 +272,7 @@ program
             stdio: 'ignore',
           });
 
-          let title: string;
-          let body: string;
-          if (isBatch) {
-            title = `chore: cherry-pick ${patches.length} changes from ${patchDirNames.join(', ')}`;
-            const lines = patches.map((p) => {
-              const ref = p.cve || p.bugNumber || p.shortCommit;
-              return `* ${p.shortCommit} from ${p.patchDirName} — ${commitSubject(p.patch)} (${ref})`;
-            });
-            const notes = patches
-              .map((p) => p.cve || p.bugNumber)
-              .filter(Boolean)
-              .join(', ');
-            body =
-              `Backports the following changes:\n\n${lines.join('\n')}\n\n` +
-              `Notes: ${
-                notes
-                  ? security
-                    ? `Security: backported fixes for ${notes}.`
-                    : `Backported fixes for ${notes}.`
-                  : `<!-- couldn't find bug numbers -->`
-              }`;
-          } else {
-            const { shortCommit, patchDirName, patch, bugNumber, cve } = first;
-            title = `chore: cherry-pick ${shortCommit} from ${patchDirName}`;
-            const commitMessage = /Subject: \[PATCH\] (.+?)^---$/ms.exec(patch)?.[1] ?? '';
-            body = `${commitMessage}\n\nNotes: ${
-              bugNumber
-                ? security
-                  ? `Security: backported fix for ${cve || bugNumber}.`
-                  : `Backported fix for ${bugNumber}.`
-                : `<!-- couldn't find bug number -->`
-            }`;
-          }
+          const { title, body } = formatPRTitleAndBody({ patches, security: !!security });
 
           d(`Creating PR for ${branchName}`);
           const { data: pr } = await octokit.pulls.create({
@@ -288,5 +313,8 @@ program
         }
       }
     },
-  )
-  .parse(process.argv);
+  );
+
+if (import.meta.main) {
+  program.parse(process.argv);
+}
