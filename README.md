@@ -63,9 +63,9 @@ commands and subcommands. See `e --help` or `e help <cmd>` for more details on a
 `e` also borrows another inspiration from nvm: having multiple configurations that you can switch
 between so that one is the current, active configuration. Many choices go into an Electron build:
 
-* Which [Electron branch](https://github.com/electron/electron/branches) is used (e.g. `main`, `36-x-y`)
-* Which [.gn config file][gn-configs] is imported (e.g. [testing](https://github.com/electron/electron/blob/main/build/args/testing.gn) or [release](https://github.com/electron/electron/blob/main/build/args/release.gn))
-* Any compile-time options (e.g. Clang's [asan or tsan][sanitizers])
+- Which [Electron branch](https://github.com/electron/electron/branches) is used (e.g. `main`, `36-x-y`)
+- Which [.gn config file][gn-configs] is imported (e.g. [testing](https://github.com/electron/electron/blob/main/build/args/testing.gn) or [release](https://github.com/electron/electron/blob/main/build/args/release.gn))
+- Any compile-time options (e.g. Clang's [asan or tsan][sanitizers])
 
 `e` holds all these variables together in a build configuration. You can have multiple build
 configurations and manage them in a way similar to nvm:
@@ -710,15 +710,6 @@ gen:
 | `DEPOT_TOOLS_DIR`                    | Override the depot-tools directory (default: `<build-tools>/.depot_tools`)                          |
 | `GIT_CACHE_PATH`                     | Consumed by `e init` as the default for new configs' `env.GIT_CACHE_PATH`                           |
 | `GN_EXTRA_ARGS`                      | When `CI=1`, appended to the GN args for `e build` (space-separated `key=value` tokens)             |
-| `ELECTRON_BUILD_TOOLS_GH_AUTH`       | GitHub token used by `e pr`, `e backport`, `e cherry-pick`, `e rcv`                                 |
-| `ELECTRON_BUILD_TOOLS_AUTO_FIX`      | If set, auto-fix fixable config validation errors instead of failing                                |
-| `ELECTRON_DEPOT_TOOLS_WIN_TOOLCHAIN` | On Windows, set to `0` to force local (non-RBE) builds                                              |
-| `ELECTRON_DEPOT_TOOLS_DISABLE_LOG`   | Suppress depot-tools log output                                                                     |
-| `ELECTRON_OVERRIDE_DIST_PATH`        | Set internally by `e npm` to make any spawned `electron` use your local build                       |
-| `ELECTRON_RUN_AS_NODE`               | Set internally by `e node`                                                                          |
-| `ELECTRON_USE_THREE_WAY_MERGE_FOR_PATCHES` | Set internally by `e sync --three-way`                                                        |
-| `SHELL_CONTEXT`                      | Set to the active config name inside `e shell`                                                      |
-| `CI`                                 | If set, non-interactive behavior (no progress bars, auto-skip confirmations, `GN_EXTRA_ARGS` honored) |
 
 ## Shell completion
 
