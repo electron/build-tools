@@ -7,7 +7,7 @@ import { program } from 'commander';
 
 import * as evmConfig from './evm-config.js';
 import { fatal } from './utils/logging.js';
-import { ensureDir } from './utils/paths.js';
+import { ensureDir, ensureBuildtoolsSymlink } from './utils/paths.js';
 import * as depot from './utils/depot-tools.js';
 import { configureReclient } from './utils/setup-reclient-chromium.js';
 import { ensureSDK } from './utils/sdk.js';
@@ -78,6 +78,8 @@ function runGClientSync(syncArgs: string[], syncOpts: { threeWay?: boolean }): v
       : {},
   };
   depot.spawnSync(config, exec, args, opts, 'gclient sync failed');
+
+  ensureBuildtoolsSymlink(config.root);
 
   // Only set remotes if we're building an Electron target.
   if (config.defaultTarget !== 'chrome') {

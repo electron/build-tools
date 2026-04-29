@@ -9,7 +9,7 @@ import { program } from 'commander';
 
 import * as evmConfig from './evm-config.js';
 import { color, fatal } from './utils/logging.js';
-import { resolvePath, deleteDir } from './utils/paths.js';
+import { resolvePath, deleteDir, ensureBuildtoolsSymlink } from './utils/paths.js';
 import * as depot from './utils/depot-tools.js';
 import type { SanitizedConfig } from './types.js';
 
@@ -103,7 +103,8 @@ program
       const newConfig: SanitizedConfig = structuredClone(sourceConfig);
       newConfig.root = targetRoot;
       newConfig.gen.out = options.out ?? sourceConfig.gen.out;
-      newConfig.env.CHROMIUM_BUILDTOOLS_PATH = path.join(targetRoot, 'src', 'buildtools');
+      delete newConfig.env.CHROMIUM_BUILDTOOLS_PATH;
+      ensureBuildtoolsSymlink(targetRoot);
 
       evmConfig.save(name, newConfig);
       console.log(`New build config ${color.config(name)} created in ${color.path(filename)}`);
