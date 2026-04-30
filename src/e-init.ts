@@ -10,7 +10,7 @@ import { program, Option } from 'commander';
 
 import * as evmConfig from './evm-config.js';
 import { color, fatal } from './utils/logging.js';
-import { resolvePath, ensureDir } from './utils/paths.js';
+import { resolvePath, ensureDir, ensureBuildtoolsSymlink } from './utils/paths.js';
 import * as depot from './utils/depot-tools.js';
 import { checkGlobalGitConfig } from './utils/git.js';
 import { ensureSDK } from './utils/sdk.js';
@@ -95,7 +95,6 @@ function createConfig(options: InitOptions): EvmConfig {
     },
     preserveSDK: 5,
     env: {
-      CHROMIUM_BUILDTOOLS_PATH: path.resolve(root, 'src', 'buildtools'),
       GIT_CACHE_PATH: gitCachePath
         ? resolvePath(gitCachePath)
         : path.resolve(homedir, '.git_cache'),
@@ -128,7 +127,8 @@ function ensureRoot(config: EvmConfig, force: boolean): void {
 
   ensureDir(root);
 
-  const hasOtherFiles = fs.readdirSync(root).some((file) => file !== '.gclient');
+  const allowedAtRoot = new Set(['.gclient', 'buildtools']);
+  const hasOtherFiles = fs.readdirSync(root).some((file) => !allowedAtRoot.has(file));
   if (hasOtherFiles && !force) {
     fatal(`Root ${color.path(root)} is not empty. Please choose a different root directory.`);
   }
@@ -139,6 +139,8 @@ function ensureRoot(config: EvmConfig, force: boolean): void {
   } else {
     runGClientConfig(config);
   }
+
+  ensureBuildtoolsSymlink(root);
 }
 
 program

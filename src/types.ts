@@ -26,10 +26,14 @@ const genSchema = z
 
 const envSchema = z
   .object({
+    // Deprecated: kept for backwards compatibility with existing configs.
+    // depot_tools' gclient_paths now auto-detects buildtools via a symlink
+    // at `<root>/buildtools`. See utils/paths.ts:ensureBuildtoolsSymlink.
     CHROMIUM_BUILDTOOLS_PATH: z
       .string()
       .min(1)
-      .describe('Path of Chromium buildtools in the checkout'),
+      .describe('Path of Chromium buildtools in the checkout')
+      .optional(),
     GIT_CACHE_PATH: z.string().min(1).describe('Path to use as git cache for gclient').optional(),
   })
   .catchall(z.string())

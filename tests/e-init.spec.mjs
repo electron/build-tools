@@ -68,8 +68,13 @@ describe('e-init', () => {
       expect(remotes.origin).toStrictEqual('https://github.com/electron/electron.git');
       expect(remotes.fork).toStrictEqual('https://github.com/cool-fork/electron.git');
 
-      expect(config.env).toHaveProperty('CHROMIUM_BUILDTOOLS_PATH');
+      expect(config.env).not.toHaveProperty('CHROMIUM_BUILDTOOLS_PATH');
       expect(config.env).toHaveProperty('GIT_CACHE_PATH');
+
+      // ensureBuildtoolsSymlink should create a buildtools symlink at the root
+      const buildtoolsLink = path.resolve(root, 'buildtools');
+      expect(fs.lstatSync(buildtoolsLink).isSymbolicLink()).toStrictEqual(true);
+      expect(fs.readlinkSync(buildtoolsLink)).toStrictEqual(path.join('src', 'buildtools'));
 
       expect(config.gen.out).toStrictEqual('Testing');
 

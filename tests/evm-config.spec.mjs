@@ -21,9 +21,7 @@ const validConfig = {
     args: [],
     out: 'Testing',
   },
-  env: {
-    CHROMIUM_BUILDTOOLS_PATH: '/path/to/your/developer/folder/src/build-tools',
-  },
+  env: {},
 };
 
 const invalidConfig = {

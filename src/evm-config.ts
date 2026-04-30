@@ -7,7 +7,7 @@ import * as YAML from 'yaml';
 import type { z } from 'zod';
 
 import { color, fatal } from './utils/logging.js';
-import { ensureDir } from './utils/paths.js';
+import { ensureDir, ensureBuildtoolsSymlink } from './utils/paths.js';
 import { evmConfigSchema, type EvmConfig, type SanitizedConfig } from './types.js';
 
 const configRoot = (): string =>
@@ -192,7 +192,7 @@ export function validateConfig(config: EvmConfig): ValidationError[] | undefined
 export function setEnvVar(name: string, key: string, value: string): void {
   const config = loadConfigFileRaw(name);
 
-  config.env ??= { CHROMIUM_BUILDTOOLS_PATH: '' };
+  config.env ??= {};
   config.env[key] = value;
 
   save(name, config);
@@ -292,12 +292,25 @@ export function sanitizeConfig(
     delete config.reclientServiceAddress;
   }
 
-  config.env ??= { CHROMIUM_BUILDTOOLS_PATH: '' };
+  config.env ??= {};
 
-  if (!config.env.CHROMIUM_BUILDTOOLS_PATH && config.root) {
-    const toolsPath = path.resolve(config.root, 'src', 'buildtools');
-    config.env.CHROMIUM_BUILDTOOLS_PATH = toolsPath;
-    changes.push(`defined ${color.config('CHROMIUM_BUILDTOOLS_PATH')}`);
+  // depot_tools deprecated CHROMIUM_BUILDTOOLS_PATH; rely on the buildtools
+  // symlink at the gclient root for auto-detection instead.
+  if (config.env.CHROMIUM_BUILDTOOLS_PATH) {
+    delete config.env.CHROMIUM_BUILDTOOLS_PATH;
+    changes.push(`removed deprecated ${color.config('CHROMIUM_BUILDTOOLS_PATH')}`);
+  }
+
+  if (config.root) {
+    try {
+      ensureBuildtoolsSymlink(config.root);
+    } catch (err) {
+      console.warn(
+        `${color.warn} Could not create buildtools symlink at ${color.path(
+          path.join(config.root, 'buildtools'),
+        )}: ${(err as Error).message}`,
+      );
+    }
   }
 
   if (changes.length > 0) {
