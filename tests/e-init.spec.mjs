@@ -68,7 +68,6 @@ describe('e-init', () => {
       expect(remotes.origin).toStrictEqual('https://github.com/electron/electron.git');
       expect(remotes.fork).toStrictEqual('https://github.com/cool-fork/electron.git');
 
-      expect(config.env).toHaveProperty('CHROMIUM_BUILDTOOLS_PATH');
       expect(config.env).toHaveProperty('GIT_CACHE_PATH');
 
       expect(config.gen.out).toStrictEqual('Testing');

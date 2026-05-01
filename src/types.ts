@@ -29,7 +29,8 @@ const envSchema = z
     CHROMIUM_BUILDTOOLS_PATH: z
       .string()
       .min(1)
-      .describe('Path of Chromium buildtools in the checkout'),
+      .describe('Path of Chromium buildtools in the checkout')
+      .optional(),
     GIT_CACHE_PATH: z.string().min(1).describe('Path to use as git cache for gclient').optional(),
   })
   .catchall(z.string())

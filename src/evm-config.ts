@@ -192,7 +192,7 @@ export function validateConfig(config: EvmConfig): ValidationError[] | undefined
 export function setEnvVar(name: string, key: string, value: string): void {
   const config = loadConfigFileRaw(name);
 
-  config.env ??= { CHROMIUM_BUILDTOOLS_PATH: '' };
+  config.env ??= {};
   config.env[key] = value;
 
   save(name, config);
@@ -292,12 +292,55 @@ export function sanitizeConfig(
     delete config.reclientServiceAddress;
   }
 
-  config.env ??= { CHROMIUM_BUILDTOOLS_PATH: '' };
+  config.env ??= {};
 
-  if (!config.env.CHROMIUM_BUILDTOOLS_PATH && config.root) {
-    const toolsPath = path.resolve(config.root, 'src', 'buildtools');
-    config.env.CHROMIUM_BUILDTOOLS_PATH = toolsPath;
-    changes.push(`defined ${color.config('CHROMIUM_BUILDTOOLS_PATH')}`);
+  if (config.root && fs.existsSync(config.root)) {
+    const symlinkPath = path.resolve(config.root, 'buildtools');
+    const configBuildtoolsPath = config.env.CHROMIUM_BUILDTOOLS_PATH;
+
+    let symlinkTarget: string | undefined;
+    try {
+      const stats = fs.lstatSync(symlinkPath);
+      if (stats.isSymbolicLink()) {
+        symlinkTarget = fs.realpathSync(symlinkPath);
+      }
+    } catch {
+      // Symlink doesn't exist
+    }
+
+    if (symlinkTarget !== undefined) {
+      if (configBuildtoolsPath) {
+        // Check if the symlink target matches the config value
+        let resolvedConfigValue: string;
+        try {
+          resolvedConfigValue = fs.realpathSync(configBuildtoolsPath);
+        } catch {
+          resolvedConfigValue = path.resolve(configBuildtoolsPath);
+        }
+
+        if (symlinkTarget === resolvedConfigValue) {
+          // Symlink matches config - no need for the env var
+          delete config.env.CHROMIUM_BUILDTOOLS_PATH;
+        } else {
+          // Mismatch - warn and keep env var as fallback
+          console.warn(
+            `${color.warn} Buildtools symlink at ${color.path(symlinkPath)} resolves to ` +
+              `${color.path(symlinkTarget)}, but ${color.config('CHROMIUM_BUILDTOOLS_PATH')} is set to ` +
+              `${color.path(configBuildtoolsPath)} - using ${color.config('CHROMIUM_BUILDTOOLS_PATH')} as fallback`,
+          );
+        }
+      }
+      // If no CHROMIUM_BUILDTOOLS_PATH in config but symlink exists, we're good
+    } else if (!configBuildtoolsPath) {
+      // No symlink and no CHROMIUM_BUILDTOOLS_PATH - error
+      fatal(
+        `No buildtools symlink found at ${color.path(symlinkPath)} and ` +
+          `${color.config('CHROMIUM_BUILDTOOLS_PATH')} is not set in your config. ` +
+          `Run ${color.cmd('e sync')} to create the symlink, or add ` +
+          `${color.config('CHROMIUM_BUILDTOOLS_PATH')} to your config.`,
+      );
+    }
+    // No symlink but CHROMIUM_BUILDTOOLS_PATH is set - keep as fallback
   }
 
   if (changes.length > 0) {
