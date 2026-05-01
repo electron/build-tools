@@ -269,4 +269,39 @@ export function setAutoUpdate(enable: boolean): void {
   }
 }
 
+export function getChromiumBuildtoolsPath(config: ConfigLike): string | undefined {
+  // If it exists, remove CHROMIUM_BUILDTOOLS_PATH from the env,
+  // otherwise it will just get used by depot_tools as the override
+  const envChromiumBuildtoolsPath = process.env['CHROMIUM_BUILDTOOLS_PATH'];
+  delete process.env['CHROMIUM_BUILDTOOLS_PATH'];
+
+  const disableLogging = process.env['ELECTRON_DEPOT_TOOLS_DISABLE_LOG'];
+  process.env['ELECTRON_DEPOT_TOOLS_DISABLE_LOG'] = '1';
+
+  let result;
+  try {
+    result = spawnSync(
+      config,
+      'python3',
+      ['-c', 'from gclient_paths import GetBuildtoolsPath; print(GetBuildtoolsPath() or "")'],
+      { cwd: config.root, encoding: 'utf8', stdio: 'pipe', env: { PYTHONPATH: DEPOT_TOOLS_DIR } },
+    );
+  } catch {
+    return undefined;
+  } finally {
+    if (envChromiumBuildtoolsPath !== undefined) {
+      process.env['CHROMIUM_BUILDTOOLS_PATH'] = envChromiumBuildtoolsPath;
+    }
+    if (disableLogging !== undefined) {
+      process.env['ELECTRON_DEPOT_TOOLS_DISABLE_LOG'] = disableLogging;
+    } else {
+      delete process.env['ELECTRON_DEPOT_TOOLS_DISABLE_LOG'];
+    }
+  }
+
+  if (result.error || result.status !== 0) return undefined;
+  const out = result.stdout.trim();
+  return out || undefined;
+}
+
 export { DEPOT_TOOLS_DIR as path };
