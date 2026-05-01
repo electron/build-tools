@@ -135,9 +135,6 @@
           "description": "Path to use as git cache for gclient"
         }
       },
-      "required": [
-        "CHROMIUM_BUILDTOOLS_PATH"
-      ],
       "additionalProperties": {
         "type": "string"
       },

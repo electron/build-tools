@@ -655,7 +655,6 @@ See [`example-configs/`](./example-configs/) for annotated templates (`evm.base.
 | `remotes.electron.fork` | string (optional)                     | Optional fork remote URL                                                             |
 | `gen.args`              | string[]                              | GN arguments written to `out/<name>/args.gn`                                         |
 | `gen.out`               | string                                | Output directory name (e.g. `Testing`)                                               |
-| `env.CHROMIUM_BUILDTOOLS_PATH` | string                         | Path to Chromium buildtools inside the checkout                                      |
 | `env.GIT_CACHE_PATH`    | string (optional)                     | Git cache path for gclient (shared across configs)                                   |
 | `env.*`                 | string                                | Any additional env vars to inject into build-tools' subprocesses                     |
 | `defaultTarget`         | string (default: `electron`)          | Default ninja target for `e build`                                                   |
@@ -674,8 +673,7 @@ A config must supply **one** of:
 2. `root` + `remotes` + `gen` + `env` (a full Electron build), **or**
 3. `defaultTarget: chrome` + `root` + `env` (a Chromium-only build).
 
-**Config inheritance (`extends`)** — useful for keeping shared fields (git cache path, buildtools
-path, git remotes) in a base config and deriving per-variant configs from it:
+**Config inheritance (`extends`)** — useful for keeping shared fields (git cache path, git remotes) in a base config and deriving per-variant configs from it:
 
 ```yaml
 # evm.base.yml
@@ -684,7 +682,6 @@ remotes:
   electron:
     origin: git@github.com:electron/electron.git
 env:
-  CHROMIUM_BUILDTOOLS_PATH: /Users/me/src/electron/src/buildtools
   GIT_CACHE_PATH: /Users/me/.git_cache
 
 # evm.testing.yml
