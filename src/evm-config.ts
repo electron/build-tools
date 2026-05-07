@@ -15,8 +15,59 @@ const configRoot = (): string =>
 
 let shouldWarn = true;
 
+type AsanOptions = Record<string, string | number>;
+
+export const defaultAsanOptions: AsanOptions = {
+  poison_history_size: 16,
+};
+
+// 'key1=val1:key2=val2' => { key1: val1, key2: val2 }
+function parseAsanOptions(value?: string): AsanOptions {
+  return Object.fromEntries(
+    (value ?? '')
+      .split(':')
+      .filter(Boolean)
+      .map((entry) => entry.split('=', 2))
+      .map(([key, optionValue = '1']) => [key, optionValue])
+      .filter(([key]) => Boolean(key)),
+  );
+}
+
+// { key1: val1, key2: val2 } ==> 'key1=val1:key2=val2'
+function stringifyAsanOptions(options: AsanOptions): string {
+  return Object.entries(options)
+    .map(([key, value]) => `${key}=${value}`)
+    .join(':');
+}
+
+function ensureConfigEnv<T extends Pick<EvmConfig, 'env'>>(
+  config: T,
+): asserts config is T & { env: NonNullable<EvmConfig['env']> } {
+  config.env ??= { CHROMIUM_BUILDTOOLS_PATH: '' };
+}
+
 export function resetShouldWarn(): void {
   shouldWarn = true;
+}
+
+export function ensureAsanOptions(
+  config: Pick<EvmConfig, 'gen' | 'env'>,
+  changes?: string[],
+): void {
+  const hasAsanGN = Boolean(config.gen?.args?.find((arg) => /^is_asan ?= ?true$/.test(arg)));
+  if (!hasAsanGN) return;
+
+  ensureConfigEnv(config);
+
+  const asanOptions = parseAsanOptions(config.env['ASAN_OPTIONS']);
+  if ('poison_history_size' in asanOptions) return;
+
+  config.env['ASAN_OPTIONS'] = stringifyAsanOptions({
+    ...defaultAsanOptions,
+    ...asanOptions,
+  });
+
+  changes?.push(`added ${color.config('ASAN_OPTIONS')} for improved ASan poisoning traces`);
 }
 
 // If you want your shell sessions to each have different active configs,
@@ -192,7 +243,7 @@ export function validateConfig(config: EvmConfig): ValidationError[] | undefined
 export function setEnvVar(name: string, key: string, value: string): void {
   const config = loadConfigFileRaw(name);
 
-  config.env ??= { CHROMIUM_BUILDTOOLS_PATH: '' };
+  ensureConfigEnv(config);
   config.env[key] = value;
 
   save(name, config);
@@ -292,7 +343,8 @@ export function sanitizeConfig(
     delete config.reclientServiceAddress;
   }
 
-  config.env ??= { CHROMIUM_BUILDTOOLS_PATH: '' };
+  ensureConfigEnv(config);
+  ensureAsanOptions(config, changes);
 
   if (!config.env.CHROMIUM_BUILDTOOLS_PATH && config.root) {
     const toolsPath = path.resolve(config.root, 'src', 'buildtools');

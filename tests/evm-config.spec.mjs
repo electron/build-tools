@@ -98,6 +98,35 @@ describe('configValidationLevel', () => {
     spy.mockClear();
   });
 
+  it('should add ASAN poison history settings for asan configs', () => {
+    const config = sanitizeConfig('foobar', {
+      ...validConfig,
+      gen: {
+        ...validConfig.gen,
+        args: ['is_asan=true'],
+      },
+    });
+
+    expect(config.env.ASAN_OPTIONS).toMatch(/poison_history_size=\d+/);
+  });
+
+  it('should preserve an existing ASAN poison history setting', () => {
+    const config = sanitizeConfig('foobar', {
+      ...validConfig,
+      gen: {
+        ...validConfig.gen,
+        args: ['is_asan=true'],
+      },
+      env: {
+        ...validConfig.env,
+        ASAN_OPTIONS: 'detect_leaks=0:poison_history_size=42',
+      },
+    });
+
+    expect(config.env.ASAN_OPTIONS).toMatch(/detect_leaks=0/);
+    expect(config.env.ASAN_OPTIONS).toMatch(/poison_history_size=42/);
+  });
+
   it('should log warnings for invalid config if set to warn', () => {
     const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {});

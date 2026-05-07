@@ -77,6 +77,25 @@ describe('e-init', () => {
       expect(validationErrors).toBeFalsy();
     });
 
+    it('adds ASAN poison history settings for asan configs', () => {
+      const root = path.resolve(sandbox.tmpdir, 'asan-root');
+
+      const result = sandbox
+        .eInitRunner()
+        .name('asan-build')
+        .root(root)
+        .asan()
+        .run();
+
+      expect(result.exitCode).toStrictEqual(0);
+
+      const configPath = path.resolve(sandbox.tmpdir, 'evm-config', 'evm.asan-build.json');
+      const config = require(configPath);
+
+      expect(config.gen.args).toContain('is_asan=true');
+      expect(config.env.ASAN_OPTIONS).toMatch(/poison_history_size=\d+/);
+    });
+
     it('logs an info message when the new build config root already has a .gclient file', () => {
       const root = path.resolve(sandbox.tmpdir, 'main');
 
