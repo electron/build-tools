@@ -1,11 +1,21 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 
 import YAML from 'yaml';
 
-const { sanitizeConfig, validateConfig, fetchByName } = require('../dist/evm-config.js');
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { beforeAll, afterAll, describe, expect, it, vi } from 'vitest';
+vi.mock('../dist/utils/depot-tools.js', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    getChromiumBuildtoolsPath: vi.fn(),
+  };
+});
+
+const { sanitizeConfig, validateConfig, fetchByName } = await import('../dist/evm-config.js');
+const { getChromiumBuildtoolsPath } = await import('../dist/utils/depot-tools.js');
 
 const validConfig = {
   $schema: 'file:///Users/user_name/.electron_build_tools/evm-config.schema.json',
@@ -21,9 +31,7 @@ const validConfig = {
     args: [],
     out: 'Testing',
   },
-  env: {
-    CHROMIUM_BUILDTOOLS_PATH: '/path/to/your/developer/folder/src/build-tools',
-  },
+  env: {},
 };
 
 const invalidConfig = {
@@ -143,3 +151,100 @@ describe('configValidationLevel', () => {
     processExitSpy.mockClear();
   });
 });
+
+describe('CHROMIUM_BUILDTOOLS_PATH resolution', () => {
+  let tmpRoot;
+  let resolvedBuildtoolsDir;
+  let altBuildtoolsDir;
+
+  beforeAll(() => {
+    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'evm-config-buildtools-'));
+    resolvedBuildtoolsDir = path.join(tmpRoot, 'src', 'buildtools');
+    altBuildtoolsDir = path.join(tmpRoot, 'other', 'buildtools');
+    fs.mkdirSync(resolvedBuildtoolsDir, { recursive: true });
+    fs.mkdirSync(altBuildtoolsDir, { recursive: true });
+  });
+
+  afterAll(() => {
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  });
+
+  afterEach(() => {
+    vi.mocked(getChromiumBuildtoolsPath).mockReset();
+  });
+
+  const baseConfig = () => ({
+    ...validConfig,
+    root: tmpRoot,
+    env: {},
+  });
+
+  it('drops CHROMIUM_BUILDTOOLS_PATH when depot_tools resolves to the same path', () => {
+    vi.mocked(getChromiumBuildtoolsPath).mockReturnValue(resolvedBuildtoolsDir);
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const config = sanitizeConfig('foobar', {
+      ...baseConfig(),
+      env: { CHROMIUM_BUILDTOOLS_PATH: resolvedBuildtoolsDir },
+    });
+
+    expect(config.env).not.toHaveProperty('CHROMIUM_BUILDTOOLS_PATH');
+    expect(warnSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining('depot_tools resolves buildtools to'),
+    );
+    warnSpy.mockRestore();
+  });
+
+  it('keeps CHROMIUM_BUILDTOOLS_PATH and warns when it disagrees with depot_tools', () => {
+    vi.mocked(getChromiumBuildtoolsPath).mockReturnValue(resolvedBuildtoolsDir);
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const config = sanitizeConfig('foobar', {
+      ...baseConfig(),
+      env: { CHROMIUM_BUILDTOOLS_PATH: altBuildtoolsDir },
+    });
+
+    expect(config.env.CHROMIUM_BUILDTOOLS_PATH).toBe(altBuildtoolsDir);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('using'),
+    );
+    warnSpy.mockRestore();
+  });
+
+  it('does not set CHROMIUM_BUILDTOOLS_PATH when depot_tools resolves and config has none', () => {
+    vi.mocked(getChromiumBuildtoolsPath).mockReturnValue(resolvedBuildtoolsDir);
+
+    const config = sanitizeConfig('foobar', baseConfig());
+
+    expect(config.env).not.toHaveProperty('CHROMIUM_BUILDTOOLS_PATH');
+  });
+
+  it('falls back to CHROMIUM_BUILDTOOLS_PATH when depot_tools cannot resolve', () => {
+    vi.mocked(getChromiumBuildtoolsPath).mockReturnValue(undefined);
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const config = sanitizeConfig('foobar', {
+      ...baseConfig(),
+      env: { CHROMIUM_BUILDTOOLS_PATH: altBuildtoolsDir },
+    });
+
+    expect(config.env.CHROMIUM_BUILDTOOLS_PATH).toBe(altBuildtoolsDir);
+    warnSpy.mockRestore();
+  });
+
+  it('fatals when depot_tools cannot resolve and there is no fallback', () => {
+    vi.mocked(getChromiumBuildtoolsPath).mockReturnValue(undefined);
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {});
+
+    sanitizeConfig('foobar', baseConfig());
+
+    expect(exitSpy).toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Could not resolve buildtools path via depot_tools'),
+    );
+    errorSpy.mockRestore();
+    exitSpy.mockRestore();
+  });
+});
+

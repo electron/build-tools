@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url';
 import * as YAML from 'yaml';
 import type { z } from 'zod';
 
+import { getChromiumBuildtoolsPath } from './utils/depot-tools.js';
 import { color, fatal } from './utils/logging.js';
 import { ensureDir } from './utils/paths.js';
 import { evmConfigSchema, type EvmConfig, type SanitizedConfig } from './types.js';
@@ -192,7 +193,7 @@ export function validateConfig(config: EvmConfig): ValidationError[] | undefined
 export function setEnvVar(name: string, key: string, value: string): void {
   const config = loadConfigFileRaw(name);
 
-  config.env ??= { CHROMIUM_BUILDTOOLS_PATH: '' };
+  config.env ??= {};
   config.env[key] = value;
 
   save(name, config);
@@ -292,12 +293,47 @@ export function sanitizeConfig(
     delete config.reclientServiceAddress;
   }
 
-  config.env ??= { CHROMIUM_BUILDTOOLS_PATH: '' };
+  config.env ??= {};
 
-  if (!config.env.CHROMIUM_BUILDTOOLS_PATH && config.root) {
-    const toolsPath = path.resolve(config.root, 'src', 'buildtools');
-    config.env.CHROMIUM_BUILDTOOLS_PATH = toolsPath;
-    changes.push(`defined ${color.config('CHROMIUM_BUILDTOOLS_PATH')}`);
+  if (config.root && fs.existsSync(config.root)) {
+    // Save off and delete the config value while we try resolving it
+    const configBuildtoolsPath = config.env.CHROMIUM_BUILDTOOLS_PATH;
+    delete config.env.CHROMIUM_BUILDTOOLS_PATH;
+
+    const resolvedBuildtoolsPath = getChromiumBuildtoolsPath(config);
+
+    if (resolvedBuildtoolsPath !== undefined) {
+      if (configBuildtoolsPath) {
+        // The path might not exist if there's a stale value in the config
+        const safeRealpath = (p: string): string => {
+          try {
+            return fs.realpathSync(p);
+          } catch {
+            return path.resolve(p);
+          }
+        };
+        if (safeRealpath(resolvedBuildtoolsPath) === safeRealpath(configBuildtoolsPath)) {
+          // The values match, so we don't need to do anything
+        } else {
+          console.warn(
+            `${color.warn} depot_tools resolves buildtools to ${color.path(resolvedBuildtoolsPath)}, ` +
+              `but ${color.config('CHROMIUM_BUILDTOOLS_PATH')} is set to ${color.path(configBuildtoolsPath)} ` +
+              `- using ${color.config('CHROMIUM_BUILDTOOLS_PATH')} as fallback`,
+          );
+          config.env.CHROMIUM_BUILDTOOLS_PATH = configBuildtoolsPath;
+        }
+      }
+    } else if (!configBuildtoolsPath) {
+      fatal(
+        `Could not resolve buildtools path via depot_tools for ${color.path(config.root)} and ` +
+          `${color.config('CHROMIUM_BUILDTOOLS_PATH')} is not set in your config. ` +
+          `Update ${color.cmd('depot_tools')} or add ` +
+          `${color.config('CHROMIUM_BUILDTOOLS_PATH')} to your config.`,
+      );
+    } else {
+      // Restore the config value for now as depot_tools isn't new enough
+      config.env.CHROMIUM_BUILDTOOLS_PATH = configBuildtoolsPath;
+    }
   }
 
   if (changes.length > 0) {
