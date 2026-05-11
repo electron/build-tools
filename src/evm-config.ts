@@ -313,7 +313,27 @@ export function sanitizeConfig(
           }
         };
         if (safeRealpath(resolvedBuildtoolsPath) === safeRealpath(configBuildtoolsPath)) {
-          // The values match, so we don't need to do anything
+          // Older versions of `electron/electron` fail if `CHROMIUM_BUILDTOOLS_PATH` is not
+          // set to ensure they had a working environment, so fallback in these cases.
+          const utilsPath = path.resolve(
+            config.root,
+            'src',
+            'electron',
+            'script',
+            'lib',
+            'utils.js',
+          );
+          if (fs.existsSync(utilsPath)) {
+            try {
+              const contents = fs.readFileSync(utilsPath, { encoding: 'utf8' });
+              if (contents.includes('CHROMIUM_BUILDTOOLS_PATH environment variable must be set')) {
+                config.env.CHROMIUM_BUILDTOOLS_PATH = configBuildtoolsPath;
+              }
+            } catch {
+              // If something went wrong, fallback to using the environment variable to be safe
+              config.env.CHROMIUM_BUILDTOOLS_PATH = configBuildtoolsPath;
+            }
+          }
         } else {
           console.warn(
             `${color.warn} depot_tools resolves buildtools to ${color.path(resolvedBuildtoolsPath)}, ` +
