@@ -76,6 +76,10 @@ function eInitRunner(execOptions) {
       args.push(`--use-https`);
       return o;
     },
+    forkAsOrigin: () => {
+      args.push('--fork-as-origin');
+      return o;
+    },
     import: (val) => {
       args.push('--import', val);
       return o;

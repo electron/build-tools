@@ -129,6 +129,12 @@ existing root to share it between build configs.
 | `--remote-build <target>`    | Remote-execution backend: `siso` (default) or `none`                             |
 | `--use-https`                | Set git remotes with `https://` URLs instead of `git@github.com:`                |
 | `--fork <user/electron>`     | Add a remote named `fork` pointing at the given GitHub fork                      |
+| `--fork-as-origin`           | Use `--fork` as the checkout `origin` and add `electron/electron` as `upstream`  |
+
+By default, `.gclient` checks out Electron from `https://github.com/electron/electron`. `--fork`
+adds a separate Git remote named `fork` and leaves `origin` pointing at upstream Electron. Use
+`--fork-as-origin` with `--fork` when the checkout source itself should be your fork; in that mode,
+`origin` points at the fork and `upstream` points at `electron/electron`.
 
 **Example**
 
@@ -651,8 +657,9 @@ See [`example-configs/`](./example-configs/) for annotated templates (`evm.base.
 | Field                   | Type                                  | Description                                                                          |
 |:------------------------|:--------------------------------------|:-------------------------------------------------------------------------------------|
 | `root`                  | string                                | Top directory — home of `.gclient`                                                   |
-| `remotes.electron.origin` | string                              | Origin git URL for `electron/electron` (ssh or https)                                |
-| `remotes.electron.fork` | string (optional)                     | Optional fork remote URL                                                             |
+| `remotes.electron.origin` | string                              | Origin git URL for the Electron checkout (ssh or https)                              |
+| `remotes.electron.upstream` | string (optional)                  | Optional upstream Electron remote URL, used when `origin` points at a fork           |
+| `remotes.electron.fork` | string (optional)                     | Optional additional `fork` remote URL                                                |
 | `gen.args`              | string[]                              | GN arguments written to `out/<name>/args.gn`                                         |
 | `gen.out`               | string                                | Output directory name (e.g. `Testing`)                                               |
 | `env.GIT_CACHE_PATH`    | string (optional)                     | Git cache path for gclient (shared across configs)                                   |
