@@ -7,6 +7,10 @@ import { fatal } from './logging.js';
 const MINIMUM_PYTHON_VERSION = '3.9.0';
 const MINIMUM_NODEJS_VERSION = '22.18.0';
 
+/**
+ * Check if Python is installed and meets minimum version requirements
+ * @returns {boolean} True if Python is installed and meets minimum version requirements, false otherwise
+ */
 function checkPythonVersion(): boolean {
   const pythonCommands = ['python3', 'python'];
 
@@ -29,6 +33,10 @@ function checkPythonVersion(): boolean {
   return false;
 }
 
+/**
+ * Check if Node.js is installed and meets minimum version requirements
+ * @returns {boolean} True if Node.js is installed and meets minimum version requirements, false otherwise
+ */
 function checkNodeVersion(): boolean {
   try {
     const versionOutput = execSync('node --version', {
@@ -45,6 +53,9 @@ function checkNodeVersion(): boolean {
   }
 }
 
+/**
+ * Ensure system prereqs installed and meet minimum version requirements
+ */
 export function ensurePrereqs(): void {
   if (!checkPythonVersion()) {
     fatal(
