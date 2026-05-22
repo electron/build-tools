@@ -78,6 +78,8 @@ async function runNinja(
   ninjaArgs: string[],
   genMode: GenMode,
 ): Promise<number> {
+  ninjaArgs.push('-C', path.join('out', config.gen.out));
+
   if (reclient.usingRemote && config.remoteBuild !== 'none') {
     const hasExecute = reclient.auth(config);
 
@@ -107,7 +109,7 @@ async function runNinja(
   const exec = os.platform() === 'win32' ? `${ninjaName}.bat` : ninjaName;
   const args = [...ninjaArgs, target];
   const opts: Partial<depot.DepotOpts> = {
-    cwd: evmConfig.outDir(config),
+    cwd: path.resolve(config.root, 'src'),
   };
   if (!reclient.usingRemote && config.reclient !== 'none') {
     opts.env = { RBE_remote_disabled: 'true' };
