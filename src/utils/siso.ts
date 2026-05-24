@@ -4,7 +4,11 @@ import * as path from 'node:path';
 import * as reclient from './reclient.js';
 import type { SanitizedConfig } from '../types.js';
 
-const SISO_REAPI_INSTANCE = 'projects/electron-rbe/instances/default_instance';
+// The REv2 instance name namespaces the remote Action Cache. Release builds
+// override this to the release-only namespace (which their RBE token is
+// scoped to); everything else uses the shared CI/local namespace.
+const SISO_REAPI_INSTANCE =
+  process.env['ELECTRON_RBE_INSTANCE'] || 'projects/electron-rbe/instances/default_instance';
 const SISO_PROJECT = SISO_REAPI_INSTANCE.split('/')[1] ?? '';
 
 type ConfigLike = Pick<
