@@ -214,6 +214,10 @@ program
   .alias('auto-cherry-pick')
   .command('gh-auth', 'Generates a device oauth token')
   .command(
+    'download-dist <pull_request_number_or_commit_sha>',
+    'Download a pull request or commit dist',
+  )
+  .command(
     'rcv <roll-pr> [chromium-version]',
     'Attempts to reconstruct an intermediate Chromium version from a roll PR',
   )
