@@ -221,7 +221,11 @@ program
     'rcv <roll-pr> [chromium-version]',
     'Attempts to reconstruct an intermediate Chromium version from a roll PR',
   )
-  .alias('reconstruct-chromium-version');
+  .alias('reconstruct-chromium-version')
+  .command(
+    'auto-roll [options]',
+    'Download a Chromium auto-roll from the agent-workflows service and apply it onto the roller branch',
+  );
 
 program
   .command('load-macos-sdk [version]')

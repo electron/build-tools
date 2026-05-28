@@ -10,7 +10,7 @@ This repository contains helper/wrapper scripts to make building Electron easier
 - [Core workflow](#core-workflow): [`init`](#e-init) · [`sync`](#e-sync) · [`build`](#e-build)
 - [Running Electron](#running-electron): [`start`](#e-start) · [`node`](#e-node) · [`debug`](#e-debug) · [`test`](#e-test) · [`npm`](#e-npm)
 - [Inspecting state](#inspecting-state): [`show`](#e-show) · [`shell`](#e-shell)
-- [Working with code](#working-with-code): [`patches`](#e-patches) · [`open`](#e-open) · [`pr`](#e-pr) · [`download-dist`](#e-download-dist) · [`backport`](#e-backport) · [`cherry-pick`](#e-cherry-pick) · [`rcv`](#e-rcv)
+- [Working with code](#working-with-code): [`patches`](#e-patches) · [`open`](#e-open) · [`pr`](#e-pr) · [`download-dist`](#e-download-dist) · [`backport`](#e-backport) · [`cherry-pick`](#e-cherry-pick) · [`rcv`](#e-rcv) · [`auto-roll`](#e-auto-roll)
 - [Managing configs](#managing-configs): [`use`](#e-use) · [`remove`](#e-remove) · [`sanitize-config`](#e-sanitize-config) · [`worktree`](#e-worktree) · [`load-macos-sdk`](#e-load-macos-sdk)
 - [Infrastructure](#infrastructure): [`depot-tools`](#e-depot-tools) · [`gh-auth`](#e-gh-auth) · [`auto-update`](#e-auto-update)
 - [Configuration file reference](#configuration-file-reference)
@@ -511,6 +511,43 @@ range. Also regenerates generated files (`gen-hunspell-filenames.js`, `gen-libc+
 
 Requires a GitHub token — see [`e gh-auth`](#e-gh-auth).
 
+### `e auto-roll`
+
+Download a Chromium auto-roll produced by the [agent-workflows][agent-workflows] service and apply
+it on top of your local roller branch.
+
+```sh
+$ e auto-roll [options]
+```
+
+Authenticates with the service's Cloudflare Access (a browser window opens for SSO the first time;
+the token is then cached under `~/.cloudflared` and reused), lists recent successful auto-roll runs,
+and prompts you to pick one. It then shows the agent's summary and the roll's `base → head` and asks
+for confirmation.
+
+Before applying, it fetches the latest `roller/chromium/main` from your remote and brings your local
+branch up to it — this is what makes the roll's base commit available. Creating the branch or
+fast-forwarding it happens automatically; a hard reset that would **discard local commits** (your
+branch has diverged) asks for confirmation first. Pass `--no-fetch` to skip this and apply against
+your branch as-is.
+
+It then downloads the run's git bundle and replays the roll's commits onto your local
+`roller/chromium/main` (fast-forwarding when the branch is exactly at the roll's base, otherwise
+cherry-picking the commits on top). On a conflict it stops and leaves the bundle ref at
+`refs/auto-roll/<run>` so you can resolve and `git cherry-pick --continue`. The working tree must be
+clean before applying.
+
+**Options**
+
+| Option            | Description                                                              |
+|:------------------|:------------------------------------------------------------------------|
+| `--branch <name>` | Local roller branch to apply onto (default: `roller/chromium/main`)      |
+| `--remote <name>` | Remote to fetch the roller branch from (default: `origin`)              |
+| `--no-fetch`      | Don't fetch/reset the roller branch to its latest upstream first         |
+| `--limit <n>`     | How many recent runs to list (default: `30`)                            |
+| `--run <id>`      | Skip the picker and use this workflow run id directly                    |
+| `--no-apply`      | Download and extract the bundle but don't apply it                       |
+
 ## Managing configs
 
 ### `e use`
@@ -778,6 +815,7 @@ way to override args without editing the config file:
 $ CI=1 GN_EXTRA_ARGS="is_official_build=true" e build
 ```
 
+[agent-workflows]: https://github.com/electron/agent-workflows
 [depot-tools]: https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
 [gdb]: https://web.eecs.umich.edu/~sugih/pointers/summary.html
 [gn-configs]: https://github.com/electron/electron/tree/main/build/args
