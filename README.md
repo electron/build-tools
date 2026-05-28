@@ -10,7 +10,7 @@ This repository contains helper/wrapper scripts to make building Electron easier
 - [Core workflow](#core-workflow): [`init`](#e-init) · [`sync`](#e-sync) · [`build`](#e-build)
 - [Running Electron](#running-electron): [`start`](#e-start) · [`node`](#e-node) · [`debug`](#e-debug) · [`test`](#e-test) · [`npm`](#e-npm)
 - [Inspecting state](#inspecting-state): [`show`](#e-show) · [`shell`](#e-shell)
-- [Working with code](#working-with-code): [`patches`](#e-patches) · [`open`](#e-open) · [`pr`](#e-pr) · [`backport`](#e-backport) · [`cherry-pick`](#e-cherry-pick) · [`rcv`](#e-rcv)
+- [Working with code](#working-with-code): [`patches`](#e-patches) · [`open`](#e-open) · [`pr`](#e-pr) · [`download-dist`](#e-download-dist) · [`backport`](#e-backport) · [`cherry-pick`](#e-cherry-pick) · [`rcv`](#e-rcv)
 - [Managing configs](#managing-configs): [`use`](#e-use) · [`remove`](#e-remove) · [`sanitize-config`](#e-sanitize-config) · [`worktree`](#e-worktree) · [`load-macos-sdk`](#e-load-macos-sdk)
 - [Infrastructure](#infrastructure): [`depot-tools`](#e-depot-tools) · [`gh-auth`](#e-gh-auth) · [`auto-update`](#e-auto-update)
 - [Configuration file reference](#configuration-file-reference)
@@ -419,16 +419,28 @@ Work with pull requests to `electron/electron`.
 | `-t, --target <branch>`    | Target branch (default: guessed from the Electron version in your checkout)         |
 | `-b, --backport <pr#>`     | Pre-fill the PR body with notes and title from the original PR being backported     |
 
-**`e pr download-dist` options**
+Requires a GitHub token — see [`e gh-auth`](#e-gh-auth).
+
+### `e download-dist`
+
+Download the built `dist.zip` artifact from the latest `Build` workflow run on `electron/electron`,
+for either a pull request or a commit SHA.
+
+```sh
+$ e download-dist <pr-number-or-commit-sha>
+```
+
+**Options**
 
 | Option                     | Description                                                                                                 |
 |:---------------------------|:------------------------------------------------------------------------------------------------------------|
 | `--platform <platform>`    | Platform to download (default: current)                                                                     |
 | `--arch <arch>`            | Architecture (default: current)                                                                             |
-| `-o, --output <dir>`       | Artifact output directory (default: `~/.electron_build_tools/artifacts/pr_{number}_{hash}_{platform}_{arch}`) |
-| `-s, --skip-confirmation`  | Skip the confirmation prompt (enabled automatically in CI)                                                  |
+| `-o, --output <dir>`       | Output directory (default: `~/.electron_build_tools/artifacts/pr_{number}_{hash}_{platform}_{arch}` or `commit_{hash}_{platform}_{arch}`) |
+| `-s, --skip-confirmation`  | Skip the PR confirmation prompt (enabled automatically in CI)                                                                            |
 
 `e pr download-dist` requires a GitHub token — see [`e gh-auth`](#e-gh-auth).
+`e pr download-dist` an alias of `e download-dist` for backwards compatibility.
 
 ### `e backport`
 

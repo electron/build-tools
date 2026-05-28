@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { styleText } from 'node:util';
 
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -23,36 +24,71 @@ export interface DownloadDistOptions {
   skipConfirmation: boolean;
 }
 
-export async function downloadDist(
-  pullRequestNumber: string,
-  options: DownloadDistOptions,
-): Promise<void> {
+export async function downloadDist(source: string, options: DownloadDistOptions): Promise<void> {
   d('checking auth...');
   const auth = await getGitHubAuthToken(['repo']);
   const octokit = new Octokit({ auth });
 
-  d('fetching pr info...');
   let pullRequest;
-  try {
-    const { data } = await octokit.pulls.get({
-      owner: 'electron',
-      repo: 'electron',
-      pull_number: parseInt(pullRequestNumber, 10),
-    });
-    pullRequest = data;
-  } catch (error) {
-    console.error(`Failed to get pull request: ${String(error)}`);
-    return;
+
+  if (/^.*[a-zA-Z].*$/.test(source)) {
+    // Looks like a commit SHA, so try to look it up
+    d('fetching commit info...');
+    try {
+      const { data } = await octokit.repos.getCommit({
+        owner: 'electron',
+        repo: 'electron',
+        ref: source,
+      });
+      source = data.sha;
+    } catch (error) {
+      fatal(`Failed to get commit ${styleText('yellow', source)}:\n${String(error)}`);
+    }
+  } else {
+    // Still could be a commit SHA, with no letters
+    let commitFound = false;
+
+    if (source.length >= 7) {
+      d('fetching commit info...');
+      try {
+        const { data } = await octokit.repos.getCommit({
+          owner: 'electron',
+          repo: 'electron',
+          ref: source,
+        });
+        source = data.sha;
+        commitFound = true;
+      } catch (error: any) {
+        if (error?.status !== 404) {
+          fatal(`Failed to get commit ${styleText('yellow', source)}:\n${String(error)}`);
+        }
+      }
+    }
+
+    // Check if it's a pull request number
+    if (!commitFound) {
+      d('fetching pr info...');
+      try {
+        const { data } = await octokit.pulls.get({
+          owner: 'electron',
+          repo: 'electron',
+          pull_number: parseInt(source, 10),
+        });
+        pullRequest = data;
+      } catch (error: any) {
+        fatal(`Failed to get pull request ${styleText('yellow', source)}:\n${String(error)}`);
+      }
+    }
   }
 
-  if (!options.skipConfirmation) {
-    const isElectronRepo = pullRequest.head.repo?.full_name !== 'electron/electron';
+  if (pullRequest && !options.skipConfirmation) {
+    const isElectronRepo = pullRequest.head.repo?.full_name === 'electron/electron';
     const proceed = await inquirer.confirm({
       default: false,
       message: `You are about to download artifacts from:
 
 “${pullRequest.title} (#${pullRequest.number})” by ${pullRequest.user?.login}
-${pullRequest.head.repo?.html_url}${isElectronRepo ? ' (fork)' : ''}
+${pullRequest.head.repo?.html_url}${isElectronRepo ? '' : ' (fork)'}
 ${pullRequest.state !== 'open' ? '\n❗❗❗ The pull request is closed, only proceed if you trust the source ❗❗❗\n' : ''}
 Proceed?`,
     });
@@ -66,8 +102,15 @@ Proceed?`,
     const { data } = await octokit.actions.listWorkflowRunsForRepo({
       owner: 'electron',
       repo: 'electron',
-      branch: pullRequest.head.ref,
-      event: 'pull_request',
+      ...(pullRequest
+        ? {
+            branch: pullRequest.head.ref,
+            event: 'pull_request',
+          }
+        : {
+            head_sha: source,
+            event: 'push',
+          }),
       status: 'completed',
       per_page: 10,
       // GitHub supports filtering by workflow name here but @octokit/openapi-types
@@ -83,7 +126,11 @@ Proceed?`,
 
   const latestBuildWorkflowRun = workflowRuns.find((run) => run.name === 'Build');
   if (!latestBuildWorkflowRun) {
-    fatal(`No 'Build' workflow runs found for pull request #${pullRequestNumber}`);
+    if (pullRequest) {
+      fatal(`No 'Build' workflow runs found for pull request #${pullRequest.number}`);
+    } else {
+      fatal(`No 'Build' workflow runs found for commit ${styleText('yellow', source)}`);
+    }
   }
   const shortCommitHash = latestBuildWorkflowRun.head_sha.substring(0, 7);
 
@@ -118,10 +165,12 @@ Proceed?`,
       fatal(`The output directory '${options.output}' does not exist`);
     }
   } else {
-    const artifactsDir = path.resolve(import.meta.dirname, '..', 'artifacts');
+    const artifactsDir = path.resolve(import.meta.dirname, '..', '..', 'artifacts');
     const defaultDir = path.resolve(
       artifactsDir,
-      `pr_${pullRequest.number}_${shortCommitHash}_${options.platform}_${options.arch}`,
+      pullRequest
+        ? `pr_${pullRequest.number}_${shortCommitHash}_${options.platform}_${options.arch}`
+        : `commit_${source}_${options.platform}_${options.arch}`,
     );
 
     // Clean up the directory if it exists
@@ -139,7 +188,15 @@ Proceed?`,
     outputDir = defaultDir;
   }
 
-  console.log(`Downloading artifact '${artifactName}' from pull request #${pullRequestNumber}...`);
+  if (pullRequest) {
+    console.log(
+      `Downloading artifact '${artifactName}' from pull request ${styleText('green', '#' + pullRequest.number)}...`,
+    );
+  } else {
+    console.log(
+      `Downloading artifact '${artifactName}' from commit ${styleText('green', source)}...`,
+    );
+  }
 
   // Download the artifact to a temporary directory
   const tempDir = path.join(os.tmpdir(), 'electron-tmp');
