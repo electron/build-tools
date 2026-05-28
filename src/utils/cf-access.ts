@@ -183,16 +183,18 @@ async function pollTransfer(
   url: string,
   encrypter: { secretKey: Uint8Array },
 ): Promise<TransferResponse | null> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), POLL_TIMEOUT_MS);
   let res: Response;
   try {
     res = await fetch(url, {
       headers: { 'User-Agent': USER_AGENT },
-      signal: controller.signal,
+      signal: AbortSignal.timeout(POLL_TIMEOUT_MS),
     });
-  } finally {
-    clearTimeout(timer);
+  } catch (err) {
+    // A per-poll timeout just means this long-poll didn't resolve in time —
+    // treat it as "not ready" so runTransfer starts another attempt rather
+    // than crashing the whole flow with an unhandled abort.
+    if (err instanceof DOMException && err.name === 'TimeoutError') return null;
+    throw err;
   }
 
   if (res.status >= 500) {

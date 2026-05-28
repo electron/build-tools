@@ -4,7 +4,6 @@ import * as cp from 'node:child_process';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import * as stream from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
 import { program } from 'commander';
@@ -157,14 +156,11 @@ async function downloadBundle(
   }
 
   const total = Number(zipRes.headers.get('content-length') ?? 0);
-  const source = stream.Readable.fromWeb(
-    zipRes.body as Parameters<typeof stream.Readable.fromWeb>[0],
-  );
   const out = fs.createWriteStream(zipPath);
   if (total > 0 && process.stdout.isTTY) {
-    await pipeline(source, progressStream(total, '  [:bar] :mbRateMB/s :percent :etas'), out);
+    await pipeline(zipRes.body, progressStream(total, '  [:bar] :mbRateMB/s :percent :etas'), out);
   } else {
-    await pipeline(source, out);
+    await pipeline(zipRes.body, out);
   }
 
   const extractDir = path.join(destDir, 'extracted');
@@ -274,7 +270,7 @@ function applyRoll(
   if (!meta.base || !meta.head) {
     fatal(`${BUNDLE_META_FILE} is missing base/head — refusing to apply an unverifiable bundle`);
   }
-  const { base, head } = meta as { base: string; head: string };
+  const { base, head } = meta;
 
   // The bundle is rooted at the roller/chromium/main tip the roll was built
   // from. If our checkout doesn't already have that commit, fetch it by SHA —
