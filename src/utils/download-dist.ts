@@ -21,10 +21,33 @@ export interface DownloadDistOptions {
   platform: string;
   arch: string;
   output?: string;
-  skipConfirmation: boolean;
+  skipConfirmation?: boolean;
 }
 
-export async function downloadDist(source: string, options: DownloadDistOptions): Promise<void> {
+export async function getDistExecutablePath(outputDir: string, platform: string): Promise<string> {
+  const platformExecutables: Record<string, string> = {
+    win32: 'electron.exe',
+    darwin: path.join('Electron.app', 'Contents', 'MacOS', 'Electron'),
+    linux: 'electron',
+  };
+
+  const executableName = platformExecutables[platform];
+  if (!executableName) {
+    throw new Error(`Unable to find executable for platform '${platform}'`);
+  }
+
+  const executablePath = path.join(outputDir, executableName);
+  if (!(await fs.promises.stat(executablePath).catch(() => false))) {
+    throw new Error(`${executableName} not found within dist.zip.`);
+  }
+
+  return executablePath;
+}
+
+export async function downloadDist(
+  source: string,
+  options: DownloadDistOptions,
+): Promise<string | undefined> {
   d('checking auth...');
   const auth = await getGitHubAuthToken(['repo']);
   const octokit = new Octokit({ auth });
@@ -255,26 +278,14 @@ Proceed?`,
     d('unzipping dist.zip to %s', outputDir);
     await extractZip(distZipPath, { dir: outputDir });
 
-    const platformExecutables: Record<string, string> = {
-      win32: 'electron.exe',
-      darwin: 'Electron.app/',
-      linux: 'electron',
-    };
-
-    const executableName = platformExecutables[options.platform];
-    if (!executableName) {
-      throw new Error(`Unable to find executable for platform '${options.platform}'`);
-    }
-
-    const executablePath = path.join(outputDir, executableName);
-    if (!(await fs.promises.stat(executablePath).catch(() => false))) {
-      throw new Error(`${executableName} not found within dist.zip.`);
-    }
-
+    const executablePath = await getDistExecutablePath(outputDir, options.platform);
     console.log(`${color.success} Downloaded to ${outputDir}`);
+
+    return executablePath;
   } catch (error) {
     logError(error);
     process.exitCode = 1; // wait for cleanup
+    return undefined;
   } finally {
     // Cleanup temporary files
     try {
