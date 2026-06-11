@@ -134,7 +134,6 @@ Proceed?`,
             head_sha: source,
             event: 'push',
           }),
-      status: 'completed',
       per_page: 10,
       // GitHub supports filtering by workflow name here but @octokit/openapi-types
       // doesn't declare it. Without this filter, a PR with many concurrent
@@ -143,8 +142,7 @@ Proceed?`,
     } as Parameters<typeof octokit.actions.listWorkflowRunsForRepo>[0] & { name: string });
     workflowRuns = data.workflow_runs;
   } catch (error) {
-    console.error(`Failed to list workflow runs: ${String(error)}`);
-    return;
+    fatal(`Failed to list workflow runs: ${String(error)}`);
   }
 
   const latestBuildWorkflowRun = workflowRuns.find((run) => run.name === 'Build');
@@ -167,16 +165,14 @@ Proceed?`,
     });
     artifacts = data.artifacts;
   } catch (error) {
-    console.error(`Failed to list artifacts: ${String(error)}`);
-    return;
+    fatal(`Failed to list artifacts: ${String(error)}`);
   }
 
   const artifactPlatform = options.platform === 'win32' ? 'win' : options.platform;
   const artifactName = `generated_artifacts_${artifactPlatform}_${options.arch}`;
   const artifact = artifacts.find((a) => a.name === artifactName);
   if (!artifact) {
-    console.error(`Failed to find artifact: ${artifactName}`);
-    return;
+    fatal(`Failed to find artifact: ${artifactName}`);
   }
 
   let outputDir: string;
