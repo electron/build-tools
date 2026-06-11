@@ -278,12 +278,15 @@ export function getChromiumBuildtoolsPath(config: ConfigLike): string | undefine
   const disableLogging = process.env['ELECTRON_DEPOT_TOOLS_DISABLE_LOG'];
   process.env['ELECTRON_DEPOT_TOOLS_DISABLE_LOG'] = '1';
 
+  const pythonCommand =
+    "from gclient_paths import GetBuildtoolsPath; print(GetBuildtoolsPath() or '')";
+
   let result;
   try {
     result = spawnSync(
       config,
       'python3',
-      ['-c', 'from gclient_paths import GetBuildtoolsPath; print(GetBuildtoolsPath() or "")'],
+      ['-c', process.platform === 'win32' ? `"${pythonCommand}"` : pythonCommand],
       { cwd: config.root, encoding: 'utf8', stdio: 'pipe', env: { PYTHONPATH: DEPOT_TOOLS_DIR } },
     );
   } catch {
