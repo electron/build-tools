@@ -111,7 +111,6 @@ Proceed?`,
             head_sha: source,
             event: 'push',
           }),
-      status: 'completed',
       per_page: 10,
       // GitHub supports filtering by workflow name here but @octokit/openapi-types
       // doesn't declare it. Without this filter, a PR with many concurrent
