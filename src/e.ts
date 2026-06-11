@@ -8,6 +8,7 @@ import { program } from 'commander';
 
 import * as evmConfig from './evm-config.js';
 import { color, fatal } from './utils/logging.js';
+import { downloadDist } from './utils/download-dist.js';
 import * as depot from './utils/depot-tools.js';
 import { ensurePrereqs } from './utils/prereqs.js';
 import { refreshPathVariable } from './utils/refresh-path.js';
@@ -121,9 +122,27 @@ program
   .alias('run')
   .description('Run the Electron executable')
   .allowUnknownOption()
-  .action((args: string[]) => {
+  .option(
+    '--from-dist <pull_request_number_or_commit_sha>',
+    'Download the dist for the given PR number or commit SHA and run it instead of the local build',
+  )
+  .action(async (args: string[], options: { fromDist?: string }) => {
     try {
-      const exec = evmConfig.execOf(evmConfig.current());
+      let exec: string;
+
+      if (options.fromDist) {
+        const downloadedExec = await downloadDist(options.fromDist, {
+          platform: process.platform,
+          arch: process.arch,
+        });
+        if (!downloadedExec) {
+          fatal(`Failed to download dist for ${color.path(options.fromDist)}`);
+        }
+        exec = downloadedExec;
+      } else {
+        exec = evmConfig.execOf(evmConfig.current());
+      }
+
       if (!fs.existsSync(exec)) {
         fatal(`Could not find Electron executable at ${color.path(exec)}`);
       }
@@ -142,6 +161,8 @@ program
     console.log('  $ e start .');
     console.log('  $ e start /path/to/app');
     console.log('  $ e start /path/to/app --js-flags');
+    console.log('  $ e start --from-dist 12345 .');
+    console.log('  $ e start --from-dist <commit-sha> .');
   });
 
 program
