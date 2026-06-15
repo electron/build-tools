@@ -1,4 +1,8 @@
 {
+  "26.5" : {
+    "fileName": "MacOSX-26.5.sdk.zip",
+    "sha256": "4d800d3de31f7042d18e3b740930222d5897414f0cfe328a9bb58dc29e4e4186"
+  },
   "26.4" : {
     "fileName": "MacOSX-26.4.sdk.zip",
     "sha256": "4534ef4ded72f012956ccd1923a82aeae8efc40a3f5483d749f7fb754ce0a604"
