@@ -78,7 +78,9 @@ async function runNinja(
   ninjaArgs: string[],
   genMode: GenMode,
 ): Promise<number> {
-  ninjaArgs.push('-C', path.join('out', config.gen.out));
+  if (!ninjaArgs.some((arg) => arg === '-C' || arg === '--C' || /^--?C=?./.test(arg))) {
+    ninjaArgs.push('-C', path.join('out', config.gen.out));
+  }
 
   if (reclient.usingRemote && config.remoteBuild !== 'none') {
     const hasExecute = reclient.auth(config);
