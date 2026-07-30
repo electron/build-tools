@@ -9,6 +9,7 @@ import { program } from 'commander';
 import * as evmConfig from './evm-config.js';
 import { color, fatal } from './utils/logging.js';
 import { downloadDist } from './utils/download-dist.js';
+import { maybeRunExternalCommand } from './utils/external-command.js';
 import * as depot from './utils/depot-tools.js';
 import { ensurePrereqs } from './utils/prereqs.js';
 import { refreshPathVariable } from './utils/refresh-path.js';
@@ -333,4 +334,5 @@ See https://github.com/electron/build-tools/blob/main/README.md for usage.`);
 });
 
 program.executableDir(import.meta.dirname);
+maybeRunExternalCommand(program, process.argv);
 program.parse(process.argv);
