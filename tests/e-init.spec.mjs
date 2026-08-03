@@ -76,6 +76,70 @@ describe('e-init', () => {
       expect(validationErrors).toBeFalsy();
     });
 
+    it('uses --fork and --fork-as-origin for the config and .gclient checkout URL', () => {
+      const root = path.resolve(sandbox.tmpdir, 'main');
+
+      const result = sandbox
+        .eInitRunner()
+        .name('special')
+        .root(root)
+        .fork('cool-fork/electron')
+        .forkAsOrigin()
+        .run();
+
+      expect(result.exitCode).toStrictEqual(0);
+
+      const configPath = path.resolve(sandbox.tmpdir, 'evm-config', 'evm.special.json');
+      const config = require(configPath);
+      expect(config.remotes.electron.origin).toStrictEqual('git@github.com:cool-fork/electron.git');
+      expect(config.remotes.electron.upstream).toStrictEqual('git@github.com:electron/electron.git');
+      expect(config.remotes.electron.fork).toBeUndefined();
+
+      const gclient = fs.readFileSync(path.resolve(root, '.gclient'), 'utf8');
+      expect(gclient).toContain('git@github.com:cool-fork/electron.git');
+      expect(gclient).not.toContain('git@github.com:electron/electron');
+    });
+
+    it('uses --fork, --fork-as-origin and --use-https for the config and .gclient checkout URL', () => {
+      const root = path.resolve(sandbox.tmpdir, 'main');
+
+      const result = sandbox
+        .eInitRunner()
+        .name('special')
+        .root(root)
+        .fork('cool-fork/electron')
+        .forkAsOrigin()
+        .useHttps()
+        .run();
+
+      expect(result.exitCode).toStrictEqual(0);
+
+      const configPath = path.resolve(sandbox.tmpdir, 'evm-config', 'evm.special.json');
+      const config = require(configPath);
+      expect(config.remotes.electron.origin).toStrictEqual('https://github.com/cool-fork/electron.git');
+      expect(config.remotes.electron.upstream).toStrictEqual('https://github.com/electron/electron.git');
+      expect(config.remotes.electron.fork).toBeUndefined();
+
+      const gclient = fs.readFileSync(path.resolve(root, '.gclient'), 'utf8');
+      expect(gclient).toContain('https://github.com/cool-fork/electron.git');
+      expect(gclient).not.toContain('https://github.com/electron/electron.git');
+    });
+
+    it('requires --fork when --fork-as-origin is passed', () => {
+      const root = path.resolve(sandbox.tmpdir, 'main');
+
+      const result = sandbox
+        .eInitRunner()
+        .name('special')
+        .root(root)
+        .forkAsOrigin()
+        .useHttps()
+        .run();
+
+      expect(result.exitCode).not.toStrictEqual(0);
+      expect(result.stderr).toEqual(expect.stringContaining('--fork-as-origin requires --fork'));
+    });
+
     it('logs an info message when the new build config root already has a .gclient file', () => {
       const root = path.resolve(sandbox.tmpdir, 'main');
 

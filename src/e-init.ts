@@ -36,7 +36,29 @@ interface InitOptions {
   bootstrap?: boolean;
   remoteBuild: RemoteBuild;
   useHttps: boolean;
+  forkAsOrigin?: boolean;
   fork?: string;
+}
+
+function getRemotes(options: InitOptions): { origin: string; fork?: string; upstream?: string } {
+  const resolveGitUrl = (value: string): string =>
+    options.useHttps ? `https://github.com/${value}.git` : `git@github.com:${value}.git`;
+
+  const electronRemote = resolveGitUrl('electron/electron');
+
+  if (options.forkAsOrigin) {
+    const forkOpt = options.fork?.trim();
+    if (!forkOpt) {
+      fatal('--fork-as-origin requires --fork to be set with a valid GitHub repo (e.g. user/electron)');
+    }
+    const forkRemote = resolveGitUrl(forkOpt);
+    return { origin: forkRemote, upstream: electronRemote };
+  }
+
+  return {
+    origin: electronRemote,
+    ...(options.fork && { fork: resolveGitUrl(options.fork) }),
+  };
 }
 
 function createConfig(options: InitOptions): EvmConfig {
@@ -69,17 +91,6 @@ function createConfig(options: InitOptions): EvmConfig {
 
   if (options.targetCpu) gn_args.push(`target_cpu="${options.targetCpu}"`);
 
-  const electron = {
-    origin: options.useHttps
-      ? 'https://github.com/electron/electron.git'
-      : 'git@github.com:electron/electron.git',
-    ...(options.fork && {
-      fork: options.useHttps
-        ? `https://github.com/${options.fork}.git`
-        : `git@github.com:${options.fork}.git`,
-    }),
-  };
-
   const gitCachePath = process.env['GIT_CACHE_PATH'];
 
   return {
@@ -87,7 +98,7 @@ function createConfig(options: InitOptions): EvmConfig {
     remoteBuild: options.remoteBuild,
     root,
     remotes: {
-      electron,
+      electron: getRemotes(options),
     },
     gen: {
       args: gn_args,
@@ -106,6 +117,7 @@ function createConfig(options: InitOptions): EvmConfig {
 function runGClientConfig(config: EvmConfig): void {
   const { root } = config;
   if (!root) fatal('Config is missing root');
+  if (!config.remotes) fatal('Config is missing remotes');
   depot.ensure();
   const exec = 'gclient';
   const args = [
@@ -113,7 +125,7 @@ function runGClientConfig(config: EvmConfig): void {
     '--name',
     'src/electron',
     '--unmanaged',
-    'https://github.com/electron/electron',
+    config.remotes.electron.origin
   ];
   const opts = {
     cwd: root,
@@ -177,8 +189,13 @@ program
     false,
   )
   .option(
-    '--fork <username/electron>',
-    `Add a remote fork of Electron with the name 'fork'. This should take the format 'username/electron'`,
+    '--fork <user/electron>',
+    `Add a remote fork of Electron with the name 'fork'. Accepts the format 'user/electron'`,
+  )
+  .option(
+    '--fork-as-origin',
+    'Use --fork as the Electron checkout origin and add electron/electron as upstream',
+    false,
   )
   .action((name: string, options: InitOptions) => {
     if (options.import && !options.out) {

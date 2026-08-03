@@ -25,25 +25,24 @@ function setRemotes(cwd: string, repo: ElectronRemotes): void {
 
   const entries: Array<[keyof ElectronRemotes, string | undefined]> = [
     ['origin', repo.origin],
+    ['upstream', repo.upstream],
     ['fork', repo.fork],
   ];
 
   for (const [remote, url] of entries) {
     if (!url) continue;
+    if (remote === 'origin') continue;
 
-    // First check that the fork remote exists.
-    if (remote === 'fork') {
-      const remotes = cp.execSync('git remote', { cwd }).toString().trim().split('\n');
+    // First check that non-origin remotes exist.
+    const remotes = cp.execSync('git remote', { cwd }).toString().trim().split('\n');
 
-      // If we've not added the fork remote, add it instead of updating the url.
-      if (!remotes.includes('fork')) {
-        cp.execSync(`git remote add ${remote} ${url}`, { cwd });
-        break;
-      }
+    // If we've not added the remote, add it instead of updating the url.
+    if (!remotes.includes(remote)) {
+      cp.execSync(`git remote add ${remote} ${url}`, { cwd });
+    } else {
+      cp.execSync(`git remote set-url ${remote} ${url}`, { cwd });
+      cp.execSync(`git remote set-url --push ${remote} ${url}`, { cwd });
     }
-
-    cp.execSync(`git remote set-url ${remote} ${url}`, { cwd });
-    cp.execSync(`git remote set-url --push ${remote} ${url}`, { cwd });
   }
 }
 
