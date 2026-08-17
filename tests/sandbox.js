@@ -269,6 +269,11 @@ function createSandbox() {
     execOptions.env.HOME = process.env.HOME;
   }
 
+  // allow CI to pin vpython's virtualenv cache to a cacheable location
+  if (process.env.VPYTHON_VIRTUALENV_ROOT) {
+    execOptions.env.VPYTHON_VIRTUALENV_ROOT = process.env.VPYTHON_VIRTUALENV_ROOT;
+  }
+
   return {
     cleanup: () => deleteDir(tmpdir),
     eInitRunner: () => {
