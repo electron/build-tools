@@ -21,6 +21,13 @@ refreshPathVariable();
 ensurePrereqs();
 
 function maybeCheckForUpdates(): void {
+  // For testing purposes: never self-update while running under the test
+  // suite, where the updater's git operations would race parallel tests
+  // and mutate the checkout under test.
+  if (process.env['__VITEST__']) {
+    return;
+  }
+
   // skip auto-update check if disabled
   //
   // NB: send updater's stdout to stderr so its log messages are visible
