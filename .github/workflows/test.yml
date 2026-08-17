@@ -25,7 +25,9 @@ jobs:
     env:
       # Pin vpython's virtualenv cache to a known path so it can be cached
       # between runs (the tests pass this through to spawned CLI processes).
-      VPYTHON_VIRTUALENV_ROOT: ${{ github.workspace }}/.vpython-root
+      # Not overridden on Windows — vpython uses its default LocalAppData
+      # location there, which is listed in the cache paths instead.
+      VPYTHON_VIRTUALENV_ROOT: ${{ matrix.os != 'windows-latest' && format('{0}/.vpython-root', github.workspace) || '' }}
     steps:
     - name: Set git global config (Windows)
       if: ${{ matrix.os == 'windows-latest' }}
@@ -67,6 +69,8 @@ jobs:
         path: |
           third_party/depot_tools
           .vpython-root
+          ~/AppData/Local/vpython-root
+          ~/.vpython-root
         # depot_tools is a rolling checkout with nothing to hash, so rotate
         # the key weekly to keep the cached copy fresh; restore-keys lets a
         # new week start from last week's cache instead of a cold bootstrap.
@@ -82,10 +86,11 @@ jobs:
         fi
     - name: Update depot_tools (Windows)
       if: matrix.os == 'windows-latest' && steps.cache-depot-tools.outputs.cache-hit != 'true'
-      shell: cmd
+      shell: pwsh
       run: |
-        if exist third_party\depot_tools\.disable_auto_update del third_party\depot_tools\.disable_auto_update
-        call third_party\depot_tools\update_depot_tools.bat
+        Remove-Item -Force -ErrorAction Ignore third_party\depot_tools\.disable_auto_update
+        & .\third_party\depot_tools\update_depot_tools.bat
+        exit $LASTEXITCODE
     - name: Update depot_tools
       if: matrix.os != 'windows-latest' && steps.cache-depot-tools.outputs.cache-hit != 'true'
       run: |
