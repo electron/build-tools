@@ -10,7 +10,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 describe('e-init', () => {
   let sandbox;
   beforeEach(() => {
-    sandbox = createSandbox();
+    // most of these tests are about config handling, not about depot_tools,
+    // so use a stub gclient instead of the real depot_tools bootstrap
+    sandbox = createSandbox({ stubDepotTools: true });
   });
   afterEach(() => {
     sandbox.cleanup();
@@ -18,6 +20,11 @@ describe('e-init', () => {
 
   describe('--root', () => {
     it('creates a new directory with a .gclient file', { timeout: 600_000 }, () => {
+      // this is the one true end-to-end test, so swap in a sandbox that
+      // bootstraps and uses the real depot_tools
+      sandbox.cleanup();
+      sandbox = createSandbox();
+
       const root = path.resolve(sandbox.tmpdir, 'main');
       const gclient_file = path.resolve(root, '.gclient');
 

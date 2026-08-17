@@ -243,7 +243,7 @@ function eRemoveRunner(execOptions) {
   return o;
 }
 
-function createSandbox() {
+function createSandbox({ stubDepotTools = false } = {}) {
   // create new temporary directories
   const tmpdir = fs.mkdtempSync(path.join(process.cwd(), 'build-tools-spec-'));
   const evm_config_dir = path.resolve(tmpdir, 'evm-config');
@@ -261,6 +261,13 @@ function createSandbox() {
       [PATH_KEY]: process.env[PATH_KEY],
     },
   };
+
+  // Tests that aren't about the depot_tools bootstrap itself can point the
+  // CLI at a fixture containing a stub `gclient`, sparing them the cost of
+  // cloning/updating the real depot_tools and bootstrapping vpython.
+  if (stubDepotTools) {
+    execOptions.env.DEPOT_TOOLS_DIR = path.resolve(__dirname, 'fixtures', 'depot_tools');
+  }
 
   // vpython pulls user home directory from environment variables
   if (os.platform() === 'win32') {
