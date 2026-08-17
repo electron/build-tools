@@ -61,6 +61,25 @@ def init(ctx):
           "lld-link": step_config["platforms"]["default"],
       })
 
+    # Chromium gates remote execution of the mojom and Blink bindings
+    # generators on its "googlechrome" config; on Electron's RBE they run
+    # fine as-is (Linux workers with python3, all inputs checked in), so
+    # enable them for every host. Validated on rbe.notgoma.com:
+    # mojom_parser, mojom_bindings_generator, generate_type_mappings and
+    # blink/generate_bindings all produce byte-identical outputs remotely.
+    # Besides taking ~1 CPU-hour of python off the 5-core macOS runners
+    # per build, remote steps are cached, so unchanged generators become
+    # cache hits on every host instead of running locally each time.
+    for rule in step_config["rules"]:
+      if rule["name"] in (
+          "mojo/mojom_bindings_generator",
+          "mojo/mojom_parser",
+          "mojo/generate_type_mappings",
+          "blink/generate_bindings",
+      ):
+        rule["remote"] = True
+        rule["remote_command"] = "python3"
+
     return module(
       "config",
       step_config = json.encode(step_config),
