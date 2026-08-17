@@ -23,11 +23,13 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
-      # Pin vpython's virtualenv cache to a known path so it can be cached
-      # between runs (the tests pass this through to spawned CLI processes).
-      # Not overridden on Windows — vpython uses its default LocalAppData
-      # location there, which is listed in the cache paths instead.
-      VPYTHON_VIRTUALENV_ROOT: ${{ matrix.os != 'windows-latest' && format('{0}/.vpython-root', github.workspace) || '' }}
+      # Pin vpython's virtualenv cache to a workspace path so it can be
+      # cached between runs (the tests pass this through to spawned CLI
+      # processes). On Windows the workspace pin is required for caching to
+      # work at all: vpython's default root lives on C:\ (LocalAppData)
+      # while actions/cache archives relative to the D:\ workspace, so the
+      # default location can never make it into the cache.
+      VPYTHON_VIRTUALENV_ROOT: ${{ matrix.os == 'windows-latest' && format('{0}\.vpython-root', github.workspace) || format('{0}/.vpython-root', github.workspace) }}
     steps:
     - name: Set git global config (Windows)
       if: ${{ matrix.os == 'windows-latest' }}
@@ -69,14 +71,13 @@ jobs:
         path: |
           third_party/depot_tools
           .vpython-root
-          ~/AppData/Local/vpython-root
-          ~/.vpython-root
         # depot_tools is a rolling checkout with nothing to hash, so rotate
         # the key weekly to keep the cached copy fresh; restore-keys lets a
         # new week start from last week's cache instead of a cold bootstrap.
-        key: ${{ runner.os }}-depot-tools-${{ steps.depot-tools-key.outputs.week }}
+        # (v2: the vpython root moved into the workspace on all platforms.)
+        key: ${{ runner.os }}-depot-tools-v2-${{ steps.depot-tools-key.outputs.week }}
         restore-keys: |
-          ${{ runner.os }}-depot-tools-
+          ${{ runner.os }}-depot-tools-v2-
     - name: Clone depot_tools
       if: steps.cache-depot-tools.outputs.cache-hit != 'true'
       shell: bash
