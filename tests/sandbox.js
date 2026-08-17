@@ -269,6 +269,10 @@ function createSandbox({ stubDepotTools = false } = {}) {
   // vpython pulls user home directory from environment variables
   if (os.platform() === 'win32') {
     execOptions.env.LocalAppData = process.env.LocalAppData;
+    // depot_tools' batch scripts and the cipd/vpython Go tools need a
+    // writable temp directory
+    execOptions.env.TEMP = process.env.TEMP;
+    execOptions.env.TMP = process.env.TMP;
   } else {
     execOptions.env.HOME = process.env.HOME;
   }

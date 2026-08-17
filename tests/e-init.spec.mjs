@@ -39,8 +39,11 @@ describe('e-init', () => {
         .name('name')
         .run();
 
-      // confirm that it worked
-      expect(result.exitCode).toStrictEqual(0);
+      // confirm that it worked; on failure, surface the CLI's output since
+      // the real depot_tools/gclient bootstrap can fail for reasons (network,
+      // environment) that the exit code alone doesn't explain
+      const message = `e init stdout:\n${result.stdout}\n\ne init stderr:\n${result.stderr}`;
+      expect(result.exitCode, message).toStrictEqual(0);
       expect(fs.statSync(root).isDirectory()).toStrictEqual(true);
       expect(fs.statSync(gclient_file).isFile()).toStrictEqual(true);
     });
