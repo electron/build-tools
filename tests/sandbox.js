@@ -7,17 +7,13 @@ const { pathKey } = require('../dist/utils/path-key');
 
 const PATH_KEY = pathKey();
 
-// execFileSync() wrapper that adds exec'ed scripts to code coverage.
+// execFileSync() wrapper that runs one of the compiled `e-*.js` CLIs.
+// Coverage of these child processes is collected natively by V8: the test
+// script wraps vitest in c8, which sets NODE_V8_COVERAGE, and the sandbox
+// env passes that variable through to each spawned process (see below).
 // Returns { exitCode:number, stderr:string, stdout:string }
 function runSync(args, options) {
-  // vitest doesn't directly support coverage of exec'ed scripts,
-  // but this workaround of invoking nyc in spawn gets the job done.
-  // https://github.com/facebook/jest/issues/3190#issuecomment-354758036
-  const spawnCmd = os.platform() === 'win32' ? 'nyc.cmd' : 'nyc';
-  const spawnArgs = ['--reporter', 'none', 'node'];
   const debug = false;
-
-  args = [...spawnArgs, ...args];
 
   const ret = {
     stdout: '',
@@ -25,14 +21,9 @@ function runSync(args, options) {
     exitCode: 0,
   };
 
-  // Necessary when spawning .cmd on Windows.
-  if (process.platform === 'win32') {
-    options = { ...options, shell: true };
-  }
-
   try {
     if (debug) console.log(args);
-    const out = childProcess.execFileSync(spawnCmd, args, options);
+    const out = childProcess.execFileSync(process.execPath, args, options);
     if (out) {
       ret.stdout = out.toString().trim();
     }
@@ -267,6 +258,12 @@ function createSandbox({ stubDepotTools = false } = {}) {
   // cloning/updating the real depot_tools and bootstrapping vpython.
   if (stubDepotTools) {
     execOptions.env.DEPOT_TOOLS_DIR = path.resolve(__dirname, 'fixtures', 'depot_tools');
+  }
+
+  // let V8 write coverage for spawned CLI processes when the test run is
+  // wrapped in c8 (which sets NODE_V8_COVERAGE)
+  if (process.env.NODE_V8_COVERAGE) {
+    execOptions.env.NODE_V8_COVERAGE = process.env.NODE_V8_COVERAGE;
   }
 
   // vpython pulls user home directory from environment variables
