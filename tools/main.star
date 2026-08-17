@@ -61,6 +61,39 @@ def init(ctx):
           "lld-link": step_config["platforms"]["default"],
       })
 
+    # Chromium gates remote execution of its python/node code generators
+    # (mojom, Blink bindings, grit strings, TypeScript/WebUI) on its
+    # "googlechrome" config; on Electron's RBE they run fine as-is (Linux
+    # workers with python3/node, all inputs checked in), so enable them for
+    # every host. Each of these was validated on rbe.notgoma.com: it executes
+    # remotely, produces byte-identical outputs and cache-hits on rerun.
+    # Besides taking ~1 CPU-hour of python off the 5-core macOS runners per
+    # build, remote steps are cached, so unchanged generators become cache
+    # hits on every host instead of running locally each time.
+    #
+    # The typescript/webui rules need their Starlark handlers (which add the
+    # node_modules etc. inputs); Chromium only attaches them when remote is
+    # enabled at config time, so attach them here.
+    remote_generators = {
+        "mojo/mojom_bindings_generator": None,
+        "mojo/mojom_parser": None,
+        "mojo/generate_type_mappings": None,
+        "blink/generate_bindings": None,
+        "grit/chrome_app_generated_resources": None,
+        "grit/components_strings": None,
+        "typescript/ts_library": "typescript_ts_library",
+        "webui/minify_js": None,
+        "webui/stylelint": None,
+        "webui/eslint_ts": "webui_eslint_ts",
+    }
+    for rule in step_config["rules"]:
+      if rule["name"] in remote_generators:
+        rule["remote"] = True
+        rule["remote_command"] = "python3"
+        handler = remote_generators[rule["name"]]
+        if handler:
+          rule["handler"] = handler
+
     return module(
       "config",
       step_config = json.encode(step_config),
