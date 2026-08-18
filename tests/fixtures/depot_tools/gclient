@@ -1,0 +1,9 @@
+#!/bin/sh
+# Minimal stand-in for depot_tools' `gclient`, used by tests that aren't
+# exercising the real depot_tools bootstrap (see tests/sandbox.js).
+# The only behavior those tests rely on is that `gclient config` drops a
+# .gclient file into the cwd.
+if [ "$1" = "config" ]; then
+  echo 'solutions = []' > .gclient
+fi
+exit 0

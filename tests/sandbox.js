@@ -7,17 +7,13 @@ const { pathKey } = require('../dist/utils/path-key');
 
 const PATH_KEY = pathKey();
 
-// execFileSync() wrapper that adds exec'ed scripts to code coverage.
+// execFileSync() wrapper that runs one of the compiled `e-*.js` CLIs.
+// Coverage of these child processes is collected natively by V8: the test
+// script wraps vitest in c8, which sets NODE_V8_COVERAGE, and the sandbox
+// env passes that variable through to each spawned process (see below).
 // Returns { exitCode:number, stderr:string, stdout:string }
 function runSync(args, options) {
-  // vitest doesn't directly support coverage of exec'ed scripts,
-  // but this workaround of invoking nyc in spawn gets the job done.
-  // https://github.com/facebook/jest/issues/3190#issuecomment-354758036
-  const spawnCmd = os.platform() === 'win32' ? 'nyc.cmd' : 'nyc';
-  const spawnArgs = ['--reporter', 'none', 'node'];
   const debug = false;
-
-  args = [...spawnArgs, ...args];
 
   const ret = {
     stdout: '',
@@ -25,14 +21,9 @@ function runSync(args, options) {
     exitCode: 0,
   };
 
-  // Necessary when spawning .cmd on Windows.
-  if (process.platform === 'win32') {
-    options = { ...options, shell: true };
-  }
-
   try {
     if (debug) console.log(args);
-    const out = childProcess.execFileSync(spawnCmd, args, options);
+    const out = childProcess.execFileSync(process.execPath, args, options);
     if (out) {
       ret.stdout = out.toString().trim();
     }
@@ -243,7 +234,7 @@ function eRemoveRunner(execOptions) {
   return o;
 }
 
-function createSandbox() {
+function createSandbox({ stubDepotTools = false } = {}) {
   // create new temporary directories
   const tmpdir = fs.mkdtempSync(path.join(process.cwd(), 'build-tools-spec-'));
   const evm_config_dir = path.resolve(tmpdir, 'evm-config');
@@ -262,11 +253,33 @@ function createSandbox() {
     },
   };
 
+  // Tests that aren't about the depot_tools bootstrap itself can point the
+  // CLI at a fixture containing a stub `gclient`, sparing them the cost of
+  // cloning/updating the real depot_tools and bootstrapping vpython.
+  if (stubDepotTools) {
+    execOptions.env.DEPOT_TOOLS_DIR = path.resolve(__dirname, 'fixtures', 'depot_tools');
+  }
+
+  // let V8 write coverage for spawned CLI processes when the test run is
+  // wrapped in c8 (which sets NODE_V8_COVERAGE)
+  if (process.env.NODE_V8_COVERAGE) {
+    execOptions.env.NODE_V8_COVERAGE = process.env.NODE_V8_COVERAGE;
+  }
+
   // vpython pulls user home directory from environment variables
   if (os.platform() === 'win32') {
     execOptions.env.LocalAppData = process.env.LocalAppData;
+    // depot_tools' batch scripts and the cipd/vpython Go tools need a
+    // writable temp directory
+    execOptions.env.TEMP = process.env.TEMP;
+    execOptions.env.TMP = process.env.TMP;
   } else {
     execOptions.env.HOME = process.env.HOME;
+  }
+
+  // allow CI to pin vpython's virtualenv cache to a cacheable location
+  if (process.env.VPYTHON_VIRTUALENV_ROOT) {
+    execOptions.env.VPYTHON_VIRTUALENV_ROOT = process.env.VPYTHON_VIRTUALENV_ROOT;
   }
 
   return {

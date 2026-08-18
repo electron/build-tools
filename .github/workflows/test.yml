@@ -22,6 +22,14 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
+    env:
+      # Pin vpython's virtualenv cache to a workspace path so it can be
+      # cached between runs (the tests pass this through to spawned CLI
+      # processes). On Windows the workspace pin is required for caching to
+      # work at all: vpython's default root lives on C:\ (LocalAppData)
+      # while actions/cache archives relative to the D:\ workspace, so the
+      # default location can never make it into the cache.
+      VPYTHON_VIRTUALENV_ROOT: ${{ matrix.os == 'windows-latest' && format('{0}\.vpython-root', github.workspace) || format('{0}/.vpython-root', github.workspace) }}
     steps:
     - name: Set git global config (Windows)
       if: ${{ matrix.os == 'windows-latest' }}
@@ -52,5 +60,45 @@ jobs:
       run: yarn install --immutable
     - name: Build
       run: yarn build
+    - name: Get depot_tools cache key
+      id: depot-tools-key
+      shell: bash
+      run: echo "week=$(date -u +%Y-%W)" >> "$GITHUB_OUTPUT"
+    - name: Cache depot_tools
+      id: cache-depot-tools
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # tag: v6.1.0
+      with:
+        path: |
+          third_party/depot_tools
+          .vpython-root
+        # depot_tools is a rolling checkout with nothing to hash, so rotate
+        # the key weekly to keep the cached copy fresh; restore-keys lets a
+        # new week start from last week's cache instead of a cold bootstrap.
+        # (v2: the vpython root moved into the workspace on all platforms.)
+        key: ${{ runner.os }}-depot-tools-v2-${{ steps.depot-tools-key.outputs.week }}
+        restore-keys: |
+          ${{ runner.os }}-depot-tools-v2-
+    - name: Clone depot_tools
+      if: steps.cache-depot-tools.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        if [ ! -e third_party/depot_tools ]; then
+          git clone -q https://chromium.googlesource.com/chromium/tools/depot_tools.git third_party/depot_tools
+        fi
+    - name: Update depot_tools (Windows)
+      if: matrix.os == 'windows-latest' && steps.cache-depot-tools.outputs.cache-hit != 'true'
+      shell: pwsh
+      run: |
+        Remove-Item -Force -ErrorAction Ignore third_party\depot_tools\.disable_auto_update
+        & .\third_party\depot_tools\update_depot_tools.bat
+        exit $LASTEXITCODE
+    - name: Update depot_tools
+      if: matrix.os != 'windows-latest' && steps.cache-depot-tools.outputs.cache-hit != 'true'
+      run: |
+        rm -f third_party/depot_tools/.disable_auto_update
+        third_party/depot_tools/update_depot_tools
+    - name: Disable depot_tools auto-update
+      shell: bash
+      run: touch third_party/depot_tools/.disable_auto_update
     - name: Test
       run: yarn test

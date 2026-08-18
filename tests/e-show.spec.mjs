@@ -12,7 +12,9 @@ describe('e-show', () => {
   let out;
 
   beforeEach(() => {
-    sandbox = createSandbox();
+    // these tests are about reading configs, not about depot_tools,
+    // so use a stub gclient instead of the real depot_tools bootstrap
+    sandbox = createSandbox({ stubDepotTools: true });
     root = path.join(sandbox.tmpdir, sandbox.randomString());
     name = sandbox.randomString();
     out = sandbox.randomString();

@@ -10,7 +10,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 describe('e-init', () => {
   let sandbox;
   beforeEach(() => {
-    sandbox = createSandbox();
+    // most of these tests are about config handling, not about depot_tools,
+    // so use a stub gclient instead of the real depot_tools bootstrap
+    sandbox = createSandbox({ stubDepotTools: true });
   });
   afterEach(() => {
     sandbox.cleanup();
@@ -18,6 +20,11 @@ describe('e-init', () => {
 
   describe('--root', () => {
     it('creates a new directory with a .gclient file', { timeout: 600_000 }, () => {
+      // this is the one true end-to-end test, so swap in a sandbox that
+      // bootstraps and uses the real depot_tools
+      sandbox.cleanup();
+      sandbox = createSandbox();
+
       const root = path.resolve(sandbox.tmpdir, 'main');
       const gclient_file = path.resolve(root, '.gclient');
 
@@ -32,8 +39,11 @@ describe('e-init', () => {
         .name('name')
         .run();
 
-      // confirm that it worked
-      expect(result.exitCode).toStrictEqual(0);
+      // confirm that it worked; on failure, surface the CLI's output since
+      // the real depot_tools/gclient bootstrap can fail for reasons (network,
+      // environment) that the exit code alone doesn't explain
+      const message = `e init stdout:\n${result.stdout}\n\ne init stderr:\n${result.stderr}`;
+      expect(result.exitCode, message).toStrictEqual(0);
       expect(fs.statSync(root).isDirectory()).toStrictEqual(true);
       expect(fs.statSync(gclient_file).isFile()).toStrictEqual(true);
     });
