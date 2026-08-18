@@ -16,8 +16,8 @@
     "lint": "npm run lint:ts && npm run lint:markdown",
     "prettier:write": "prettier --write \"src/**/*.ts\" \"tests/*.js\"",
     "prepare": "husky && npm run build",
-    "test": "c8 --reporter=lcov --reporter=text-summary vitest run --reporter=verbose --exclude tests/bootstrap.spec.mjs",
-    "test:all": "c8 --reporter=lcov --reporter=text-summary vitest run --reporter=verbose"
+    "test": "c8 --all --src dist --reporter=lcov --reporter=text-summary vitest run --reporter=verbose --exclude tests/bootstrap.spec.mjs",
+    "test:all": "c8 --all --src dist --reporter=lcov --reporter=text-summary vitest run --reporter=verbose"
   },
   "repository": "https://github.com/electron/build-tools",
   "author": "Electron Authors",
