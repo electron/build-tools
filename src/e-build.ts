@@ -10,6 +10,7 @@ import * as evmConfig from './evm-config.js';
 import { color, fatal } from './utils/logging.js';
 import * as depot from './utils/depot-tools.js';
 import { ensureDir } from './utils/paths.js';
+import { ensureMetalToolchain } from './utils/prereqs.js';
 import * as reclient from './utils/reclient.js';
 import * as siso from './utils/siso.js';
 import { ensureSDK, ensureSDKAndSymlink } from './utils/sdk.js';
@@ -98,6 +99,8 @@ async function runNinja(
   } else {
     console.info(`${color.info} Building ${target} with remote execution disabled`);
   }
+
+  ensureMetalToolchain();
 
   depot.ensure();
   await ensureGNGen(config, genMode);
