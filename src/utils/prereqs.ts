@@ -54,6 +54,44 @@ function checkNodeVersion(): boolean {
 }
 
 /**
+ * Check if the Metal toolchain is usable
+ *
+ * Xcode 26 unbundled the Metal toolchain into a separately installed component,
+ * but Xcode still ships a `metal` stub that fails at execution time when the
+ * component is missing - so probe by running the tool rather than looking for it.
+ * @returns {boolean} True if the Metal toolchain can be executed, false otherwise
+ */
+function checkMetalToolchain(): boolean {
+  try {
+    execSync('xcrun metal --version', {
+      encoding: 'utf8',
+      stdio: 'pipe',
+    });
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Ensure the Metal toolchain is installed, as ANGLE's shader targets need it.
+ * Only relevant on macOS, and only for builds - syncing does not use it.
+ */
+export function ensureMetalToolchain(): void {
+  if (process.platform !== 'darwin') return;
+
+  if (!checkMetalToolchain()) {
+    fatal(
+      `The Metal toolchain is not installed, and ANGLE's shader targets need it to build. ` +
+        `Xcode 26 unbundled it from Xcode itself, so it has to be installed separately:\n` +
+        `  xcodebuild -runFirstLaunch\n` +
+        `  xcodebuild -downloadComponent MetalToolchain`,
+    );
+  }
+}
+
+/**
  * Ensure system prereqs installed and meet minimum version requirements
  */
 export function ensurePrereqs(): void {
