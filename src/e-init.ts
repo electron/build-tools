@@ -13,6 +13,7 @@ import { color, fatal } from './utils/logging.js';
 import { resolvePath, ensureDir } from './utils/paths.js';
 import * as depot from './utils/depot-tools.js';
 import { checkGlobalGitConfig } from './utils/git.js';
+import { registerPatchesMergeDriver } from './utils/patches-merge-driver.js';
 import { ensureSDK } from './utils/sdk.js';
 import type { EvmConfig, RemoteBuild } from './types.js';
 
@@ -222,6 +223,16 @@ program
       }
 
       ensureRoot(config, !!options.force);
+
+      // If this root already has an electron checkout (shared between build
+      // configs), make sure its .patches merge driver is registered; otherwise
+      // `e sync` will do it once the checkout exists.
+      if (config.root) {
+        const electronPath = path.resolve(config.root, 'src', 'electron');
+        if (fs.existsSync(electronPath)) {
+          registerPatchesMergeDriver(electronPath);
+        }
+      }
 
       // (maybe) run sync to ensure external binaries are downloaded
       if (options.bootstrap) {

@@ -10,7 +10,7 @@ This repository contains helper/wrapper scripts to make building Electron easier
 - [Core workflow](#core-workflow): [`init`](#e-init) · [`sync`](#e-sync) · [`build`](#e-build)
 - [Running Electron](#running-electron): [`start`](#e-start) · [`node`](#e-node) · [`debug`](#e-debug) · [`test`](#e-test) · [`npm`](#e-npm)
 - [Inspecting state](#inspecting-state): [`show`](#e-show) · [`shell`](#e-shell)
-- [Working with code](#working-with-code): [`patches`](#e-patches) · [`open`](#e-open) · [`pr`](#e-pr) · [`download-dist`](#e-download-dist) · [`backport`](#e-backport) · [`cherry-pick`](#e-cherry-pick) · [`rcv`](#e-rcv) · [`auto-roll`](#e-auto-roll)
+- [Working with code](#working-with-code): [`patches`](#e-patches) · [`patch-merge-driver`](#e-patch-merge-driver) · [`open`](#e-open) · [`pr`](#e-pr) · [`download-dist`](#e-download-dist) · [`backport`](#e-backport) · [`cherry-pick`](#e-cherry-pick) · [`rcv`](#e-rcv) · [`auto-roll`](#e-auto-roll)
 - [Managing configs](#managing-configs): [`use`](#e-use) · [`remove`](#e-remove) · [`sanitize-config`](#e-sanitize-config) · [`worktree`](#e-worktree) · [`load-macos-sdk`](#e-load-macos-sdk)
 - [Infrastructure](#infrastructure): [`depot-tools`](#e-depot-tools) · [`gh-auth`](#e-gh-auth) · [`auto-update`](#e-auto-update)
 - [Configuration file reference](#configuration-file-reference)
@@ -177,6 +177,9 @@ branch.
 
 Any extra args are passed along to gclient. To make your output more verbose, you can add an
 increasing number of `-v`s (e.g. `e sync -v`, `e sync -vvvv`).
+
+After syncing, `e sync` also registers the [`.patches` merge driver](#e-patch-merge-driver) in the
+electron checkout.
 
 **Options**
 
@@ -389,6 +392,28 @@ Supported targets are defined in Electron's `patches/config.json` and typically 
 
 Use `e patches all` to refresh every target, or `e patches --list-targets` to see the full list for
 your checkout.
+
+### `e patch-merge-driver`
+
+A git merge driver for Electron's `patches/**/.patches` files. You should not need to run it by
+hand: `e sync` (and `e init`, when the checkout already exists) registers it in the electron
+checkout's repo-local git config and `.git/info/attributes`, so `git merge`, `git rebase`, and
+`git cherry-pick` pick it up automatically.
+
+```sh
+$ e patch-merge-driver <base> <ours> <theirs>   # git runs this as `... %O %A %B`
+```
+
+`.patches` files are ordered lists of patch filenames, and electron/electron ships them with
+`merge=union`. Union keeps every line from both sides, so a patch deleted or renamed on one side of
+a merge comes back (and then fails to apply), and a patch added on both sides shows up twice. This
+driver merges the file as an ordered list instead:
+
+- Entries removed on either side stay removed.
+- Additions from either side are kept, positioned after their nearest surviving neighbour; entries
+  both sides added at the same spot are kept once, ours first.
+- A reorder made on one side is kept. If both sides reorder the same entries differently, the
+  driver falls back to a plain union merge, so it is never worse than the default.
 
 ### `e open`
 

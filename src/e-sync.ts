@@ -9,6 +9,7 @@ import * as evmConfig from './evm-config.js';
 import { fatal } from './utils/logging.js';
 import { ensureDir } from './utils/paths.js';
 import * as depot from './utils/depot-tools.js';
+import { registerPatchesMergeDriver } from './utils/patches-merge-driver.js';
 import { configureReclient } from './utils/setup-reclient-chromium.js';
 import { ensureSDK } from './utils/sdk.js';
 import type { ElectronRemotes } from './types.js';
@@ -83,6 +84,7 @@ function runGClientSync(syncArgs: string[], syncOpts: { threeWay?: boolean }): v
   if (config.defaultTarget !== 'chrome') {
     const electronPath = path.resolve(srcdir, 'electron');
     setRemotes(electronPath, config.remotes.electron);
+    registerPatchesMergeDriver(electronPath);
   }
 }
 

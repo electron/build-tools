@@ -232,6 +232,10 @@ program
   .command('test [specRunnerArgs...]', `Run Electron's spec runner`)
   .command('pr [subcommand]', 'Work with PRs to electron/electron')
   .command('patches <target>', 'Refresh the patches in $root/src/electron/patches/$target')
+  .command(
+    'patch-merge-driver <base> <ours> <theirs>',
+    'Git merge driver for electron patches/**/.patches files (registered by `e sync`)',
+  )
   .command('open <sha1|PR#>', 'Open a GitHub URL for the given commit hash / pull # / issue #')
   .command('auto-update', 'Check for build-tools updates or enable/disable automatic updates')
   .alias('check-for-updates')
