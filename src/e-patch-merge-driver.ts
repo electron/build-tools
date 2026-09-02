@@ -179,7 +179,8 @@ program
   .on('--help', () => {
     console.log('');
     console.log('This command is registered as a git merge driver by `e sync`; you should not');
-    console.log('need to run it by hand. Git invokes it as:');
+    console.log('need to run it by hand. Git invokes it with the three versions of the file,');
+    console.log('equivalent to:');
     console.log('');
     console.log('  $ e patch-merge-driver %O %A %B');
   });

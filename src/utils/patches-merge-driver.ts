@@ -35,7 +35,8 @@ function git(cwd: string, args: string[]): cp.SpawnSyncReturns<string> {
 function ensureRepoConfig(cwd: string, key: string, value: string): boolean {
   const current = git(cwd, ['config', '--local', '--get', key]);
   if (current.status === 0 && current.stdout.trimEnd() === value) return false;
-  const set = git(cwd, ['config', '--local', key, value]);
+  // --replace-all so a stray duplicate entry can't make plain `git config` bail out.
+  const set = git(cwd, ['config', '--local', '--replace-all', key, value]);
   if (set.status !== 0) throw new Error(`git config ${key} failed: ${set.stderr.trim()}`);
   return true;
 }
