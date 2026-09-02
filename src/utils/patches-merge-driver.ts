@@ -41,57 +41,77 @@ function ensureRepoConfig(cwd: string, key: string, value: string): boolean {
   return true;
 }
 
+export interface PatchesMergeDriverInstall {
+  /** True when any config or attributes were written; false if already registered. */
+  changed: boolean;
+  /** The `merge.patches-list.driver` command git will run. */
+  driverCommand: string;
+  /** Absolute path of the `info/attributes` file that carries the override line. */
+  attributesPath: string;
+}
+
+/**
+ * Install the `.patches` list merge driver in the git checkout at `electronDir`:
+ * repo-local `merge.patches-list.*` config plus a line in
+ * `$GIT_DIR/info/attributes` overriding the `merge=union` that electron/electron
+ * commits in .gitattributes (kept there so checkouts without build-tools still
+ * get a sane default). Idempotent. Throws if `electronDir` is not a git
+ * checkout or git fails; see `registerPatchesMergeDriver` for the never-fatal
+ * variant used by `e sync` / `e init`.
+ */
+export function installPatchesMergeDriver(electronDir: string): PatchesMergeDriverInstall {
+  if (!fs.existsSync(path.join(electronDir, '.git'))) {
+    throw new Error(`${electronDir} is not a git checkout`);
+  }
+
+  let changed = false;
+  changed =
+    ensureRepoConfig(
+      electronDir,
+      `merge.${PATCHES_MERGE_DRIVER_NAME}.name`,
+      'electron .patches list merge',
+    ) || changed;
+  const driverCommand = patchesMergeDriverCommand();
+  changed =
+    ensureRepoConfig(electronDir, `merge.${PATCHES_MERGE_DRIVER_NAME}.driver`, driverCommand) ||
+    changed;
+
+  // `--git-path` resolves correctly inside worktrees, where `.git` is a file
+  // and info/ lives in the shared common dir.
+  const gitPath = git(electronDir, ['rev-parse', '--git-path', 'info/attributes']);
+  if (gitPath.status !== 0) {
+    throw new Error(`git rev-parse --git-path failed: ${gitPath.stderr.trim()}`);
+  }
+  const attributesPath = path.resolve(electronDir, gitPath.stdout.trim());
+  const existing = fs.existsSync(attributesPath) ? fs.readFileSync(attributesPath, 'utf8') : '';
+  const hasAttribute = existing.split('\n').some((line) => line.trim() === PATCHES_MERGE_ATTRIBUTE);
+  if (!hasAttribute) {
+    fs.mkdirSync(path.dirname(attributesPath), { recursive: true });
+    const separator = existing.length === 0 || existing.endsWith('\n') ? '' : '\n';
+    fs.appendFileSync(attributesPath, `${separator}${PATCHES_MERGE_ATTRIBUTE}\n`);
+    changed = true;
+  }
+
+  return { changed, driverCommand, attributesPath };
+}
+
 /**
  * Register the `.patches` list merge driver in the electron checkout at
- * `electronDir`: repo-local `merge.patches-list.*` config plus a line in
- * `$GIT_DIR/info/attributes` overriding the `merge=union` that
- * electron/electron commits in .gitattributes (kept there so checkouts without
- * build-tools still get a sane default). Idempotent, and never fatal: a missing
- * checkout just logs a warning so `e sync` / `e init` carry on.
+ * `electronDir` (see `installPatchesMergeDriver`). Never fatal: a missing
+ * checkout or a git error just logs a warning so `e sync` / `e init` carry on.
  *
  * Returns true when anything was written.
  */
 export function registerPatchesMergeDriver(electronDir: string): boolean {
+  if (!fs.existsSync(path.join(electronDir, '.git'))) {
+    console.warn(
+      `${color.warn} ${color.path(electronDir)} is not a git checkout; skipping .patches merge driver setup`,
+    );
+    return false;
+  }
+
   try {
-    if (!fs.existsSync(path.join(electronDir, '.git'))) {
-      console.warn(
-        `${color.warn} ${color.path(electronDir)} is not a git checkout; skipping .patches merge driver setup`,
-      );
-      return false;
-    }
-
-    let changed = false;
-    changed =
-      ensureRepoConfig(
-        electronDir,
-        `merge.${PATCHES_MERGE_DRIVER_NAME}.name`,
-        'electron .patches list merge',
-      ) || changed;
-    changed =
-      ensureRepoConfig(
-        electronDir,
-        `merge.${PATCHES_MERGE_DRIVER_NAME}.driver`,
-        patchesMergeDriverCommand(),
-      ) || changed;
-
-    // `--git-path` resolves correctly inside worktrees, where `.git` is a file
-    // and info/ lives in the shared common dir.
-    const gitPath = git(electronDir, ['rev-parse', '--git-path', 'info/attributes']);
-    if (gitPath.status !== 0) {
-      throw new Error(`git rev-parse --git-path failed: ${gitPath.stderr.trim()}`);
-    }
-    const attributesPath = path.resolve(electronDir, gitPath.stdout.trim());
-    const existing = fs.existsSync(attributesPath) ? fs.readFileSync(attributesPath, 'utf8') : '';
-    const hasAttribute = existing
-      .split('\n')
-      .some((line) => line.trim() === PATCHES_MERGE_ATTRIBUTE);
-    if (!hasAttribute) {
-      fs.mkdirSync(path.dirname(attributesPath), { recursive: true });
-      const separator = existing.length === 0 || existing.endsWith('\n') ? '' : '\n';
-      fs.appendFileSync(attributesPath, `${separator}${PATCHES_MERGE_ATTRIBUTE}\n`);
-      changed = true;
-    }
-
+    const { changed } = installPatchesMergeDriver(electronDir);
     if (changed) {
       console.log(
         `${color.info} Registered the .patches list merge driver in ${color.path(electronDir)}`,

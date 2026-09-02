@@ -178,9 +178,9 @@ program
   })
   .on('--help', () => {
     console.log('');
-    console.log('This command is registered as a git merge driver by `e sync`; you should not');
-    console.log('need to run it by hand. Git invokes it with the three versions of the file,');
-    console.log('equivalent to:');
+    console.log('This command is registered as a git merge driver by `e sync` (or by hand with');
+    console.log('`e register-patches-merge-driver`); you should not need to run it yourself. Git');
+    console.log('invokes it with the three versions of the file, equivalent to:');
     console.log('');
     console.log('  $ e patch-merge-driver %O %A %B');
   });

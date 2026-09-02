@@ -236,6 +236,10 @@ program
     'patch-merge-driver <base> <ours> <theirs>',
     'Git merge driver for electron patches/**/.patches files (registered by `e sync`)',
   )
+  .command(
+    'register-patches-merge-driver [checkout]',
+    'Register the .patches merge driver in an electron checkout (`e sync` does this automatically)',
+  )
   .command('open <sha1|PR#>', 'Open a GitHub URL for the given commit hash / pull # / issue #')
   .command('auto-update', 'Check for build-tools updates or enable/disable automatic updates')
   .alias('check-for-updates')
