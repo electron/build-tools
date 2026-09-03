@@ -10,7 +10,7 @@ This repository contains helper/wrapper scripts to make building Electron easier
 - [Core workflow](#core-workflow): [`init`](#e-init) · [`sync`](#e-sync) · [`build`](#e-build)
 - [Running Electron](#running-electron): [`start`](#e-start) · [`node`](#e-node) · [`debug`](#e-debug) · [`test`](#e-test) · [`npm`](#e-npm)
 - [Inspecting state](#inspecting-state): [`show`](#e-show) · [`shell`](#e-shell)
-- [Working with code](#working-with-code): [`patches`](#e-patches) · [`open`](#e-open) · [`pr`](#e-pr) · [`download-dist`](#e-download-dist) · [`backport`](#e-backport) · [`cherry-pick`](#e-cherry-pick) · [`rcv`](#e-rcv) · [`auto-roll`](#e-auto-roll)
+- [Working with code](#working-with-code): [`patches`](#e-patches) · [`patch-merge-driver`](#e-patch-merge-driver) · [`register-patches-merge-driver`](#e-register-patches-merge-driver) · [`open`](#e-open) · [`pr`](#e-pr) · [`download-dist`](#e-download-dist) · [`backport`](#e-backport) · [`cherry-pick`](#e-cherry-pick) · [`rcv`](#e-rcv) · [`auto-roll`](#e-auto-roll)
 - [Managing configs](#managing-configs): [`use`](#e-use) · [`remove`](#e-remove) · [`sanitize-config`](#e-sanitize-config) · [`worktree`](#e-worktree) · [`load-macos-sdk`](#e-load-macos-sdk)
 - [Infrastructure](#infrastructure): [`depot-tools`](#e-depot-tools) · [`gh-auth`](#e-gh-auth) · [`auto-update`](#e-auto-update)
 - [Configuration file reference](#configuration-file-reference)
@@ -177,6 +177,10 @@ branch.
 
 Any extra args are passed along to gclient. To make your output more verbose, you can add an
 increasing number of `-v`s (e.g. `e sync -v`, `e sync -vvvv`).
+
+After syncing, `e sync` also registers the [`.patches` merge driver](#e-patch-merge-driver) in the
+electron checkout (see [`e register-patches-merge-driver`](#e-register-patches-merge-driver) to do
+this for a checkout `e sync` does not manage).
 
 **Options**
 
@@ -389,6 +393,46 @@ Supported targets are defined in Electron's `patches/config.json` and typically 
 
 Use `e patches all` to refresh every target, or `e patches --list-targets` to see the full list for
 your checkout.
+
+### `e patch-merge-driver`
+
+A git merge driver for Electron's `patches/**/.patches` files. You should not need to run it by
+hand: `e sync` (and `e init`, when the checkout already exists) registers it in the electron
+checkout's repo-local git config and `.git/info/attributes`, so `git merge`, `git rebase`, and
+`git cherry-pick` pick it up automatically.
+
+```sh
+$ e patch-merge-driver <base> <ours> <theirs>   # git runs this as `... %O %A %B`
+```
+
+`.patches` files are ordered lists of patch filenames, and electron/electron ships them with
+`merge=union`. Union keeps every line from both sides, so a patch deleted or renamed on one side of
+a merge comes back (and then fails to apply), and a patch added on both sides shows up twice. This
+driver merges the file as an ordered list instead:
+
+- Entries removed on either side stay removed.
+- Additions from either side are kept, positioned after their nearest surviving neighbour; entries
+  both sides added at the same spot are kept once, ours first.
+- A reorder made on one side is kept. If both sides reorder the same entries differently, there is
+  no right answer: the driver writes a plain union merge (what the default would have produced) but
+  reports a conflict, so git leaves the file unmerged for you to review before committing.
+
+### `e register-patches-merge-driver`
+
+Register the [`.patches` merge driver](#e-patch-merge-driver) in an electron checkout. `e sync`
+does this automatically for the current build config, so you only need this for a checkout that
+build-tools does not manage, for example one used by a bot or a CI job that cherry-picks between
+electron branches.
+
+```sh
+$ e register-patches-merge-driver [checkout]
+```
+
+`checkout` defaults to the current build config's electron checkout, or to the git repo containing
+the current directory when no build config is active. The command writes the repo-local
+`merge.patches-list.*` git config and a `patches/**/.patches merge=patches-list` line to
+`$GIT_DIR/info/attributes`, prints what it wrote, and is safe to run repeatedly. It exits non-zero
+if the path is not a git checkout.
 
 ### `e open`
 
