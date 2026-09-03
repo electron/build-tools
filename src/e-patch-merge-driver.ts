@@ -16,8 +16,12 @@ import { color } from './utils/logging.js';
 // then fails to apply), and a line added on both sides shows up twice.
 //
 // This driver treats the file as what it is - an ordered set - and performs a
-// three-way list merge instead. `e sync` registers it in the electron checkout
-// (see utils/patches-merge-driver.ts).
+// three-way list merge instead. When that merge is undecidable (both sides
+// reordered the same entries differently) it writes a plain union merge but
+// exits non-zero, so git leaves the file conflicted for a human to review
+// instead of silently accepting a list that may contain duplicates or
+// resurrected deletions. `e sync` registers the driver in the electron
+// checkout (see utils/patches-merge-driver.ts).
 
 /** Split a `.patches` file into its entries: trimmed, non-blank, first occurrence wins. */
 export function parsePatchList(contents: string): string[] {
@@ -55,7 +59,8 @@ function sameOrder(a: readonly string[], b: readonly string[]): boolean {
  * sides reordered the surviving base entries and disagree about the result
  * (e.g. ours moved `a` after `b`, theirs moved `c` before `a`). There is no
  * way to pick one ordering without silently discarding one side's intent, so
- * the caller falls back to a plain union merge for a human to look at.
+ * the caller writes a plain union merge as a starting point and reports a
+ * conflict so that a human looks at it.
  */
 export function mergePatchLists(
   base: readonly string[],
@@ -121,7 +126,9 @@ export function formatPatchList(entries: readonly string[], ours: string, theirs
  * Merge `.patches` files on disk, writing the result to `oursPath` (git's %A).
  * Returns true when the list merge succeeded and false when it fell back to
  * `git merge-file --union`, which is what the committed .gitattributes would
- * have done anyway, so the driver is never worse than the default.
+ * have done anyway. The union result is only a starting point for manual
+ * resolution (it can contain duplicates or resurrected deletions), so the CLI
+ * exits non-zero in that case to leave the path conflicted.
  */
 export function mergePatchFiles(basePath: string, oursPath: string, theirsPath: string): boolean {
   const base = fs.readFileSync(basePath, 'utf8');
@@ -147,8 +154,8 @@ export function mergePatchFiles(basePath: string, oursPath: string, theirsPath: 
     { encoding: 'utf8' },
   );
   if (union.error) throw union.error;
-  if (union.status === null || union.status < 0) {
-    throw new Error(`git merge-file failed: ${union.stderr}`);
+  if (union.status !== 0) {
+    throw new Error(`git merge-file failed (${union.status}): ${union.stderr}`);
   }
   fs.writeFileSync(oursPath, union.stdout);
   return false;
@@ -166,9 +173,12 @@ program
   .action((base: string, ours: string, theirs: string) => {
     try {
       if (!mergePatchFiles(base, ours, theirs)) {
+        // The union output stays in %A as a starting point, but a non-zero
+        // exit makes git leave the path unmerged for manual resolution.
         console.error(
           `${color.warn} Conflicting reorders in ${color.path(ours)}; fell back to a union merge`,
         );
+        process.exitCode = 1;
       }
     } catch (e) {
       // A failing merge driver leaves the path conflicted for the user to resolve.
@@ -183,6 +193,10 @@ program
     console.log('invokes it with the three versions of the file, equivalent to:');
     console.log('');
     console.log('  $ e patch-merge-driver %O %A %B');
+    console.log('');
+    console.log('If both sides reordered the same entries differently, the merge is undecidable:');
+    console.log('the driver writes a plain union merge to %A but exits non-zero, so git marks the');
+    console.log('file conflicted and you can review the result before committing.');
   });
 
 if (import.meta.main) {

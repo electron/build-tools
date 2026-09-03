@@ -15,6 +15,7 @@ import {
   PATCHES_MERGE_ATTRIBUTE,
   patchesMergeDriverCommand,
   registerPatchesMergeDriver,
+  shellQuote,
 } from '../dist/utils/patches-merge-driver.js';
 
 const driverScript = path.resolve(import.meta.dirname, '..', 'dist', 'e-patch-merge-driver.js');
@@ -202,6 +203,30 @@ describe('e-patch-merge-driver', () => {
       expect(merged).toBe(union);
     });
 
+    it('exits non-zero after a union fallback so git leaves the path conflicted', () => {
+      const sides = { base: 'a\nb\nc\n', ours: 'b\na\nc\n', theirs: 'a\nc\nb\n' };
+      const p = writeSides(sides);
+      const result = childProcess.spawnSync(
+        process.execPath,
+        [driverScript, p.base, p.ours, p.theirs],
+        { encoding: 'utf8' },
+      );
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain(
+        `Conflicting reorders in ${p.ours}; fell back to a union merge`,
+      );
+
+      // %A holds the union result as a starting point for manual resolution
+      const merged = fs.readFileSync(p.ours, 'utf8');
+      fs.writeFileSync(p.ours, sides.ours);
+      const union = childProcess.execFileSync(
+        'git',
+        ['merge-file', '--union', '-p', p.ours, p.base, p.theirs],
+        { encoding: 'utf8' },
+      );
+      expect(merged).toBe(union);
+    });
+
     it('runs as a CLI with git-style %O %A %B arguments', () => {
       const p = writeSides({
         base: 'a\nb\n',
@@ -228,6 +253,15 @@ describe('e-patch-merge-driver', () => {
     });
   });
 
+  describe('shellQuote', () => {
+    it('single-quotes for sh so $, backticks and quotes stay literal', () => {
+      expect(shellQuote('/opt/node')).toBe("'/opt/node'");
+      expect(shellQuote("C:\\Program Files\\it's $HOME `dir`\\node.exe")).toBe(
+        "'C:/Program Files/it'\\''s $HOME `dir`/node.exe'",
+      );
+    });
+  });
+
   describe('registerPatchesMergeDriver', () => {
     let tmpdir;
     let repo;
@@ -250,7 +284,7 @@ describe('e-patch-merge-driver', () => {
       expect(git(repo, 'config', '--local', 'merge.patches-list.driver')).toBe(
         patchesMergeDriverCommand(),
       );
-      expect(patchesMergeDriverCommand()).toMatch(/e-patch-merge-driver\.js" %O %A %B$/);
+      expect(patchesMergeDriverCommand()).toMatch(/e-patch-merge-driver\.js' %O %A %B$/);
 
       const attributes = path.join(repo, '.git', 'info', 'attributes');
       expect(fs.readFileSync(attributes, 'utf8')).toBe(`${PATCHES_MERGE_ATTRIBUTE}\n`);
@@ -318,6 +352,78 @@ describe('e-patch-merge-driver', () => {
       expect(fs.readFileSync(patchesFile, 'utf8')).toBe(
         'a_renamed.patch\nc.patch\nours.patch\ntheirs.patch\n',
       );
+    });
+
+    it('runs through sh when the driver lives at a path with $, spaces and quotes', () => {
+      // Reach dist/ through a link whose name would break double quoting: `$HOME`
+      // would expand, the space would split the argument and the `'` would end it.
+      const weirdDir = path.join(tmpdir, "it's $HOME dist");
+      fs.symlinkSync(path.dirname(driverScript), weirdDir, 'junction');
+      const weirdScript = path.join(weirdDir, path.basename(driverScript));
+      const command = `${shellQuote(process.execPath)} ${shellQuote(weirdScript)} %O %A %B`;
+      expect(command).toContain("it'\\''s $HOME dist");
+
+      const patchesDir = path.join(repo, 'patches', 'chromium');
+      const patchesFile = path.join(patchesDir, '.patches');
+      fs.mkdirSync(patchesDir, { recursive: true });
+      fs.writeFileSync(patchesFile, 'a.patch\nb.patch\nc.patch\n');
+      git(repo, 'add', '.');
+      git(repo, 'commit', '-q', '-m', 'base');
+      fs.writeFileSync(patchesFile, 'a.patch\nc.patch\nours.patch\n');
+      git(repo, 'commit', '-q', '-am', 'ours');
+      git(repo, 'checkout', '-q', '-b', 'theirs', 'HEAD~1');
+      fs.writeFileSync(patchesFile, 'a.patch\nb.patch\nc.patch\ntheirs.patch\n');
+      git(repo, 'commit', '-q', '-am', 'theirs');
+      git(repo, 'checkout', '-q', 'main');
+
+      registerPatchesMergeDriver(repo);
+      git(repo, 'config', '--local', 'merge.patches-list.driver', command);
+      git(repo, 'merge', '-q', '--no-edit', 'theirs');
+
+      expect(fs.readFileSync(patchesFile, 'utf8')).toBe(
+        'a.patch\nc.patch\nours.patch\ntheirs.patch\n',
+      );
+    });
+
+    it('leaves the file conflicted with the union result when reorders are undecidable', () => {
+      const patchesDir = path.join(repo, 'patches', 'chromium');
+      const patchesFile = path.join(patchesDir, '.patches');
+      const sides = { base: 'a\nb\nc\n', ours: 'b\na\nc\n', theirs: 'a\nc\nb\n' };
+      fs.mkdirSync(patchesDir, { recursive: true });
+      fs.writeFileSync(patchesFile, sides.base);
+      git(repo, 'add', '.');
+      git(repo, 'commit', '-q', '-m', 'base');
+      fs.writeFileSync(patchesFile, sides.ours);
+      git(repo, 'commit', '-q', '-am', 'ours');
+      git(repo, 'checkout', '-q', '-b', 'theirs', 'HEAD~1');
+      fs.writeFileSync(patchesFile, sides.theirs);
+      git(repo, 'commit', '-q', '-am', 'theirs');
+      git(repo, 'checkout', '-q', 'main');
+
+      registerPatchesMergeDriver(repo);
+      const merge = childProcess.spawnSync('git', ['merge', '--no-edit', 'theirs'], {
+        cwd: repo,
+        encoding: 'utf8',
+      });
+      expect(merge.status).not.toBe(0);
+      expect(merge.stderr).toContain('fell back to a union merge');
+      expect(git(repo, 'status', '--porcelain')).toContain('UU patches/chromium/.patches');
+
+      // the working tree holds the union result as a starting point
+      for (const [name, contents] of Object.entries(sides)) {
+        fs.writeFileSync(path.join(tmpdir, name), contents);
+      }
+      const union = childProcess.execFileSync(
+        'git',
+        [
+          'merge-file',
+          '--union',
+          '-p',
+          ...['ours', 'base', 'theirs'].map((n) => path.join(tmpdir, n)),
+        ],
+        { encoding: 'utf8' },
+      );
+      expect(fs.readFileSync(patchesFile, 'utf8')).toBe(union);
     });
   });
 });

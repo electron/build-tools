@@ -7,10 +7,15 @@ import { color } from './logging.js';
 export const PATCHES_MERGE_DRIVER_NAME = 'patches-list';
 export const PATCHES_MERGE_ATTRIBUTE = `patches/**/.patches merge=${PATCHES_MERGE_DRIVER_NAME}`;
 
-// Git runs merge drivers through `sh -c`, so quote both paths and use forward
-// slashes (fine for node.exe and for Git for Windows' sh; backslashes are not).
-function shellQuote(p: string): string {
-  return `"${p.replace(/\\/g, '/')}"`;
+/**
+ * Quote a path for the `sh -c` that git runs merge drivers through (Git for
+ * Windows bundles sh, so this holds on every platform). POSIX single quotes
+ * keep `$`, backticks and `$()` literal, unlike double quotes; an embedded `'`
+ * becomes `'\''`. Backslashes are normalized to forward slashes, which node.exe
+ * and Git for Windows' sh both accept and which need no escaping.
+ */
+export function shellQuote(p: string): string {
+  return `'${p.replace(/\\/g, '/').replaceAll("'", "'\\''")}'`;
 }
 
 /**

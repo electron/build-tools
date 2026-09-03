@@ -413,8 +413,9 @@ driver merges the file as an ordered list instead:
 - Entries removed on either side stay removed.
 - Additions from either side are kept, positioned after their nearest surviving neighbour; entries
   both sides added at the same spot are kept once, ours first.
-- A reorder made on one side is kept. If both sides reorder the same entries differently, the
-  driver falls back to a plain union merge, so it is never worse than the default.
+- A reorder made on one side is kept. If both sides reorder the same entries differently, there is
+  no right answer: the driver writes a plain union merge (what the default would have produced) but
+  reports a conflict, so git leaves the file unmerged for you to review before committing.
 
 ### `e register-patches-merge-driver`
 
