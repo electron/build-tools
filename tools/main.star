@@ -118,6 +118,9 @@ def init(ctx):
             "third_party/llvm-build/Release+Asserts/bin/clang-tidy",
             ".clang-tidy",
             "electron/.clang-tidy",
+            # clang-tidy also reads any .clang-tidy between a source file and
+            # electron/, so those go to the worker and into the cache key too.
+            "electron/shell:clang_tidy_configs",
         ],
         "exclude_input_patterns": ["*.stamp"],
         "remote": True,
@@ -141,9 +144,15 @@ def init(ctx):
       step_config["executables"].extend(linux_tools)
     step_config["rules"].insert(0, tidy_rule)
 
+    filegroups = dict(mod.filegroups)
+    filegroups["electron/shell:clang_tidy_configs"] = {
+        "type": "glob",
+        "includes": [".clang-tidy"],
+    }
+
     return module(
       "config",
       step_config = json.encode(step_config),
-      filegroups = mod.filegroups,
+      filegroups = filegroups,
       handlers = mod.handlers,
     )
