@@ -44,14 +44,44 @@ function updateDepotTools(): void {
   }
 }
 
+// Seconds to wait before each retry of the initial clone. googlesource.com
+// occasionally hands out a truncated pack ("fetch-pack: invalid index-pack
+// output") or a 5xx, which used to fail CI jobs outright at "Install Build
+// Tools"; a fresh clone a few seconds later succeeds.
+const CLONE_RETRY_DELAYS_SEC = [1, 4, 16];
+
+function sleepSync(seconds: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, seconds * 1000);
+}
+
+function cloneDepotTools(depot_dir: string): void {
+  const url = 'https://chromium.googlesource.com/chromium/tools/depot_tools.git';
+  for (let attempt = 0; ; attempt++) {
+    try {
+      childProcess.execFileSync('git', ['clone', '-q', url, depot_dir], { stdio: 'inherit' });
+      return;
+    } catch (err) {
+      // Never leave (or retry into) a partial checkout.
+      fs.rmSync(depot_dir, { recursive: true, force: true });
+      const delay = CLONE_RETRY_DELAYS_SEC[attempt];
+      if (delay === undefined) {
+        throw err;
+      }
+      console.error(
+        `${color.warn} depot_tools clone failed (attempt ${attempt + 1} of ${CLONE_RETRY_DELAYS_SEC.length + 1}); retrying in ${delay}s`,
+      );
+      sleepSync(delay);
+    }
+  }
+}
+
 export function ensure(): void {
   const depot_dir = DEPOT_TOOLS_DIR;
 
   // If it doesn't exist, create it.
   if (!fs.existsSync(depot_dir)) {
     console.log(`Cloning ${color.cmd('depot_tools')} into ${color.path(depot_dir)}`);
-    const url = 'https://chromium.googlesource.com/chromium/tools/depot_tools.git';
-    childProcess.execFileSync('git', ['clone', '-q', url, depot_dir], { stdio: 'inherit' });
+    cloneDepotTools(depot_dir);
     updateDepotTools();
   }
 
