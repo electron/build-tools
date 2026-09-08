@@ -61,6 +61,7 @@ interface AutoRollOptions {
   limit: string;
   apply: boolean;
   run?: string;
+  signCommits?: boolean;
 }
 
 function shortSha(sha: string): string {
@@ -262,6 +263,7 @@ function applyRoll(
   branch: string,
   runId: number,
   remote: string,
+  signCommits = false,
 ): void {
   const bundlePath = path.join(extractDir, BUNDLE_FILE);
   const metaPath = path.join(extractDir, BUNDLE_META_FILE);
@@ -321,17 +323,19 @@ function applyRoll(
   const branchTip = git(electronDir, ['rev-parse', branch], { capture: true }).stdout.trim();
 
   let applied: cp.SpawnSyncReturns<string>;
-  if (branchTip === base) {
+  if (branchTip === base && !signCommits) {
     // Local branch is exactly where the roll started — fast-forward.
     console.log(`${color.info} ${color.config(branch)} is at the roll base; fast-forwarding`);
     applied = git(electronDir, ['merge', '--ff-only', tempRef]);
   } else {
-    // Branch has diverged from the roll's base — replay the roll's commits on
-    // top of wherever the branch is now.
     console.log(
       `${color.info} Replaying roll commits ${shortSha(base)}..${shortSha(head)} onto ${color.config(branch)}`,
     );
-    applied = git(electronDir, ['cherry-pick', `${base}..${tempRef}`]);
+    applied = git(electronDir, [
+      'cherry-pick',
+      ...(signCommits ? ['--gpg-sign'] : []),
+      `${base}..${tempRef}`,
+    ]);
   }
 
   if (applied.status !== 0) {
@@ -366,6 +370,7 @@ program
   .option('--limit <n>', 'How many recent runs to list', '30')
   .option('--run <id>', 'Skip the picker and use this workflow run id directly')
   .option('--no-apply', 'Download and extract the bundle but do not apply it')
+  .option('--sign-commits', 'Replay and sign roll commits using your Git signing configuration')
   .action(async (options: AutoRollOptions) => {
     const config = evmConfig.current();
     const electronDir = path.resolve(config.root, 'src', 'electron');
@@ -482,7 +487,14 @@ program
         await syncRollerBranch(electronDir, options.remote, DEFAULT_ROLLER_BRANCH, options.branch);
       }
       const extractDir = await downloadBundle(client, bundle, destDir);
-      applyRoll(electronDir, extractDir, options.branch, runId, options.remote);
+      applyRoll(
+        electronDir,
+        extractDir,
+        options.branch,
+        runId,
+        options.remote,
+        options.signCommits,
+      );
     } finally {
       fs.rmSync(destDir, { recursive: true, force: true });
     }
