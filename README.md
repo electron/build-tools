@@ -581,6 +581,10 @@ cherry-picking the commits on top). On a conflict it stops and leaves the bundle
 `refs/auto-roll/<run>` so you can resolve and `git cherry-pick --continue`. The working tree must be
 clean before applying.
 
+Pass `--sign-commits` to replay and sign every roll commit using your existing Git signing
+configuration. This uses `git cherry-pick --gpg-sign` even when a fast-forward is possible,
+so the signed commits will have new hashes.
+
 **Options**
 
 | Option            | Description                                                              |
@@ -591,6 +595,7 @@ clean before applying.
 | `--limit <n>`     | How many recent runs to list (default: `30`)                            |
 | `--run <id>`      | Skip the picker and use this workflow run id directly                    |
 | `--no-apply`      | Download and extract the bundle but don't apply it                       |
+| `--sign-commits`  | Replay and sign roll commits using your Git signing configuration        |
 
 ## Managing configs
 
