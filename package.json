@@ -16,8 +16,8 @@
     "lint": "npm run lint:ts && npm run lint:markdown",
     "prettier:write": "prettier --write \"src/**/*.ts\" \"tests/*.js\"",
     "prepare": "husky && npm run build",
-    "test": "c8 vitest run --reporter=verbose --exclude tests/bootstrap.spec.mjs",
-    "test:all": "c8 vitest run --reporter=verbose"
+    "test": "vitest run --coverage --reporter=verbose --exclude tests/bootstrap.spec.mjs",
+    "test:all": "vitest run --coverage --reporter=verbose"
   },
   "repository": "https://github.com/electron/build-tools",
   "author": "Electron Authors",
@@ -45,12 +45,13 @@
     "@types/progress": "^2.0.7",
     "@types/readline-sync": "^1.4.8",
     "@types/semver": "^7.5.0",
-    "c8": "^12.0.0",
+    "@vitest/coverage-v8": "~5.0.0",
     "husky": "^9.1.6",
     "lint-staged": "^17.4.1",
     "prettier": "^3.3.3",
     "typescript": "^6.0.0",
-    "vitest": "~4.1.2"
+    "vite": "^8.2.2",
+    "vitest": "~5.0.0"
   },
   "lint-staged": {
     "*.ts": [

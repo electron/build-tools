@@ -8,9 +8,11 @@ const { pathKey } = require('../dist/utils/path-key');
 const PATH_KEY = pathKey();
 
 // execFileSync() wrapper that runs one of the compiled `e-*.js` CLIs.
-// Coverage of these child processes is collected natively by V8: the test
-// script wraps vitest in c8, which sets NODE_V8_COVERAGE, and the sandbox
-// env passes that variable through to each spawned process (see below).
+// Coverage of these child processes is collected natively by V8: vitest's
+// coverage provider sets NODE_V8_COVERAGE in the test worker (see
+// `coverage.autoAttachSubprocess` in vitest.config.js), and Node propagates
+// that variable to every child process, even ones spawned with an explicit
+// `env` like the sandbox's.
 // Returns { exitCode:number, stderr:string, stdout:string }
 function runSync(args, options) {
   const debug = false;
@@ -258,12 +260,6 @@ function createSandbox({ stubDepotTools = false } = {}) {
   // cloning/updating the real depot_tools and bootstrapping vpython.
   if (stubDepotTools) {
     execOptions.env.DEPOT_TOOLS_DIR = path.resolve(__dirname, 'fixtures', 'depot_tools');
-  }
-
-  // let V8 write coverage for spawned CLI processes when the test run is
-  // wrapped in c8 (which sets NODE_V8_COVERAGE)
-  if (process.env.NODE_V8_COVERAGE) {
-    execOptions.env.NODE_V8_COVERAGE = process.env.NODE_V8_COVERAGE;
   }
 
   // vpython pulls user home directory from environment variables
