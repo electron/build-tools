@@ -50,7 +50,7 @@
     "lint-staged": "^17.4.1",
     "prettier": "^3.3.3",
     "typescript": "^6.0.0",
-    "vitest": "~4.1.2"
+    "vitest": "~4.1.11"
   },
   "lint-staged": {
     "*.ts": [
