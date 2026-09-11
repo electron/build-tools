@@ -7,6 +7,7 @@ import * as path from 'node:path';
 import { program } from 'commander';
 
 import * as evmConfig from './evm-config.js';
+import { ensureCrossClang } from './utils/cross-clang.js';
 import { color, fatal } from './utils/logging.js';
 import * as depot from './utils/depot-tools.js';
 import { ensureDir } from './utils/paths.js';
@@ -151,6 +152,7 @@ program
 
       reclient.downloadAndPrepareRBECredentialHelper(config);
       await siso.ensureBackendStarlark(config);
+      ensureCrossClang(config);
 
       if (process.platform === 'darwin') {
         ensureSDK();

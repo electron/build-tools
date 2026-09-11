@@ -6,6 +6,10 @@ load("@config//main.star", upstream_init = "init")
 load("@config//win_sdk.star", "win_sdk")
 load("@config//gn_logs.star", "gn_logs")
 
+# Installed by src/utils/cross-clang.ts, next to the Linux clang it runs.
+cross_clang_wrapper = "buildtools/reclient_cfgs/chromium-browser-clang/clang_remote_wrapper"
+linux_clang = "third_party/llvm-build/Release+Asserts_linux/bin/clang"
+
 def init(ctx):
     mod = upstream_init(ctx)
     step_config = json.decode(mod.step_config)
@@ -16,24 +20,17 @@ def init(ctx):
       if input_root_absolute_path:
         rule.pop("input_root_absolute_path", None)
 
-    # Only wrap clang rules with a remote wrapper if not on Linux. These are currently only
-    # needed for X-Compile builds, which run on Windows and Mac.
+    # The RBE workers are Linux, so on macOS and Windows hosts run the clang
+    # steps through a wrapper that swaps in a Linux clang on the worker.
     if runtime.os != "linux":
       for rule in step_config["rules"]:
         if rule["name"].startswith("clang/") or rule["name"].startswith("clang-cl/"):
-          rule["remote_wrapper"] = "../../buildtools/reclient_cfgs/chromium-browser-clang/clang_remote_wrapper"
-          if "inputs" not in rule:
-            rule["inputs"] = []
-          rule["inputs"].append("buildtools/reclient_cfgs/chromium-browser-clang/clang_remote_wrapper")
-          rule["inputs"].append("third_party/llvm-build/Release+Asserts_linux/bin/clang")
-
-      if "executables" not in step_config:
-        step_config["executables"] = []
-      step_config["executables"].append("buildtools/reclient_cfgs/chromium-browser-clang/clang_remote_wrapper")
-      step_config["executables"].append("third_party/llvm-build/Release+Asserts_linux/bin/clang")
+          rule["remote_wrapper"] = "../../" + cross_clang_wrapper
+          rule.setdefault("inputs", []).extend([cross_clang_wrapper, linux_clang])
+      step_config.setdefault("executables", []).extend([cross_clang_wrapper, linux_clang])
 
     if runtime.os == "darwin":
-      # Update platforms to match our default siso config instead of reclient configs.
+      # Chromium took these platforms from the stub rewrapper cfg; use the backend default.
       step_config["platforms"].update({
           "clang": step_config["platforms"]["default"],
           "clang_large": step_config["platforms"]["default"],          
@@ -65,7 +62,7 @@ def init(ctx):
         ])
 
     if runtime.os == "windows":
-      # Update platforms to match our default siso config instead of reclient configs.
+      # Chromium took these platforms from the stub rewrapper cfg; use the backend default.
       step_config["platforms"].update({
           "clang-cl": step_config["platforms"]["default"],
           "clang-cl_large": step_config["platforms"]["default"],
@@ -135,8 +132,8 @@ def init(ctx):
       # run through clang_remote_wrapper with the Linux toolchain staged next to
       # the host one. The clang-tidy job downloads the Linux clang-tidy there.
       linux_tools = [
-          "buildtools/reclient_cfgs/chromium-browser-clang/clang_remote_wrapper",
-          "third_party/llvm-build/Release+Asserts_linux/bin/clang",
+          cross_clang_wrapper,
+          linux_clang,
           "third_party/llvm-build/Release+Asserts_linux/bin/clang-tidy",
       ]
       tidy_rule["remote_wrapper"] = "../../" + linux_tools[0]
