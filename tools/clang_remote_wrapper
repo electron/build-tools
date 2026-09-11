@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+# Runs a macOS or Windows host's clang step on Electron's Linux RBE workers:
+# src/utils/cross-clang.ts stages Chromium's Linux clang next to the host one
+# and tools/main.star puts this script in front of every remote clang step. On
+# the worker it exposes the host package's resource headers and runtime libs
+# (the ones uploaded with the step) to the Linux clang and runs that instead.
+#
+# This file is an input of every remote compile; changing it misses the cache.
+
+set -e
+
+host_clang=../../third_party/llvm-build/Release+Asserts
+linux_clang=${host_clang}_linux
+
+# A Windows host sends PATH in Windows form.
+PATH=${PATH//\\//}
+export PATH=${PATH//;/:}
+
+for tool in clang++ clang-cl; do
+  if [[ ! -e $linux_clang/bin/$tool ]]; then
+    ln -s clang "$linux_clang/bin/$tool"
+  fi
+done
+
+for dir in "$host_clang"/lib/clang/*/include "$host_clang"/lib/clang/*/lib; do
+  linux_dir=$linux_clang${dir#"$host_clang"}
+  if [[ -d $dir && ! -e $linux_dir ]]; then
+    mkdir -p "$(dirname "$linux_dir")"
+    ln -sr "$dir" "$linux_dir"
+  fi
+done
+
+clang=${1//\\//}
+clang=${clang/"$host_clang"/"$linux_clang"}
+exec "${clang%.exe}" "${@:2}"

@@ -10,7 +10,7 @@ import { fatal } from './utils/logging.js';
 import { ensureDir } from './utils/paths.js';
 import * as depot from './utils/depot-tools.js';
 import { registerPatchesMergeDriver } from './utils/patches-merge-driver.js';
-import { configureReclient } from './utils/setup-reclient-chromium.js';
+import { ensureCrossClang } from './utils/cross-clang.js';
 import { ensureSDK } from './utils/sdk.js';
 import type { ElectronRemotes } from './types.js';
 
@@ -63,10 +63,6 @@ function runGClientSync(syncArgs: string[], syncOpts: { threeWay?: boolean }): v
     ensureSDK();
   }
 
-  if (config.defaultTarget === 'chrome') {
-    configureReclient();
-  }
-
   const exec = 'gclient';
   const args = ['sync', '--with_branch_heads', '--with_tags', '-vv', ...syncArgs];
   const opts = {
@@ -79,6 +75,7 @@ function runGClientSync(syncArgs: string[], syncOpts: { threeWay?: boolean }): v
       : {},
   };
   depot.spawnSync(config, exec, args, opts, 'gclient sync failed');
+  ensureCrossClang(config);
 
   // Only set remotes if we're building an Electron target.
   if (config.defaultTarget !== 'chrome') {
