@@ -7,6 +7,7 @@ const gitUrl = z
 const electronRemotesSchema = z
   .strictObject({
     origin: gitUrl.describe('Origin remote'),
+    upstream: gitUrl.describe('Upstream remote').optional(),
     fork: gitUrl.describe('Fork remote').optional(),
   })
   .describe('Remotes for the Electron repo');

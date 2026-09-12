@@ -70,6 +70,19 @@
               ],
               "description": "Origin remote"
             },
+            "upstream": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^git@.+$"
+                }
+              ],
+              "description": "Upstream remote"
+            },
             "fork": {
               "anyOf": [
                 {
