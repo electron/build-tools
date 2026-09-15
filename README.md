@@ -480,7 +480,7 @@ $ e download-dist <pr-number-or-commit-sha>
 |:---------------------------|:------------------------------------------------------------------------------------------------------------|
 | `--platform <platform>`    | Platform to download (default: current)                                                                     |
 | `--arch <arch>`            | Architecture (default: current)                                                                             |
-| `-o, --output <dir>`       | Output directory (default: `~/.electron_build_tools/artifacts/pr_{number}_{hash}_{platform}_{arch}` or `commit_{hash}_{platform}_{arch}`) |
+| `-o, --output <dir>`       | Output directory (default: `<build-tools>/artifacts/pr_{number}_{hash}_{platform}_{arch}` or `commit_{hash}_{platform}_{arch}`) |
 | `-s, --skip-confirmation`  | Skip the PR confirmation prompt (enabled automatically in CI)                                                                            |
 
 `e pr download-dist` requires a GitHub token — see [`e gh-auth`](#e-gh-auth).
@@ -802,7 +802,8 @@ gen:
 | `EVM_CURRENT_FILE`                   | Alternative location for the active-config pointer file. Enables per-session active configs.        |
 | `EVM_FORMAT`                         | Preferred on-disk format for configs when saving: `json` (default), `yml`, or `yaml`                |
 | `BUILD_TOOLS_SHA`                    | If set, skip the auto-update check (useful when you've checked out a specific build-tools commit)   |
-| `DEPOT_TOOLS_DIR`                    | Override the depot-tools directory (default: `<build-tools>/.depot_tools`)                          |
+| `DEPOT_TOOLS_DIR`                    | Override the depot-tools directory (default: `<build-tools>/third_party/depot_tools`)               |
+| `ELECTRON_BUILD_TOOLS_ROOT`          | Override where `build-tools` itself is installed (default: `~/.electron_build_tools`)               |
 | `GIT_CACHE_PATH`                     | Consumed by `e init` as the default for new configs' `env.GIT_CACHE_PATH`                           |
 | `GN_EXTRA_ARGS`                      | When `CI=1`, appended to the GN args for `e build` (space-separated `key=value` tokens)             |
 
