@@ -1,0 +1,9 @@
+{
+  "config": {
+    "extends": "@electron/lint-roller/configs/markdownlint.json",
+    // The README's aligned tables let the occasional long row overflow
+    "table-column-style": false
+  },
+  "customRules": ["@electron/lint-roller/markdownlint-rules/index.mjs"],
+  "ignores": ["node_modules/**", "third_party/**"]
+}
