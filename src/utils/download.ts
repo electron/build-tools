@@ -18,6 +18,12 @@ export function progressStream(total: number, tokens: string): PassThrough {
         mbRate: (rate / MB_BYTES).toFixed(2),
       });
     });
+
+    // If the transfer dies part way through, finish the bar's line so whatever
+    // is logged next doesn't get appended to a half-drawn bar.
+    pt.on('close', () => {
+      if (!bar.complete) bar.terminate();
+    });
   });
 
   return pt;
