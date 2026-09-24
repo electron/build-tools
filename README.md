@@ -116,19 +116,19 @@ existing root to share it between build configs.
 
 **Options**
 
-| Option                       | Description                                                                      |
-|:-----------------------------|:---------------------------------------------------------------------------------|
-| `-r, --root <path>`          | Root for source and build files (default: `$PWD/electron`)                       |
-| `-i, --import <name>`        | GN args file to import from `build/args/<name>.gn` (default: `testing`)          |
-| `-o, --out <name>`           | Output directory name under `$root/src/out/` (default: capitalized `--import`)   |
-| `-f, --force`                | Overwrite an existing build config with the same name                            |
-| `--asan`, `--tsan`, `--msan`, `--lsan` | Enable Clang's address / thread / memory / leak sanitizer                |
-| `--mas`                      | Build for the macOS App Store (macOS only)                                       |
-| `--target-cpu <arch>`        | Target architecture: `x86`, `x64`, `arm`, `arm64`                                |
-| `--bootstrap`                | Run `e sync` and `e build` immediately after creating the config                 |
-| `--remote-build <target>`    | Remote-execution backend: `siso` (default) or `none`                             |
-| `--use-https`                | Set git remotes with `https://` URLs instead of `git@github.com:`                |
-| `--fork <user/electron>`     | Add a remote named `fork` pointing at the given GitHub fork                      |
+| Option                                 | Description                                                                    |
+|:---------------------------------------|:-------------------------------------------------------------------------------|
+| `-r, --root <path>`                    | Root for source and build files (default: `$PWD/electron`)                     |
+| `-i, --import <name>`                  | GN args file to import from `build/args/<name>.gn` (default: `testing`)        |
+| `-o, --out <name>`                     | Output directory name under `$root/src/out/` (default: capitalized `--import`) |
+| `-f, --force`                          | Overwrite an existing build config with the same name                          |
+| `--asan`, `--tsan`, `--msan`, `--lsan` | Enable Clang's address / thread / memory / leak sanitizer                      |
+| `--mas`                                | Build for the macOS App Store (macOS only)                                     |
+| `--target-cpu <arch>`                  | Target architecture: `x86`, `x64`, `arm`, `arm64`                              |
+| `--bootstrap`                          | Run `e sync` and `e build` immediately after creating the config               |
+| `--remote-build <target>`              | Remote-execution backend: `siso` (default) or `none`                           |
+| `--use-https`                          | Set git remotes with `https://` URLs instead of `git@github.com:`              |
+| `--fork <user/electron>`               | Add a remote named `fork` pointing at the given GitHub fork                    |
 
 **Example**
 
@@ -237,12 +237,12 @@ repositories or content.
 
 ## Running Electron
 
-| Command   | Description                          |
-|:----------|:-------------------------------------|
-| `e start` | Run the Electron build               |
-| `e node`  | Run the Electron build as Node       |
-| `e debug` | Run the Electron build in a debugger |
-| `e test`  | Run Electron's spec runner           |
+| Command   | Description                                                                  |
+|:----------|:-----------------------------------------------------------------------------|
+| `e start` | Run the Electron build                                                       |
+| `e node`  | Run the Electron build as Node                                               |
+| `e debug` | Run the Electron build in a debugger                                         |
+| `e test`  | Run Electron's spec runner                                                   |
 | `e npm`   | Run an npm command with the local Electron substituted for the published one |
 
 ### `e start`
@@ -323,16 +323,16 @@ Useful for testing your local Electron against an app's existing `electron` depe
 
 Show information about the current build config.
 
-| Subcommand          | Description                                                                             |
-|:--------------------|:----------------------------------------------------------------------------------------|
-| `e show current`    | Print the active config name. `-g/--git` appends git status; `-f/--filepath` the path.  |
-| `e show configs`    | List all build configs (active is marked with `*`). Alias: `e show ls`.                 |
+| Subcommand          | Description                                                                                                   |
+|:--------------------|:--------------------------------------------------------------------------------------------------------------|
+| `e show current`    | Print the active config name. `-g/--git` appends git status; `-f/--filepath` the path.                        |
+| `e show configs`    | List all build configs (active is marked with `*`). Alias: `e show ls`.                                       |
 | `e show env`        | Environment variables injected by the active config (diffed against your current env). Add `--json` for JSON. |
-| `e show exe`        | Path of the built Electron executable. Alias: `e show exec`.                            |
-| `e show root`       | Path of the root directory — home of `.gclient`.                                        |
-| `e show src [name]` | Path of a named source dir (default: `electron`). E.g. `e show src base`.               |
-| `e show out`        | The outdir name (e.g. `Testing`). Pass `--path` for the absolute path.                  |
-| `e show depotdir`   | Path of the depot-tools directory that build-tools manages.                             |
+| `e show exe`        | Path of the built Electron executable. Alias: `e show exec`.                                                  |
+| `e show root`       | Path of the root directory — home of `.gclient`.                                                              |
+| `e show src [name]` | Path of a named source dir (default: `electron`). E.g. `e show src base`.                                     |
+| `e show out`        | The outdir name (e.g. `Testing`). Pass `--path` for the absolute path.                                        |
+| `e show depotdir`   | Path of the depot-tools directory that build-tools manages.                                                   |
 
 **Example**
 
@@ -450,10 +450,10 @@ a number directly, `e open 23450` opens that PR or issue. Pass `--print` to prin
 
 Work with pull requests to `electron/electron`.
 
-| Subcommand              | Description                                                                                                      |
-|:------------------------|:-----------------------------------------------------------------------------------------------------------------|
-| `e pr open`             | Open a GitHub compare URL for creating a PR (default subcommand; `e pr` is the same).                            |
-| `e pr download-dist <pr#>` | Download built artifacts from the latest Build workflow run of a PR.                                          |
+| Subcommand                 | Description                                                                           |
+|:---------------------------|:--------------------------------------------------------------------------------------|
+| `e pr open`                | Open a GitHub compare URL for creating a PR (default subcommand; `e pr` is the same). |
+| `e pr download-dist <pr#>` | Download built artifacts from the latest Build workflow run of a PR.                  |
 
 **`e pr open` options**
 
@@ -476,12 +476,12 @@ $ e download-dist <pr-number-or-commit-sha>
 
 **Options**
 
-| Option                     | Description                                                                                                 |
-|:---------------------------|:------------------------------------------------------------------------------------------------------------|
-| `--platform <platform>`    | Platform to download (default: current)                                                                     |
-| `--arch <arch>`            | Architecture (default: current)                                                                             |
-| `-o, --output <dir>`       | Output directory (default: `<build-tools>/artifacts/pr_{number}_{hash}_{platform}_{arch}` or `commit_{hash}_{platform}_{arch}`) |
-| `-s, --skip-confirmation`  | Skip the PR confirmation prompt (enabled automatically in CI)                                                                            |
+| Option                    | Description                                                                                                                     |
+|:--------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| `--platform <platform>`   | Platform to download (default: current)                                                                                         |
+| `--arch <arch>`           | Architecture (default: current)                                                                                                 |
+| `-o, --output <dir>`      | Output directory (default: `<build-tools>/artifacts/pr_{number}_{hash}_{platform}_{arch}` or `commit_{hash}_{platform}_{arch}`) |
+| `-s, --skip-confirmation` | Skip the PR confirmation prompt (enabled automatically in CI)                                                                   |
 
 `e pr download-dist` requires a GitHub token — see [`e gh-auth`](#e-gh-auth).
 `e pr download-dist` an alias of `e download-dist` for backwards compatibility.
@@ -587,15 +587,15 @@ so the signed commits will have new hashes.
 
 **Options**
 
-| Option            | Description                                                              |
-|:------------------|:------------------------------------------------------------------------|
-| `--branch <name>` | Local roller branch to apply onto (default: `roller/chromium/main`)      |
-| `--remote <name>` | Remote to fetch the roller branch from (default: `origin`)              |
-| `--no-fetch`      | Don't fetch/reset the roller branch to its latest upstream first         |
-| `--limit <n>`     | How many recent runs to list (default: `30`)                            |
-| `--run <id>`      | Skip the picker and use this workflow run id directly                    |
-| `--no-apply`      | Download and extract the bundle but don't apply it                       |
-| `--sign-commits`  | Replay and sign roll commits using your Git signing configuration        |
+| Option            | Description                                                         |
+|:------------------|:--------------------------------------------------------------------|
+| `--branch <name>` | Local roller branch to apply onto (default: `roller/chromium/main`) |
+| `--remote <name>` | Remote to fetch the roller branch from (default: `origin`)          |
+| `--no-fetch`      | Don't fetch/reset the roller branch to its latest upstream first    |
+| `--limit <n>`     | How many recent runs to list (default: `30`)                        |
+| `--run <id>`      | Skip the picker and use this workflow run id directly               |
+| `--no-apply`      | Download and extract the bundle but don't apply it                  |
+| `--sign-commits`  | Replay and sign roll commits using your Git signing configuration   |
 
 ## Managing configs
 
@@ -632,8 +632,8 @@ Manage additional gclient working directories that share git objects with an exi
 Useful when you want to iterate on multiple branches or configs simultaneously without re-syncing
 full Chromium trees. Unix only (requires symlinks).
 
-| Subcommand                            | Description                                                       |
-|:--------------------------------------|:------------------------------------------------------------------|
+| Subcommand                            | Description                                                        |
+|:--------------------------------------|:-------------------------------------------------------------------|
 | `e worktree add <name> <new_workdir>` | Create a new worktree + matching build config from an existing one |
 | `e worktree clean <name>`             | Delete a worktree directory and its build config                   |
 
@@ -746,24 +746,24 @@ See [`example-configs/`](./example-configs/) for annotated templates (`evm.base.
 
 **Top-level fields**
 
-| Field                   | Type                                  | Description                                                                          |
-|:------------------------|:--------------------------------------|:-------------------------------------------------------------------------------------|
-| `root`                  | string                                | Top directory — home of `.gclient`                                                   |
-| `remotes.electron.origin` | string                              | Origin git URL for `electron/electron` (ssh or https)                                |
-| `remotes.electron.fork` | string (optional)                     | Optional fork remote URL                                                             |
-| `gen.args`              | string[]                              | GN arguments written to `out/<name>/args.gn`                                         |
-| `gen.out`               | string                                | Output directory name (e.g. `Testing`)                                               |
-| `env.GIT_CACHE_PATH`    | string (optional)                     | Git cache path for gclient (shared across configs)                                   |
-| `env.*`                 | string                                | Any additional env vars to inject into build-tools' subprocesses                     |
-| `defaultTarget`         | string (default: `electron`)          | Default ninja target for `e build`                                                   |
-| `execName`              | string (default: `Electron`)          | Name of the built executable for `e start`                                           |
-| `remoteBuild`           | `siso` \| `reclient` \| `none`        | Which remote-execution backend to use                                                |
-| `rbeHelperPath`         | string (optional)                     | Path to a custom RBE credential helper                                               |
-| `rbeServiceAddress`     | string (optional)                     | Alternative RBE cluster address                                                      |
-| `preserveSDK`           | integer (default: 5)                  | Number of recent macOS SDKs to keep on disk                                          |
-| `configValidationLevel` | `strict` \| `warn` \| `none`          | How strictly to validate the config file (default: `strict`)                         |
-| `extends`               | string (optional)                     | Name of a base config to inherit from; arrays concatenate and objects deep-merge     |
-| `$schema`               | URI                                   | Reference to `evm-config.schema.json` for editor validation                          |
+| Field                     | Type                           | Description                                                                      |
+|:--------------------------|:-------------------------------|:---------------------------------------------------------------------------------|
+| `root`                    | string                         | Top directory — home of `.gclient`                                               |
+| `remotes.electron.origin` | string                         | Origin git URL for `electron/electron` (ssh or https)                            |
+| `remotes.electron.fork`   | string (optional)              | Optional fork remote URL                                                         |
+| `gen.args`                | string[]                       | GN arguments written to `out/<name>/args.gn`                                     |
+| `gen.out`                 | string                         | Output directory name (e.g. `Testing`)                                           |
+| `env.GIT_CACHE_PATH`      | string (optional)              | Git cache path for gclient (shared across configs)                               |
+| `env.*`                   | string                         | Any additional env vars to inject into build-tools' subprocesses                 |
+| `defaultTarget`           | string (default: `electron`)   | Default ninja target for `e build`                                               |
+| `execName`                | string (default: `Electron`)   | Name of the built executable for `e start`                                       |
+| `remoteBuild`             | `siso` \| `reclient` \| `none` | Which remote-execution backend to use                                            |
+| `rbeHelperPath`           | string (optional)              | Path to a custom RBE credential helper                                           |
+| `rbeServiceAddress`       | string (optional)              | Alternative RBE cluster address                                                  |
+| `preserveSDK`             | integer (default: 5)           | Number of recent macOS SDKs to keep on disk                                      |
+| `configValidationLevel`   | `strict` \| `warn` \| `none`   | How strictly to validate the config file (default: `strict`)                     |
+| `extends`                 | string (optional)              | Name of a base config to inherit from; arrays concatenate and objects deep-merge |
+| `$schema`                 | URI                            | Reference to `evm-config.schema.json` for editor validation                      |
 
 A config must supply **one** of:
 

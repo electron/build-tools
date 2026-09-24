@@ -11,7 +11,7 @@
     "build": "tsc && npm run build:copy",
     "build:copy": "node scripts/copy-assets.js",
     "build:schema": "node dist/gen-schema.js",
-    "lint:markdown": "electron-markdownlint \"**/*.md\"",
+    "lint:markdown": "markdownlint-cli2 \"**/*.md\"",
     "lint:ts": "prettier --check \"src/**/*.ts\" \"tests/*.js\"",
     "lint": "npm run lint:ts && npm run lint:markdown",
     "prettier:write": "prettier --write \"src/**/*.ts\" \"tests/*.js\"",
@@ -38,7 +38,7 @@
     "zod": "^4.0.0"
   },
   "devDependencies": {
-    "@electron/lint-roller": "^1.13.0",
+    "@electron/lint-roller": "^4.0.0",
     "@tsconfig/node22": "^22.0.5",
     "@types/debug": "^4.1.13",
     "@types/node": "^22.0.0",
@@ -48,6 +48,7 @@
     "@vitest/coverage-v8": "~5.0.0",
     "husky": "^9.1.6",
     "lint-staged": "^17.4.1",
+    "markdownlint-cli2": "^0.23.2",
     "prettier": "^3.3.3",
     "typescript": "^6.0.0",
     "vite": "^8.2.2",
@@ -59,7 +60,8 @@
     ]
   },
   "resolutions": {
-    "fsevents": "npm:@electron/fsevents@2.3.3-fork"
+    "fsevents": "npm:@electron/fsevents@2.3.3-fork",
+    "smol-toml": "1.7.1"
   },
   "packageManager": "yarn@4.10.3+sha512.c38cafb5c7bb273f3926d04e55e1d8c9dfa7d9c3ea1f36a4868fa028b9e5f72298f0b7f401ad5eb921749eb012eb1c3bb74bf7503df3ee43fd600d14a018266f"
 }
