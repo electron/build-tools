@@ -23,12 +23,12 @@
   "author": "Electron Authors",
   "license": "MIT",
   "dependencies": {
+    "@electron-internal/extract-zip": "^1.0.5",
     "@inquirer/prompts": "^8.2.0",
     "@octokit/auth-oauth-device": "^8.0.3",
     "@octokit/rest": "^22.0.1",
     "commander": "^9.0.0",
     "debug": "^4.4.3",
-    "extract-zip": "^2.0.1",
     "open": "^6.4.0",
     "progress": "^2.0.3",
     "readline-sync": "^1.4.10",
