@@ -9,7 +9,7 @@ import { pipeline } from 'node:stream/promises';
 import { program } from 'commander';
 import * as inquirer from '@inquirer/prompts';
 import debug from 'debug';
-import extractZip from 'extract-zip';
+import extractZip from '@electron-internal/extract-zip';
 
 import * as evmConfig from './evm-config.js';
 import { AccessClient } from './utils/cf-access.js';

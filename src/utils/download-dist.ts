@@ -9,7 +9,7 @@ import { pipeline } from 'node:stream/promises';
 import * as inquirer from '@inquirer/prompts';
 import { Octokit } from '@octokit/rest';
 import debug from 'debug';
-import extractZip from 'extract-zip';
+import extractZip from '@electron-internal/extract-zip';
 
 import { progressStream } from './download.js';
 import { getGitHubAuthToken } from './github-auth.js';
@@ -270,7 +270,7 @@ Proceed?`,
     }
 
     // Extract dist.zip
-    // NOTE: 'extract-zip' is used as it correctly extracts symlinks.
+    // NOTE: '@electron-internal/extract-zip' is used as it correctly extracts symlinks.
     d('unzipping dist.zip to %s', outputDir);
     await extractZip(distZipPath, { dir: outputDir });
 
