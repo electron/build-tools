@@ -142,6 +142,14 @@ def init(ctx):
     step_config["rules"].insert(0, tidy_rule)
 
     filegroups = dict(mod.filegroups)
+    # siso uploads this filegroup as a precomputed subtree and drops other
+    # inputs under it, including the clang-tidy input of the rule above.
+    # Chromium narrowed its bin/clang-* glob in crrev.com/c/8471431, so add
+    # clang-tidy back.
+    llvm_headers = "third_party/llvm-build/Release+Asserts:headers"
+    if llvm_headers in filegroups:
+      filegroups[llvm_headers] = dict(filegroups[llvm_headers])
+      filegroups[llvm_headers]["includes"] = filegroups[llvm_headers]["includes"] + ["bin/clang-tidy"]
     filegroups["electron/shell:clang_tidy_configs"] = {
         "type": "glob",
         "includes": [".clang-tidy"],
