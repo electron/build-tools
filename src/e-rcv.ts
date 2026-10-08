@@ -170,7 +170,7 @@ program
 
       for (const milestone of milestones) {
         const releases = (await fetch(
-          `https://chromiumdash.appspot.com/fetch_releases?channel=Canary&platform=Linux,Mac,Win32,Windows&milestone=${milestone}&num=1000`,
+          `https://chromiumdash.appspot.com/fetch_releases?platform=Linux,Mac,Win32,Windows&milestone=${milestone}&num=1000`,
         ).then((resp) => resp.json())) as Array<{ version: string }>;
         const milestoneVersions = new Set(releases.map(({ version }) => version));
         chromiumVersions.push(...milestoneVersions);
