@@ -85,6 +85,11 @@ def init(ctx):
     # The typescript/webui rules need their Starlark handlers (which add the
     # node_modules etc. inputs); Chromium only attaches them when remote is
     # enabled at config time, so attach them here.
+    #
+    # remote_command stays as Chromium set it. Since crrev.com/c/8160801 that
+    # is the Linux python3 in third_party/cpython3, which Chromium also adds to
+    # each rule's inputs, so the workers don't need a python3 of their own. On
+    # older branches it is plain "python3".
     remote_generators = {
         "mojo/mojom_bindings_generator": None,
         "mojo/mojom_parser": None,
@@ -100,7 +105,6 @@ def init(ctx):
     for rule in step_config["rules"]:
       if rule["name"] in remote_generators:
         rule["remote"] = True
-        rule["remote_command"] = "python3"
         handler = remote_generators[rule["name"]]
         if handler:
           rule["handler"] = handler
