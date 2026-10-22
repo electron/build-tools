@@ -7,7 +7,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { auth, env as reclientEnv } from '../dist/utils/reclient.js';
 import { backendStarlark, ensureBackendStarlark, env, flags } from '../dist/utils/siso.js';
 
-const flagValue = (result, name) => result[result.indexOf(name) + 1];
+const flagValue = (result, name) =>
+  result.find((arg) => String(arg).startsWith(`${name}=`))?.slice(name.length + 1);
 
 describe('siso alternative RBE backends', () => {
   const tlsConfig = {
@@ -22,7 +23,7 @@ describe('siso alternative RBE backends', () => {
     const result = flags(tlsConfig, true);
     expect(flagValue(result, '-reapi_instance')).toBe('');
     expect(flagValue(result, '-project')).toBe('');
-    expect(flagValue(result, '-reapi_address')).toBe('rbe.example.com:443');
+    expect(result[result.indexOf('-reapi_address') + 1]).toBe('rbe.example.com:443');
   });
 
   it('derives the project from a custom instance name', () => {
@@ -37,9 +38,25 @@ describe('siso alternative RBE backends', () => {
   });
 
   it('does not use the credential helper with a TLS client certificate', () => {
-    expect(auth(tlsConfig)).toBe(true);
     expect(reclientEnv(tlsConfig)).toEqual({});
     expect(env(tlsConfig)).not.toHaveProperty('SISO_CREDENTIAL_HELPER');
+  });
+
+  it('expands ~ in the TLS client certificate paths', () => {
+    const result = flags({ ...tlsConfig, rbeTlsClientCert: '~/client.crt' }, true);
+    expect(flagValue(result, '-reapi_tls_client_auth_cert')).toBe(
+      path.join(os.homedir(), 'client.crt'),
+    );
+  });
+
+  it('accepts existing TLS client certificate files without the credential helper', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'siso-tls-'));
+    const rbeTlsClientCert = path.join(dir, 'client.crt');
+    const rbeTlsClientKey = path.join(dir, 'client.key');
+    fs.writeFileSync(rbeTlsClientCert, '');
+    fs.writeFileSync(rbeTlsClientKey, '');
+    expect(auth({ ...tlsConfig, rbeTlsClientCert, rbeTlsClientKey })).toBe(true);
+    fs.rmSync(dir, { recursive: true, force: true });
   });
 
   it('keeps the default instance when none is configured', () => {
@@ -47,7 +64,7 @@ describe('siso alternative RBE backends', () => {
     expect(flagValue(result, '-reapi_instance')).toBe(
       'projects/electron-rbe/instances/default_instance',
     );
-    expect(result).not.toContain('-reapi_tls_client_auth_cert');
+    expect(flagValue(result, '-reapi_tls_client_auth_cert')).toBeUndefined();
   });
 });
 

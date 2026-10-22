@@ -4,7 +4,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import { color, fatal } from './logging.js';
-import { deleteDir } from './paths.js';
+import { deleteDir, resolvePath } from './paths.js';
 import type { SanitizedConfig } from '../types.js';
 
 const reclientDir = path.resolve(import.meta.dirname, '..', '..', 'third_party', 'reclient');
@@ -172,7 +172,14 @@ export function env(config: ConfigLike | undefined): Record<string, string | num
 }
 
 export function auth(config: ConfigLike): boolean {
-  if (usesTlsClientAuth(config)) return true;
+  if (usesTlsClientAuth(config)) {
+    for (const file of [config.rbeTlsClientCert!, config.rbeTlsClientKey!]) {
+      if (!fs.existsSync(resolvePath(file))) {
+        fatal(`RBE TLS client auth file ${color.path(file)} does not exist`);
+      }
+    }
+    return true;
+  }
 
   const result = childProcess.spawnSync(rbeHelperPath, ['status'], {
     stdio: 'pipe',

@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
+import { resolvePath } from './paths.js';
 import * as reclient from './reclient.js';
 import type { SanitizedConfig } from '../types.js';
 
@@ -58,10 +59,9 @@ export function flags(config: ConfigLike, hasExecute: boolean): (string | number
   const result: (string | number)[] = [
     '-remote_jobs',
     200,
-    '-project',
-    project(config),
-    '-reapi_instance',
-    reapiInstance(config),
+    // Keep each value in its flag's token: the Windows shell join drops empty arguments.
+    `-project=${project(config)}`,
+    `-reapi_instance=${reapiInstance(config)}`,
     '-reapi_address',
     reclient.serviceAddress(config),
     '-load',
@@ -70,10 +70,8 @@ export function flags(config: ConfigLike, hasExecute: boolean): (string | number
 
   if (reclient.usesTlsClientAuth(config)) {
     result.push(
-      '-reapi_tls_client_auth_cert',
-      config.rbeTlsClientCert!,
-      '-reapi_tls_client_auth_key',
-      config.rbeTlsClientKey!,
+      `-reapi_tls_client_auth_cert=${resolvePath(config.rbeTlsClientCert!)}`,
+      `-reapi_tls_client_auth_key=${resolvePath(config.rbeTlsClientKey!)}`,
     );
   }
 
