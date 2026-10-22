@@ -30,11 +30,24 @@ export function setUsingRemote(value: boolean): void {
   usingRemote = value;
 }
 
-type ConfigLike = Pick<SanitizedConfig, 'remoteBuild' | 'rbeHelperPath' | 'rbeServiceAddress'> &
+type ConfigLike = Pick<
+  SanitizedConfig,
+  'remoteBuild' | 'rbeHelperPath' | 'rbeServiceAddress' | 'rbeTlsClientCert' | 'rbeTlsClientKey'
+> &
   Partial<Pick<SanitizedConfig, 'defaultTarget'>>;
 
+// With a TLS client certificate the backend authenticates the connection itself,
+// so the credential helper is neither needed nor consulted.
+export function usesTlsClientAuth(config: ConfigLike | undefined): boolean {
+  if (config?.remoteBuild !== 'siso') return false;
+  if (!config.rbeTlsClientCert !== !config.rbeTlsClientKey) {
+    fatal('rbeTlsClientCert and rbeTlsClientKey must be set together');
+  }
+  return !!config.rbeTlsClientCert;
+}
+
 export function downloadAndPrepareRBECredentialHelper(config: ConfigLike): void {
-  if (config.remoteBuild === 'none') return;
+  if (config.remoteBuild === 'none' || usesTlsClientAuth(config)) return;
 
   // If a custom reclient credentials helper is specified, expect
   // that it exists in the specified location
@@ -136,7 +149,7 @@ export function helperFlags(): Record<string, string> {
 }
 
 export function env(config: ConfigLike | undefined): Record<string, string | number> {
-  if (config?.remoteBuild === 'none' || !usingRemote) {
+  if (config?.remoteBuild === 'none' || !usingRemote || usesTlsClientAuth(config)) {
     return {};
   }
 
@@ -158,7 +171,9 @@ export function env(config: ConfigLike | undefined): Record<string, string | num
   return Object.assign(base, helperFlags());
 }
 
-export function auth(_config: ConfigLike): boolean {
+export function auth(config: ConfigLike): boolean {
+  if (usesTlsClientAuth(config)) return true;
+
   const result = childProcess.spawnSync(rbeHelperPath, ['status'], {
     stdio: 'pipe',
   });
