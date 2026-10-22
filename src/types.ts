@@ -79,6 +79,13 @@ const baseConfigShape = z.strictObject({
     .record(z.string(), z.string())
     .describe('Remote platform properties, replacing the default backend config. siso only')
     .optional(),
+  rbeRemoteJobs: z
+    .number()
+    .int()
+    .min(1)
+    .describe('Maximum number of build steps to run remotely at once. siso only')
+    .meta({ default: 200 })
+    .optional(),
   root: z
     .string()
     .min(1)

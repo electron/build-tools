@@ -764,6 +764,7 @@ See [`example-configs/`](./example-configs/) for annotated templates (`evm.base.
 | `rbeTlsClientCert`        | string (optional)              | TLS client certificate path, replaces the credential helper (`siso` only)        |
 | `rbeTlsClientKey`         | string (optional)              | Private key path for `rbeTlsClientCert` (`siso` only)                            |
 | `rbePlatformProperties`   | object (optional)              | Remote platform properties, replaces the default backend config (`siso` only)    |
+| `rbeRemoteJobs`           | integer (default: 200)         | Maximum number of build steps to run remotely at once (`siso` only)              |
 | `preserveSDK`             | integer (default: 5)           | Number of recent macOS SDKs to keep on disk                                      |
 | `configValidationLevel`   | `strict` \| `warn` \| `none`   | How strictly to validate the config file (default: `strict`)                     |
 | `extends`                 | string (optional)              | Name of a base config to inherit from; arrays concatenate and objects deep-merge |
@@ -818,6 +819,8 @@ gen:
 - Some backends reject outputs outside the working directory. Add
   `clang_diagnostic_dir = "clang-crashreports"` to `gen.args` to keep the clang crash directory in
   the output directory.
+- Set `rbeRemoteJobs` to match the capacity of the backend. For a single build, pass the flag
+  instead: `e build -remote_jobs 500`.
 
 ## Environment variables
 
