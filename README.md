@@ -794,6 +794,9 @@ gen:
   out: Testing
 ```
 
+Values set in the extending config take precedence over the base config's. Arrays are
+concatenated (the extending config's entries first) and objects are merged key by key.
+
 **Preferred format on save** — by default `e init` and `e sanitize-config` write JSON. Set
 `EVM_FORMAT=yml` to prefer YAML.
 

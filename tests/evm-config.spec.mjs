@@ -82,6 +82,21 @@ describe('example configs', () => {
       env: expect.any(Object),
     });
   });
+
+  it('should let a config override values from the config it extends', () => {
+    // evm.base.yml sets `out: Testing`.
+    expect(fetchByName('release').gen.out).toBe('Release');
+  });
+
+  it("should put a config's own array entries before the ones it inherits", () => {
+    // GN needs the import() before the assignments that override it.
+    expect(fetchByName('release').gen.args).toEqual([
+      'import("//electron/build/args/release.gn")',
+      'use_remoteexec = true',
+      'use_reclient = false',
+      'use_siso = true',
+    ]);
+  });
 });
 
 describe('invalid configs', () => {

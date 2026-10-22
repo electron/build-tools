@@ -37,7 +37,11 @@ function buildPathCandidates(name: string): string[] {
   return suffixes.map((suffix) => buildPath(name, suffix));
 }
 
-/** Deep-merge two config objects. Arrays concat, objects recurse. Exported for testing. */
+/**
+ * Deep-merge `source` (a base config) into `target` (the config extending it).
+ * Arrays concat, objects recurse, and any other value already set on `target`
+ * wins. Exported for testing.
+ */
 export function mergeConfigs<T extends Record<string, unknown>>(target: T, source: T): T {
   for (const key of Object.keys(source)) {
     const tVal = target[key];
@@ -56,7 +60,7 @@ export function mergeConfigs<T extends Record<string, unknown>>(target: T, sourc
         tVal as Record<string, unknown>,
         sVal as Record<string, unknown>,
       );
-    } else {
+    } else if (tVal === undefined || tVal === null) {
       (target as Record<string, unknown>)[key] = sVal;
     }
   }
