@@ -35,6 +35,9 @@ program
 
     let cwd: string | undefined;
     if (args[0] === 'rbe') {
+      if (reclient.usesTlsClientAuth(evmConfig.current())) {
+        fatal('The RBE credential helper is not used when rbeTlsClientCert is set');
+      }
       reclient.downloadAndPrepareRBECredentialHelper(evmConfig.current());
       args[0] = reclient.helperPath(evmConfig.current());
     }

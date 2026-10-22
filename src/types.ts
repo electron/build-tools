@@ -63,6 +63,22 @@ const baseConfigShape = z.strictObject({
     .optional(),
   rbeHelperPath: z.string().describe('Path to alternative reclient credential helper').optional(),
   rbeServiceAddress: z.string().describe('Alternative RBE cluster address').optional(),
+  rbeInstance: z
+    .string()
+    .describe('Alternative REv2 instance name. May be empty. siso only')
+    .optional(),
+  rbeTlsClientCert: z
+    .string()
+    .describe('Path to a TLS client certificate for RBE. Replaces the credential helper. siso only')
+    .optional(),
+  rbeTlsClientKey: z
+    .string()
+    .describe('Path to the private key for rbeTlsClientCert. siso only')
+    .optional(),
+  rbePlatformProperties: z
+    .record(z.string(), z.string())
+    .describe('Remote platform properties, replacing the default backend config. siso only')
+    .optional(),
   root: z
     .string()
     .min(1)

@@ -46,6 +46,28 @@
       "type": "string",
       "description": "Alternative RBE cluster address"
     },
+    "rbeInstance": {
+      "type": "string",
+      "description": "Alternative REv2 instance name. May be empty. siso only"
+    },
+    "rbeTlsClientCert": {
+      "type": "string",
+      "description": "Path to a TLS client certificate for RBE. Replaces the credential helper. siso only"
+    },
+    "rbeTlsClientKey": {
+      "type": "string",
+      "description": "Path to the private key for rbeTlsClientCert. siso only"
+    },
+    "rbePlatformProperties": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Remote platform properties, replacing the default backend config. siso only"
+    },
     "root": {
       "type": "string",
       "minLength": 1,

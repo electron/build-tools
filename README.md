@@ -760,6 +760,10 @@ See [`example-configs/`](./example-configs/) for annotated templates (`evm.base.
 | `remoteBuild`             | `siso` \| `reclient` \| `none` | Which remote-execution backend to use                                            |
 | `rbeHelperPath`           | string (optional)              | Path to a custom RBE credential helper                                           |
 | `rbeServiceAddress`       | string (optional)              | Alternative RBE cluster address                                                  |
+| `rbeInstance`             | string (optional)              | Alternative REv2 instance name, may be empty (`siso` only)                       |
+| `rbeTlsClientCert`        | string (optional)              | TLS client certificate path, replaces the credential helper (`siso` only)        |
+| `rbeTlsClientKey`         | string (optional)              | Private key path for `rbeTlsClientCert` (`siso` only)                            |
+| `rbePlatformProperties`   | object (optional)              | Remote platform properties, replaces the default backend config (`siso` only)    |
 | `preserveSDK`             | integer (default: 5)           | Number of recent macOS SDKs to keep on disk                                      |
 | `configValidationLevel`   | `strict` \| `warn` \| `none`   | How strictly to validate the config file (default: `strict`)                     |
 | `extends`                 | string (optional)              | Name of a base config to inherit from; arrays concatenate and objects deep-merge |
@@ -792,6 +796,28 @@ gen:
 
 **Preferred format on save** — by default `e init` and `e sanitize-config` write JSON. Set
 `EVM_FORMAT=yml` to prefer YAML.
+
+### Using an alternative RBE backend
+
+`siso` builds can use any REv2 backend. For example, with a TLS client certificate:
+
+```json
+{
+  "remoteBuild": "siso",
+  "rbeServiceAddress": "rbe.example.com:443",
+  "rbeInstance": "",
+  "rbeTlsClientCert": "/path/to/client.crt",
+  "rbeTlsClientKey": "/path/to/client.key",
+  "rbePlatformProperties": { "OSFamily": "Linux" }
+}
+```
+
+- When `rbeTlsClientCert` and `rbeTlsClientKey` are set, the credential helper is not used.
+- Behind an HTTP proxy, prefix the address with `passthrough:///`. Otherwise `siso` resolves the
+  hostname locally instead of sending it to the proxy.
+- Some backends reject outputs outside the working directory. Add
+  `clang_diagnostic_dir = "clang-crashreports"` to `gen.args` to keep the clang crash directory in
+  the output directory.
 
 ## Environment variables
 
