@@ -105,6 +105,9 @@ def init(ctx):
     for rule in step_config["rules"]:
       if rule["name"] in remote_generators:
         rule["remote"] = True
+        # The grit rules set no timeout. siso then asks for a 2 hour action
+        # timeout, which is more than some backends accept.
+        rule.setdefault("timeout", "10m")
         handler = remote_generators[rule["name"]]
         if handler:
           rule["handler"] = handler
