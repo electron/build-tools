@@ -68,6 +68,33 @@ describe('siso alternative RBE backends', () => {
   });
 });
 
+describe('siso remote jobs', () => {
+  const remoteJobs = (result) => result[result.indexOf('-remote_jobs') + 1];
+
+  it('defaults to 200', () => {
+    expect(remoteJobs(flags({ remoteBuild: 'siso' }, true))).toBe(200);
+  });
+
+  it('uses rbeRemoteJobs when configured', () => {
+    expect(remoteJobs(flags({ remoteBuild: 'siso', rbeRemoteJobs: 500 }, true))).toBe(500);
+  });
+
+  it.each([
+    [['-remote_jobs', '50']],
+    [['-remote_jobs=50']],
+    [['--remote_jobs', '50']],
+    [['--remote_jobs=50']],
+  ])('leaves the flag out when the user passes %j', (userArgs) => {
+    const result = flags({ remoteBuild: 'siso', rbeRemoteJobs: 500 }, true, userArgs);
+    expect(result).not.toContain('-remote_jobs');
+  });
+
+  it('is not fooled by other flags', () => {
+    const result = flags({ remoteBuild: 'siso' }, true, ['-local_jobs', '8', '-remote_jobs_foo=1']);
+    expect(remoteJobs(result)).toBe(200);
+  });
+});
+
 describe('ensureBackendStarlark', () => {
   let root;
   const backendStar = () => path.join(root, 'src/build/config/siso/backend_config/backend.star');

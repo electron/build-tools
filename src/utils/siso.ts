@@ -10,6 +10,8 @@ import type { SanitizedConfig } from '../types.js';
 // scoped to); everything else uses the shared CI/local namespace.
 const DEFAULT_REAPI_INSTANCE = 'projects/electron-rbe/instances/default_instance';
 
+const DEFAULT_REMOTE_JOBS = 200;
+
 type ConfigLike = Pick<
   SanitizedConfig,
   | 'remoteBuild'
@@ -19,6 +21,7 @@ type ConfigLike = Pick<
   | 'rbeTlsClientCert'
   | 'rbeTlsClientKey'
   | 'rbePlatformProperties'
+  | 'rbeRemoteJobs'
   | 'root'
 >;
 
@@ -53,12 +56,22 @@ function getStarFile(envVar: string, filename: string): string {
   return path.resolve(import.meta.dirname, '../../tools', filename);
 }
 
-export function flags(config: ConfigLike, hasExecute: boolean): (string | number)[] {
+export function flags(
+  config: ConfigLike,
+  hasExecute: boolean,
+  userArgs: string[] = [],
+): (string | number)[] {
   if (config.remoteBuild !== 'siso') return [];
 
-  const result: (string | number)[] = [
-    '-remote_jobs',
-    200,
+  const result: (string | number)[] = [];
+
+  // These flags go after the user's and siso keeps the last value it sees, so
+  // leave -remote_jobs out when the user passed their own.
+  if (!userArgs.some((arg) => /^--?remote_jobs(=|$)/.test(arg.trim()))) {
+    result.push('-remote_jobs', config.rbeRemoteJobs ?? DEFAULT_REMOTE_JOBS);
+  }
+
+  result.push(
     // Keep each value in its flag's token: the Windows shell join drops empty arguments.
     `-project=${project(config)}`,
     `-reapi_instance=${reapiInstance(config)}`,
@@ -66,7 +79,7 @@ export function flags(config: ConfigLike, hasExecute: boolean): (string | number
     reclient.serviceAddress(config),
     '-load',
     getStarFile('ELECTRON_BUILD_TOOLS_MAIN_STAR', 'main.star'),
-  ];
+  );
 
   if (reclient.usesTlsClientAuth(config)) {
     result.push(

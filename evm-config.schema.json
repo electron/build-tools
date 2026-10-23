@@ -68,6 +68,13 @@
       },
       "description": "Remote platform properties, replacing the default backend config. siso only"
     },
+    "rbeRemoteJobs": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991,
+      "description": "Maximum number of build steps to run remotely at once. siso only",
+      "default": 200
+    },
     "root": {
       "type": "string",
       "minLength": 1,

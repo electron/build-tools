@@ -95,7 +95,7 @@ async function runNinja(
     }
 
     if (config.remoteBuild === 'siso') {
-      ninjaArgs.push(...siso.flags(config, hasExecute).map(String));
+      ninjaArgs.push(...siso.flags(config, hasExecute, ninjaArgs).map(String));
     }
   } else {
     console.info(`${color.info} Building ${target} with remote execution disabled`);
