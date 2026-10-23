@@ -115,8 +115,20 @@ describe('evm-config.filenameToConfigName', () => {
 });
 
 describe('evm-config.mergeConfigs', () => {
-  it('overwrites scalars', () => {
-    expect(mergeConfigs({ a: 1 }, { a: 2 })).toEqual({ a: 2 });
+  it('keeps scalars already set on target', () => {
+    expect(mergeConfigs({ a: 1 }, { a: 2 })).toEqual({ a: 1 });
+  });
+
+  it('keeps falsy values already set on target', () => {
+    expect(mergeConfigs({ a: '', b: 0, c: false }, { a: 'x', b: 1, c: true })).toEqual({
+      a: '',
+      b: 0,
+      c: false,
+    });
+  });
+
+  it('treats null on target as unset', () => {
+    expect(mergeConfigs({ a: null }, { a: 2 })).toEqual({ a: 2 });
   });
 
   it('concatenates arrays', () => {
@@ -125,7 +137,7 @@ describe('evm-config.mergeConfigs', () => {
 
   it('recurses into objects', () => {
     expect(mergeConfigs({ a: { x: 1, y: 2 } }, { a: { y: 3, z: 4 } })).toEqual({
-      a: { x: 1, y: 3, z: 4 },
+      a: { x: 1, y: 2, z: 4 },
     });
   });
 
@@ -134,6 +146,6 @@ describe('evm-config.mergeConfigs', () => {
   });
 
   it('leaves keys only in target untouched', () => {
-    expect(mergeConfigs({ a: 1, b: 2 }, { b: 3 })).toEqual({ a: 1, b: 3 });
+    expect(mergeConfigs({ a: 1, b: 2 }, { b: 3 })).toEqual({ a: 1, b: 2 });
   });
 });
