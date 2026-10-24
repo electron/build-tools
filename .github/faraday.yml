@@ -1,0 +1,9 @@
+# faraday trust configuration for electron/build-tools.
+# See: https://github.com/electron/faraday
+
+trusted-bots:
+  # rbe-credential-helper bump PRs.
+  - login: electron-roller[bot]
+    id: 84116207
+    paths:
+      - src/utils/reclient.ts
