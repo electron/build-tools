@@ -9,7 +9,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const srcUtils = path.join(root, 'src', 'utils');
 const distUtils = path.join(root, 'dist', 'utils');
 
-const assets = ['get-path.bat', 'sdks.json'];
+const assets = ['get-path.bat', 'sdks.json', 'rbe-credential-helper.json'];
 
 fs.mkdirSync(distUtils, { recursive: true });
 for (const asset of assets) {

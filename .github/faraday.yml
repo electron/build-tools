@@ -1,0 +1,10 @@
+# faraday trust configuration for electron/build-tools.
+# See: https://github.com/electron/faraday
+
+trusted-bots:
+  # rbe-credential-helper bump PRs from electron/roller, which only rewrite
+  # the pinned tag and per-platform sha256s in this JSON data file.
+  - login: electron-roller[bot]
+    id: 84116207
+    paths:
+      - src/utils/rbe-credential-helper.json
