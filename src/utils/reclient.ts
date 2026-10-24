@@ -3,7 +3,6 @@ import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import credentialHelperPin from './rbe-credential-helper.json' with { type: 'json' };
 import { color, fatal } from './logging.js';
 import { deleteDir, resolvePath } from './paths.js';
 import type { SanitizedConfig } from '../types.js';
@@ -17,8 +16,30 @@ const rbeHelperPath = path.resolve(
 const RBE_SERVICE_ADDRESS = 'rbe.notgoma.com:443';
 
 // Pinned in JSON so automated bumps (electron/roller) only touch data, not code.
-const CREDENTIAL_HELPER_TAG: string = credentialHelperPin.tag;
-const CREDENTIAL_HELPER_SHA256: Record<string, string> = credentialHelperPin.sha256;
+const credentialHelperPinPath = path.resolve(import.meta.dirname, 'rbe-credential-helper.json');
+
+function readCredentialHelperPin(): { tag: string; sha256: Record<string, string> } {
+  let pin: unknown;
+  try {
+    pin = JSON.parse(fs.readFileSync(credentialHelperPinPath, 'utf8'));
+  } catch (e) {
+    fatal(`Failed to read reclient credential helper pin from ${credentialHelperPinPath}: ${e}`);
+  }
+  if (
+    typeof pin !== 'object' ||
+    pin === null ||
+    !('tag' in pin) ||
+    typeof pin.tag !== 'string' ||
+    !('sha256' in pin) ||
+    typeof pin.sha256 !== 'object' ||
+    pin.sha256 === null
+  ) {
+    fatal(
+      `Malformed reclient credential helper pin in ${credentialHelperPinPath}: expected a string "tag" and an object "sha256"`,
+    );
+  }
+  return { tag: pin.tag, sha256: pin.sha256 as Record<string, string> };
+}
 
 export let usingRemote = true;
 export function setUsingRemote(value: boolean): void {
@@ -71,20 +92,22 @@ export function downloadAndPrepareRBECredentialHelper(config: ConfigLike): void 
   // Not supported
   if (!targetPlatform) return;
 
+  const { tag: credentialHelperTag, sha256: credentialHelperSha256 } = readCredentialHelperPin();
+
   if (!fs.existsSync(path.dirname(reclientDir))) {
     fs.mkdirSync(path.dirname(reclientDir));
   }
 
   if (
     fs.existsSync(reclientTagFile) &&
-    fs.readFileSync(reclientTagFile, 'utf8') === CREDENTIAL_HELPER_TAG
+    fs.readFileSync(reclientTagFile, 'utf8') === credentialHelperTag
   )
     return;
 
-  const expectedHash = CREDENTIAL_HELPER_SHA256[targetPlatform];
+  const expectedHash = credentialHelperSha256[targetPlatform];
   if (!expectedHash) {
     fatal(
-      `No pinned sha256 for reclient credential helper ${CREDENTIAL_HELPER_TAG} on ${targetPlatform} (see src/utils/rbe-credential-helper.json)`,
+      `No pinned sha256 for reclient credential helper ${credentialHelperTag} on ${targetPlatform} (see src/utils/rbe-credential-helper.json)`,
     );
   }
 
@@ -93,7 +116,7 @@ export function downloadAndPrepareRBECredentialHelper(config: ConfigLike): void 
   deleteDir(reclientDir);
   deleteDir(tmpDownload);
 
-  const downloadURL = `https://dev-cdn-experimental.electronjs.org/reclient/credential-helper/${CREDENTIAL_HELPER_TAG}/electron-rbe-credential-helper-${targetPlatform}.tar.gz`;
+  const downloadURL = `https://dev-cdn-experimental.electronjs.org/reclient/credential-helper/${credentialHelperTag}/electron-rbe-credential-helper-${targetPlatform}.tar.gz`;
   console.log(`Downloading ${color.cmd(downloadURL)} into ${color.path(tmpDownload)}`);
   const { status } = childProcess.spawnSync(
     process.execPath,
@@ -130,7 +153,7 @@ export function downloadAndPrepareRBECredentialHelper(config: ConfigLike): void 
   }
 
   deleteDir(tmpDownload);
-  fs.writeFileSync(reclientTagFile, CREDENTIAL_HELPER_TAG);
+  fs.writeFileSync(reclientTagFile, credentialHelperTag);
 }
 
 export function helperFlags(): Record<string, string> {
