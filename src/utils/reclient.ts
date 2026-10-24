@@ -3,6 +3,7 @@ import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
+import credentialHelperPin from './rbe-credential-helper.json' with { type: 'json' };
 import { color, fatal } from './logging.js';
 import { deleteDir, resolvePath } from './paths.js';
 import type { SanitizedConfig } from '../types.js';
@@ -15,15 +16,9 @@ const rbeHelperPath = path.resolve(
 );
 const RBE_SERVICE_ADDRESS = 'rbe.notgoma.com:443';
 
-const CREDENTIAL_HELPER_TAG = 'v0.6.3';
-const CREDENTIAL_HELPER_SHA256: Record<string, string> = {
-  'darwin-amd64': '7f9edede56c555c8e682a209ac8b9bf5152c660f23cc3476c1ac9624bf08cc63',
-  'darwin-arm64': '09e63d6a5e190b1d0ad6621124220f1d3e6595080dbe15c17aac0012c9a37bbf',
-  'linux-amd64': '87ee5d2e8cc126601fe19e4e84c2132fd37123086622805d60907bfcf3c69a06',
-  'linux-arm64': '230cb1d9ce7a8ae0909671eb34ca580d765e0de2d4cde168ce12b98404c48cdf',
-  'windows-amd64': '73106b53e62299c74860cdd26cf3e7f78028f7be9655258bc8f3c697118d002b',
-  'windows-arm64': '56c26a2ea4632cd11cc9cef6a9235e2ed8e9ef0b28064c390aba6ccd3b04332b',
-};
+// Pinned in JSON so automated bumps (electron/roller) only touch data, not code.
+const CREDENTIAL_HELPER_TAG: string = credentialHelperPin.tag;
+const CREDENTIAL_HELPER_SHA256: Record<string, string> = credentialHelperPin.sha256;
 
 export let usingRemote = true;
 export function setUsingRemote(value: boolean): void {
@@ -86,6 +81,13 @@ export function downloadAndPrepareRBECredentialHelper(config: ConfigLike): void 
   )
     return;
 
+  const expectedHash = CREDENTIAL_HELPER_SHA256[targetPlatform];
+  if (!expectedHash) {
+    fatal(
+      `No pinned sha256 for reclient credential helper ${CREDENTIAL_HELPER_TAG} on ${targetPlatform} (see src/utils/rbe-credential-helper.json)`,
+    );
+  }
+
   const tmpDownload = path.resolve(reclientDir, '..', 'reclient.tar.gz');
   // Clean Up
   deleteDir(reclientDir);
@@ -105,7 +107,6 @@ export function downloadAndPrepareRBECredentialHelper(config: ConfigLike): void 
     fatal(`Failure while downloading reclient`);
   }
 
-  const expectedHash = CREDENTIAL_HELPER_SHA256[targetPlatform];
   const actualHash = crypto.createHash('sha256').update(fs.readFileSync(tmpDownload)).digest('hex');
   if (actualHash !== expectedHash) {
     deleteDir(tmpDownload);
