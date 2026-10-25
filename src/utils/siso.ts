@@ -45,7 +45,7 @@ export function env(config: ConfigLike): Record<string, string> {
   if (reclient.usesTlsClientAuth(config)) return base;
 
   base['SISO_CREDENTIAL_HELPER'] = reclient.helperPath(config);
-  return Object.assign(base, reclient.helperFlags());
+  return Object.assign(base, reclient.helperFlags(config));
 }
 
 function getStarFile(envVar: string, filename: string): string {

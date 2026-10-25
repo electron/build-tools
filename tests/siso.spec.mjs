@@ -68,6 +68,65 @@ describe('siso alternative RBE backends', () => {
   });
 });
 
+describe('configured credential helper', () => {
+  // A custom rbeHelperPath points at a backend the bundled helper knows nothing
+  // about, so both the auth status probe and the flags must come from it.
+  let dir;
+  let helper;
+  const helperConfig = () => ({
+    remoteBuild: 'siso',
+    rbeServiceAddress: '127.0.0.1:8980',
+    rbeHelperPath: helper,
+  });
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'siso-helper-'));
+    helper = path.join(dir, 'helper.sh');
+    fs.writeFileSync(
+      helper,
+      [
+        '#!/bin/sh',
+        'case "$1" in',
+        '  status) echo "Authentication Status: Authenticated" ;;',
+        `  flags) echo '{"RBE_exec_strategy":"remote_local_fallback","RBE_service_no_security":"true"}' ;;`,
+        '  *) echo "{}" ;;',
+        'esac',
+      ].join('\n'),
+      { mode: 0o755 },
+    );
+  });
+
+  afterEach(() => {
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it.skipIf(process.platform === 'win32')('passes the configured helper flags to siso', () => {
+    const result = env(helperConfig());
+    expect(result.SISO_CREDENTIAL_HELPER).toBe(helper);
+    expect(result.RBE_service_no_security).toBe('true');
+    expect(result.RBE_exec_strategy).toBe('remote_local_fallback');
+  });
+
+  it.skipIf(process.platform === 'win32')('passes the configured helper flags to reclient', () => {
+    const result = reclientEnv(helperConfig());
+    expect(result.RBE_credentials_helper).toBe(helper);
+    expect(result.RBE_service_no_security).toBe('true');
+  });
+
+  it.skipIf(process.platform === 'win32')('checks auth with the configured helper', () => {
+    expect(auth(helperConfig())).toBe(true);
+  });
+
+  it.skipIf(process.platform === 'win32')('reports a local-only configured helper', () => {
+    fs.writeFileSync(
+      helper,
+      ['#!/bin/sh', 'case "$1" in', `  flags) echo '{"RBE_exec_strategy":"local"}' ;;`, '  *) echo ok ;;', 'esac'].join('\n'),
+      { mode: 0o755 },
+    );
+    expect(auth(helperConfig())).toBe(false);
+  });
+});
+
 describe('siso remote jobs', () => {
   const remoteJobs = (result) => result[result.indexOf('-remote_jobs') + 1];
 
