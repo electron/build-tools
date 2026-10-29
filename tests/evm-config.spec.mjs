@@ -93,7 +93,6 @@ describe('example configs', () => {
     expect(fetchByName('release').gen.args).toEqual([
       'import("//electron/build/args/release.gn")',
       'use_remoteexec = true',
-      'use_reclient = false',
       'use_siso = true',
     ]);
   });
