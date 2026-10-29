@@ -35,7 +35,7 @@
     "semver": "^7.6.0",
     "tweetnacl": "^1.0.3",
     "yaml": "^2.8.3",
-    "zod": "^4.0.0"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@electron/lint-roller": "^4.0.0",
