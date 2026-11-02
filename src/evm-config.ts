@@ -281,6 +281,17 @@ export function sanitizeConfig(
     changes.push(`removed gn arg ${color.cmd(useSisoGnArg)} as siso is disabled`);
   }
 
+  // Older `e init` wrote this for siso builds. It's already the default, and
+  // newer Chromium no longer declares the arg, so gn warns about it.
+  const useReclientFalseGnArg = 'use_reclient = false';
+  const hasUseReclientFalseGN = Boolean(
+    config.gen?.args?.find((arg) => /^use_reclient ?= ?false$/.test(arg)),
+  );
+  if (hasUseReclientFalseGN && config.gen) {
+    config.gen.args = config.gen.args.filter((arg) => !/^use_reclient ?= ?false$/.test(arg));
+    changes.push(`removed unneeded gn arg ${color.cmd(useReclientFalseGnArg)}`);
+  }
+
   if (!config.rbeHelperPath && config.reclientHelperPath) {
     config.rbeHelperPath = config.reclientHelperPath;
     changes.push(
