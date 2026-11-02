@@ -93,7 +93,6 @@ describe('example configs', () => {
     expect(fetchByName('release').gen.args).toEqual([
       'import("//electron/build/args/release.gn")',
       'use_remoteexec = true',
-      'use_reclient = false',
       'use_siso = true',
     ]);
   });
@@ -164,6 +163,22 @@ describe('configValidationLevel', () => {
     consoleWarnSpy.mockClear();
     consoleErrorSpy.mockClear();
     processExitSpy.mockClear();
+  });
+});
+
+describe('gn args', () => {
+  it('should remove use_reclient = false', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const config = sanitizeConfig('foobar', {
+      ...validConfig,
+      remoteBuild: 'siso',
+      gen: {
+        args: ['use_remoteexec = true', 'use_reclient = false', 'use_siso = true'],
+        out: 'Testing',
+      },
+    });
+    expect(config.gen.args).toEqual(['use_remoteexec = true', 'use_siso = true']);
+    warnSpy.mockRestore();
   });
 });
 

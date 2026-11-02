@@ -52,7 +52,6 @@ function createConfig(options: InitOptions): EvmConfig {
   }
 
   if (options.remoteBuild === 'siso') {
-    gn_args.push('use_reclient = false');
     gn_args.push('use_siso = true');
   }
 
