@@ -235,6 +235,21 @@ can look scary because GitHub's UI is less than optimal
 obtains user-profile access and `read:org` permission. No permission is granted to any of your
 repositories or content.
 
+**siso weights**
+
+`siso` builds pass `siso` a `-weights_file` of how long each step took in a previous build, so
+`siso` starts the slowest chains (such as the V8 snapshot and the final link) earlier instead of
+treating every step as equally expensive. Weights only change the order steps run in: what runs,
+cache hits and outputs are the same with or without them. `e build` uses the first of these that
+exists:
+
+1. `ELECTRON_SISO_WEIGHTS_FILE`, a path to a weights file. Set it to `0` to build without weights.
+2. `siso_weights.json.gz` in the out directory. After each successful `siso` build, `e build`
+   merges that build's `siso_metrics.json` into this file, so it learns from your own builds.
+3. A weights file shipped with build-tools for your platform, if there is one.
+
+If you pass your own `-weights_file` (or `--weights_file`) to `e build`, it is used instead.
+
 ## Running Electron
 
 | Command   | Description                                                                  |
