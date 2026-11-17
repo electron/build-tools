@@ -112,12 +112,14 @@ async function runNinja(
 
   const exec = os.platform() === 'win32' ? `${ninjaName}.bat` : ninjaName;
   const args = [...ninjaArgs, target];
+  const env: Record<string, string> = siso.buildEnv(config);
+  if (!reclient.usingRemote && config.reclient !== 'none') {
+    env['RBE_remote_disabled'] = 'true';
+  }
   const opts: Partial<depot.DepotOpts> = {
     cwd: path.resolve(config.root, 'src'),
+    env,
   };
-  if (!reclient.usingRemote && config.reclient !== 'none') {
-    opts.env = { RBE_remote_disabled: 'true' };
-  }
   const result = await depot.spawn(config, exec, args, opts);
   return result.status ?? 1;
 }
