@@ -19,13 +19,17 @@ import type { SanitizedConfig } from '../types.js';
 // Outputs missing from the file (new, renamed) fall back to the file's
 // per-rule medians and default, and a missing or unreadable file only logs a
 // warning in siso, so stale weights cannot break a build.
+//
+// The file goes to siso as $SISO_WEIGHTS_FILE, not -weights_file: siso added
+// both together (the env var is the flag's default), and a siso from before
+// that rejects the unknown flag but ignores the env var. Older Electron
+// branches pin such a siso.
 
 const LEARNED = 'siso_weights.json.gz';
 const MIN_RULE_SAMPLES = 20;
 
-// Same as evmConfig.outDir(). Importing evm-config here would pull it into
-// siso.ts's imports, which breaks evm-config.spec's depot-tools mock when the
-// spec files share a worker.
+// Same as evmConfig.outDir(). Importing evm-config here would load it ahead of
+// evm-config.spec's depot-tools mock when the spec files share a worker.
 function outDir(config: Pick<SanitizedConfig, 'root' | 'gen'>): string {
   return path.resolve(config.root, 'src', 'out', config.gen.out);
 }
@@ -54,6 +58,22 @@ export function weightsFile(
     if (f && fs.existsSync(f)) return f;
   }
   return undefined;
+}
+
+// weightsEnv is the env for the siso build `e build` runs, remote or local.
+// A -weights_file the user passed, or a SISO_WEIGHTS_FILE set in the shell or
+// the config's env, wins.
+export function weightsEnv(
+  config: Pick<SanitizedConfig, 'remoteBuild' | 'root' | 'gen' | 'env'>,
+  userArgs: string[] = [],
+  processEnv: NodeJS.ProcessEnv = process.env,
+): Record<string, string> {
+  if (config.remoteBuild !== 'siso') return {};
+  if (userArgs.some((arg) => /^--?weights_file(=|$)/.test(arg.trim()))) return {};
+  if (processEnv['SISO_WEIGHTS_FILE'] !== undefined) return {};
+  if (config.env?.['SISO_WEIGHTS_FILE'] !== undefined) return {};
+  const file = weightsFile(config);
+  return file ? { SISO_WEIGHTS_FILE: file } : {};
 }
 
 interface WeightsFile {

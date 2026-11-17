@@ -5,8 +5,14 @@ import zlib from 'node:zlib';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { setUsingRemote } from '../dist/utils/reclient.js';
 import { flags } from '../dist/utils/siso.js';
-import { seedFile, updateLearnedWeights, weightsFile } from '../dist/utils/siso-weights.js';
+import {
+  seedFile,
+  updateLearnedWeights,
+  weightsEnv,
+  weightsFile,
+} from '../dist/utils/siso-weights.js';
 
 const ENV = 'ELECTRON_SISO_WEIGHTS_FILE';
 
@@ -121,23 +127,42 @@ describe('siso weights', () => {
     });
   });
 
-  describe('flags', () => {
-    const weightsFlags = (result) =>
-      result.filter((arg) => String(arg).startsWith('-weights_file'));
+  describe('weightsEnv', () => {
+    const weights = () => ({ SISO_WEIGHTS_FILE: learned() });
 
-    it('passes the learned weights file to siso', () => {
+    it('passes the learned weights file to siso through SISO_WEIGHTS_FILE', () => {
       touch(learned());
-      expect(weightsFlags(flags(config, true))).toEqual([`-weights_file=${learned()}`]);
+      expect(weightsEnv(config, [], {})).toEqual(weights());
     });
 
-    it('passes no weights file when there is none', () => {
-      expect(weightsFlags(flags(config, true))).toEqual([]);
+    it('never passes -weights_file, which an older siso rejects', () => {
+      touch(learned());
+      expect(flags(config, true).filter((arg) => String(arg).includes('weights_file'))).toEqual([]);
     });
 
-    it('passes no weights file when ELECTRON_SISO_WEIGHTS_FILE is 0', () => {
+    it('passes nothing when there is no weights file', () => {
+      expect(weightsEnv(config, [], {})).toEqual({});
+    });
+
+    it('passes nothing when ELECTRON_SISO_WEIGHTS_FILE is 0', () => {
       touch(learned());
       process.env[ENV] = '0';
-      expect(weightsFlags(flags(config, true))).toEqual([]);
+      expect(weightsEnv(config, [], {})).toEqual({});
+    });
+
+    it('passes nothing for other backends', () => {
+      touch(learned());
+      expect(weightsEnv({ ...config, remoteBuild: 'none' }, [], {})).toEqual({});
+    });
+
+    it('also weights local-only (--no-remote) builds', () => {
+      touch(learned());
+      setUsingRemote(false);
+      try {
+        expect(weightsEnv(config, ['-C', 'out/Testing'], {})).toEqual(weights());
+      } finally {
+        setUsingRemote(true);
+      }
     });
 
     it.each([
@@ -145,16 +170,26 @@ describe('siso weights', () => {
       [['-weights_file=mine.json']],
       [['--weights_file', 'mine.json']],
       [['--weights_file=mine.json']],
-    ])('leaves the flag out when the user passes %j', (userArgs) => {
+    ])('passes nothing when the user passes %j', (userArgs) => {
       touch(learned());
-      expect(weightsFlags(flags(config, true, userArgs))).toEqual([]);
+      expect(weightsEnv(config, userArgs, {})).toEqual({});
     });
 
     it('is not fooled by other flags', () => {
       touch(learned());
-      expect(weightsFlags(flags(config, true, ['-weights_file_foo=1']))).toEqual([
-        `-weights_file=${learned()}`,
-      ]);
+      expect(weightsEnv(config, ['-weights_file_foo=1'], {})).toEqual(weights());
+    });
+
+    it('keeps a SISO_WEIGHTS_FILE set in the shell', () => {
+      touch(learned());
+      expect(weightsEnv(config, [], { SISO_WEIGHTS_FILE: '/mine.json' })).toEqual({});
+      expect(weightsEnv(config, [], { SISO_WEIGHTS_FILE: '' })).toEqual({});
+    });
+
+    it('keeps a SISO_WEIGHTS_FILE set in the config env', () => {
+      touch(learned());
+      const withEnv = { ...config, env: { SISO_WEIGHTS_FILE: '/mine.json' } };
+      expect(weightsEnv(withEnv, [], {})).toEqual({});
     });
   });
 

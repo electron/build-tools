@@ -14,7 +14,7 @@ import { ensureDir } from './utils/paths.js';
 import { ensureMetalToolchain } from './utils/prereqs.js';
 import * as reclient from './utils/reclient.js';
 import * as siso from './utils/siso.js';
-import { updateLearnedWeights } from './utils/siso-weights.js';
+import { updateLearnedWeights, weightsEnv } from './utils/siso-weights.js';
 import { ensureSDK, ensureSDKAndSymlink } from './utils/sdk.js';
 import type { SanitizedConfig } from './types.js';
 
@@ -115,9 +115,11 @@ async function runNinja(
   const args = [...ninjaArgs, target];
   const opts: Partial<depot.DepotOpts> = {
     cwd: path.resolve(config.root, 'src'),
+    // Every siso build gets weights, including --no-remote ones.
+    env: weightsEnv(config, ninjaArgs),
   };
   if (!reclient.usingRemote && config.reclient !== 'none') {
-    opts.env = { RBE_remote_disabled: 'true' };
+    opts.env = { ...opts.env, RBE_remote_disabled: 'true' };
   }
   const result = await depot.spawn(config, exec, args, opts);
   if (result.status === 0 && config.remoteBuild === 'siso') {

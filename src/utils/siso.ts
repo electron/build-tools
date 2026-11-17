@@ -3,7 +3,6 @@ import * as path from 'node:path';
 
 import { resolvePath } from './paths.js';
 import * as reclient from './reclient.js';
-import { weightsFile } from './siso-weights.js';
 import type { SanitizedConfig } from '../types.js';
 
 // The REv2 instance name namespaces the remote Action Cache. Release builds
@@ -24,7 +23,6 @@ type ConfigLike = Pick<
   | 'rbePlatformProperties'
   | 'rbeRemoteJobs'
   | 'root'
-  | 'gen'
 >;
 
 function reapiInstance(config: ConfigLike): string {
@@ -92,13 +90,6 @@ export function flags(
 
   if (!hasExecute) {
     result.push('-re_exec_enable=false');
-  }
-
-  // Schedule by step durations of previous builds; see siso-weights.ts.
-  // A -weights_file the user passed wins.
-  if (!userArgs.some((arg) => /^--?weights_file(=|$)/.test(arg.trim()))) {
-    const weights = weightsFile(config);
-    if (weights) result.push(`-weights_file=${weights}`);
   }
 
   return result;
