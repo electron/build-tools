@@ -220,6 +220,13 @@ def _electron_extras(step_config, filegroups):
         "includes": ["tsconfig*.json", "package.json"],
     }
 
+# Chromium's clang compile rules. clang-coverage/* match the same compiles when
+# coverage_instrumentation_input_file wraps them in clang_code_coverage_wrapper.py
+# (its handler strips the wrapper so they run clang directly, like clang/*).
+def is_clang_rule(rule):
+  name = rule["name"]
+  return name.startswith("clang/") or name.startswith("clang-coverage/") or name.startswith("clang-cl/")
+
 def init(ctx):
     mod = upstream_init(ctx)
     step_config = json.decode(mod.step_config)
@@ -234,7 +241,7 @@ def init(ctx):
     # steps through a wrapper that swaps in a Linux clang on the worker.
     if runtime.os != "linux":
       for rule in step_config["rules"]:
-        if rule["name"].startswith("clang/") or rule["name"].startswith("clang-cl/"):
+        if is_clang_rule(rule):
           rule["remote_wrapper"] = "../../" + cross_clang_wrapper
           rule.setdefault("inputs", []).extend([cross_clang_wrapper, linux_clang])
       step_config.setdefault("executables", []).extend([cross_clang_wrapper, linux_clang])
@@ -257,7 +264,7 @@ def init(ctx):
     # queueing; local fallback stays as the safety net.
     if runtime.os != "linux":
       for rule in step_config["rules"]:
-        if (rule["name"].startswith("clang/") or rule["name"].startswith("clang-cl/")) and rule.get("remote"):
+        if is_clang_rule(rule) and rule.get("remote"):
           rule["timeout"] = "10m"
 
     # Add additional Windows SDK headers needed by Electron. Use
