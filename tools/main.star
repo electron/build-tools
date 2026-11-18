@@ -81,7 +81,7 @@ _ELECTRON_REMOTE_RULES = {
 _ELECTRON_REMOTE_PYTHON = {
     # script (and leading args): extra rule fields
     "tools/json_schema_compiler/compiler.py": {},
-    "tools/grit/pak_util.py repack": {"handler": "electron_pak_util_repack"},
+    "tools/grit/pak_util.py repack": {},
     "tools/grit/preprocess_if_expr.py": {},
     "net/tools/dafsa/make_dafsa.py": {},
     "third_party/blink/renderer/bindings/scripts/generate_event_interface_names.py": {},
@@ -108,37 +108,6 @@ _ELECTRON_REMOTE_DEVTOOLS_WRAPPED = [
 _PYTHON = "../../third_party/cpython3/host/bin/python3"
 _REMOTE_PYTHON = "../../third_party/cpython3/linux-amd64/bin/python3"
 _REMOTE_PYTHON_INPUTS = "third_party/cpython3/linux-amd64:cpython3"
-
-def _pak_util_repack(ctx, cmd):
-    # tools/grit/repack.gni passes --allowlist as an absolute path
-    # (rebase_path(invoker.repack_allowlist) without root_build_dir), which
-    # doesn't exist on the worker and would put the checkout path in the cache
-    # key. Rewrite it relative to the out dir. Drop this handler once
-    # repack.gni uses rebase_path(invoker.repack_allowlist, root_build_dir).
-    # args: python pak_util.py repack [flags] <output.pak> <input.pak>...
-    out_arg = None
-    for a in cmd.args[3:]:
-        if not a.startswith("-"):
-            out_arg = a
-            break
-    out_dir = None
-    for o in cmd.outputs:
-        if out_arg and o.endswith("/" + out_arg):
-            out_dir = o[:len(o) - len(out_arg) - 1]
-    if not out_dir:
-        return
-    args = list(cmd.args)
-    changed = False
-    for i, a in enumerate(args):
-        if a.startswith("--allowlist=/"):
-            abs_path = a[len("--allowlist="):]
-            for inp in cmd.inputs:
-                if abs_path.endswith("/" + inp):
-                    args[i] = "--allowlist=" + path.rel(out_dir, inp)
-                    changed = True
-                    break
-    if changed:
-        ctx.actions.fix(args = args)
 
 def _esbuild_sourcemap(ctx, cmd):
     # esbuild --sourcemap also writes <outfile>.map, which is not a GN output,
@@ -409,7 +378,6 @@ def init(ctx):
     }
 
     handlers = dict(mod.handlers)
-    handlers["electron_pak_util_repack"] = _pak_util_repack
     handlers["electron_esbuild_sourcemap"] = _esbuild_sourcemap
     handlers["electron_thin_archive"] = _thin_archive
 
