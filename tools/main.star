@@ -2,9 +2,6 @@ load("@builtin//encoding.star", "json")
 load("@builtin//path.star", "path")
 load("@builtin//runtime.star", "runtime")
 load("@builtin//struct.star", "module")
-# ar.star exists from Chromium M132; build-tools only uses siso where
-# build/config/siso/backend_config exists (M133+).
-load("@config//ar.star", "ar")
 load("@config//main.star", upstream_init = "init")
 load("@config//win_sdk.star", "win_sdk")
 load("@config//gn_logs.star", "gn_logs")
@@ -12,229 +9,6 @@ load("@config//gn_logs.star", "gn_logs")
 # Installed by src/utils/cross-clang.ts, next to the Linux clang it runs.
 cross_clang_wrapper = "buildtools/reclient_cfgs/chromium-browser-clang/clang_remote_wrapper"
 linux_clang = "third_party/llvm-build/Release+Asserts_linux/bin/clang"
-
-# Opt out of everything in _electron_extras() with `e build -config=electron-no-extras`
-# (it combines with Chromium's own -config values: -config=remote-link,electron-no-extras).
-ELECTRON_NO_EXTRAS = "electron-no-extras"
-
-# Chromium rules that Chromium only runs remotely under its "googlechrome" /
-# "default-remote" configs, which Electron's backend doesn't set. Each was run
-# remotely on Electron's RBE and its outputs compared with a local build.
-# Link steps (rust_bin, rust_cdylib, rust_macro, clang links) stay local:
-# electron-rbe has no remote-link support. rust/bindgen stays local because it
-# fails remotely.
-_ELECTRON_REMOTE_RULES = {
-    # Rust
-    "rust_rlib": {},
-    "rust_staticlib": {},
-    "rust/run_build_script": {},
-    "rust/find_std_rlibs": {},
-    "rust/cpp_api_from_rust": {},
-    "rust/rust_api_from_cpp": {},
-    # Chromium lists this one in denylist.star; it only needs the two helper
-    # modules it imports declared as inputs.
-    "third_party/rust/cxx/chromium_integration/run_cxxbridge.py": {
-        "inputs": ["build/action_helpers.py", "build/gn_helpers.py"],
-    },
-    # Assembly and code generators
-    "nasm": {},
-    "nasm/clang_x64": {},
-    "proto/protoc_wrapper": {},
-    "v8/torque": {},
-    "blink/run_with_pythonpath": {},
-    "blink/build_web_idl_database": {},
-    "typescript/ts_definitions": {"handler": "typescript_ts_definitions"},
-    # DevTools frontend
-    "devtools-frontend/build/generate_css_js_files": {},
-    "devtools-frontend/build/optimize_images": {},
-    # esbuild reads the tsconfig.json ("extends" chain included) and
-    # package.json files above each source file, and with --sourcemap it
-    # follows the //# sourceMappingURL of bundled third_party .js files. None
-    # of those are GN inputs, so without them a remote esbuild silently
-    # produces different bundles (iife bundles lose "use strict"). These
-    # declarations belong upstream in devtools-frontend (as GN inputs of the
-    # esbuild action and a <outfile>.map output); until then, declare them here.
-    "devtools-frontend/esbuild": {
-        "inputs": [
-            "third_party/devtools-frontend/src/front_end:esbuild_configs",
-            "third_party/devtools-frontend/src/inspector_overlay/tsconfig.json",
-            "third_party/devtools-frontend/src/scripts/tsconfig.json",
-            "third_party/devtools-frontend/src/scripts/package.json",
-            "third_party/devtools-frontend/src/config/typescript/tsconfig.base.json",
-            "third_party/devtools-frontend/src/package.json",
-            # Read by the source-map-scopes-codec bundle (package/src/*.js;
-            # without them esbuild falls back to the sibling .ts sources) and
-            # by lighthouse (report-generator.mjs from the source tree).
-            "third_party/devtools-frontend/src/front_end/third_party/source-map-scopes-codec/package/src:js",
-            "third_party/devtools-frontend/src/front_end/third_party/lighthouse/report-assets/report-generator.mjs",
-            "third_party/devtools-frontend/src/front_end/third_party:sourcemaps",
-        ],
-        "handler": "electron_esbuild_sourcemap",
-    },
-}
-
-# Python scripts that have no Chromium siso rule and run remotely here. Each
-# was read and found hermetic (it reads only its declared inputs and its own
-# imports; no git, network, environment, absolute paths or clock beyond the
-# copyright year) and then compared with a local build. There is no catch-all:
-# Chromium's "default-python" rule breaks several scripts that read git
-# (third_party/angle/src/commit_id.py writes "unknown hash" remotely) or paths
-# outside their inputs, so anything not listed stays local.
-_ELECTRON_REMOTE_PYTHON = {
-    # script (and leading args): extra rule fields
-    "tools/json_schema_compiler/compiler.py": {},
-    "tools/grit/pak_util.py repack": {},
-    "tools/grit/preprocess_if_expr.py": {},
-    "net/tools/dafsa/make_dafsa.py": {},
-    "third_party/blink/renderer/bindings/scripts/generate_event_interface_names.py": {},
-    "third_party/blink/renderer/bindings/scripts/check_generated_file_list.py": {},
-    "third_party/blink/renderer/bindings/scripts/collect_idl_files.py": {},
-    "third_party/blink/renderer/bindings/scripts/validate_web_idl.py": {},
-    "third_party/blink/renderer/build/scripts/run_with_pythonpath.py": {},
-    # Writes its args as JSON. v8's metagen.py waits for it at the start of
-    # the build, where it would otherwise queue for a local slot.
-    "v8/tools/testrunner/utils/dump_build_config.py": {},
-}
-
-# devtools-frontend wraps both python generators and TypeScript steps in these
-# scripts, so match on GN action names as well: the CSS properties generator,
-# and the *-dts (isolated declarations), *_checked (chromium-bidi) and
-# *_typecheck (tsc -p, noEmit) steps. tsc here is tsgo, a static linux-amd64
-# binary whose lib/*.d.ts are already GN inputs.
-_ELECTRON_REMOTE_DEVTOOLS_WRAPPED = [
-    ("generate_supported_css", "run_with_restat", ".*_generate_supported_css_properties___.*"),
-    ("tsc/run_with_restat", "run_with_restat", ".*(-dts|_checked|_typecheck)___.*"),
-    ("tsc/run_with_stamp", "run_with_stamp", ".*(-dts|_checked|_typecheck)___.*"),
-]
-
-_PYTHON = "../../third_party/cpython3/host/bin/python3"
-_REMOTE_PYTHON = "../../third_party/cpython3/linux-amd64/bin/python3"
-_REMOTE_PYTHON_INPUTS = "third_party/cpython3/linux-amd64:cpython3"
-
-def _esbuild_sourcemap(ctx, cmd):
-    # esbuild --sourcemap also writes <outfile>.map, which is not a GN output,
-    # so a remote step wouldn't download it. Declare it (belongs upstream in
-    # devtools-frontend's esbuild GN template).
-    if "--sourcemap" not in cmd.args:
-        return
-    for i, a in enumerate(cmd.args):
-        if a == "--outfile" and i + 1 < len(cmd.args):
-            m = ctx.fs.canonpath(cmd.args[i + 1] + ".map")
-            if m not in cmd.outputs:
-                ctx.actions.fix(outputs = cmd.outputs + [m])
-            return
-
-def _thin_archive(ctx, cmd):
-    # Chromium's lld_thin_archive handler (build/config/siso/clang_all.star)
-    # without its remote-link gate: siso writes the thin archive without symbol
-    # table (llvm-ar -T -S) itself instead of running llvm-ar. The step then
-    # needs neither its accumulated inputs (15-23k objects for some Blink
-    # archives) expanded and flushed to disk nor a local process. The output is
-    # byte-identical to llvm-ar's. Chromium's version mishandles empty
-    # archives and empty rsp tokens; both are handled here. Drop this (and
-    # the handler override in _electron_extras) once Chromium ungates
-    # lld_thin_archive for llvm-ar and fixes those two cases upstream.
-    if not ("-T" in cmd.args[-1] and "-S" in cmd.args[-1]):
-        return
-    inputs = []
-    for line in str(cmd.rspfile_content).split("\n"):
-        for fname in line.split(" "):
-            if fname:
-                inputs.append(ctx.fs.canonpath(fname))
-    if not inputs:
-        # llvm-ar writes only the magic for an empty thin archive.
-        data = bytes("!<thin>\n")
-    else:
-        data = ar.create(ctx, path.dir(cmd.outputs[0]), inputs)
-    ctx.actions.write(cmd.outputs[0], data)
-    ctx.actions.exit(exit_status = 0)
-
-def _electron_extras_enabled(ctx, filegroups):
-    configs = ctx.flags["config"].split(",") if "config" in ctx.flags else []
-    if ELECTRON_NO_EXTRAS in configs:
-        return False
-
-    # Verified on Linux x64 hosts only. Also requires the DEPS-provided Linux
-    # python (crrev.com/c/8160801); older branches keep the previous behavior.
-    return runtime.os == "linux" and _REMOTE_PYTHON_INPUTS in filegroups
-
-# Until electron/electron#55870, repack.gni passed --allowlist as an absolute
-# path, which a remote worker can't open. Keep repack local on Electron
-# checkouts without that fix.
-_REPACK_GNI = "tools/grit/repack.gni"
-_REPACK_ALLOWLIST_FIXED = "rebase_path(invoker.repack_allowlist, root_build_dir)"
-
-def _repack_allowlist_relative(ctx):
-    if not ctx.fs.exists(_REPACK_GNI):
-        return False
-    return _REPACK_ALLOWLIST_FIXED in str(ctx.fs.read(_REPACK_GNI))
-
-def _electron_extras(ctx, step_config, filegroups):
-    """Remote execution and siso-side steps beyond Chromium's defaults.
-
-    All of it was verified on a clean, warm-cache Linux build by comparing the
-    sha256 of every build output (~149k files) with a fully local build: no
-    differences other than files that already differ between two local builds.
-    """
-    for rule in step_config["rules"]:
-        name = rule["name"]
-        if name in _ELECTRON_REMOTE_RULES:
-            extra = _ELECTRON_REMOTE_RULES[name]
-            rule["remote"] = True
-            rule["timeout"] = "10m"
-            if "inputs" in extra:
-                rule.setdefault("inputs", []).extend(extra["inputs"])
-            if "handler" in extra:
-                rule["handler"] = extra["handler"]
-            if rule.get("command_prefix", "").startswith(_PYTHON):
-                rule["remote_command"] = _REMOTE_PYTHON
-                inputs = rule.setdefault("inputs", [])
-                if _REMOTE_PYTHON_INPUTS not in inputs:
-                    inputs.append(_REMOTE_PYTHON_INPUTS)
-        elif name == "clang/alink/llvm-ar":
-            rule["handler"] = "electron_thin_archive"
-
-    # Appended, so these only match steps that no Chromium rule claimed.
-    remote_py = {
-        "remote": True,
-        "remote_command": _REMOTE_PYTHON,
-        "timeout": "10m",
-    }
-    repack_remote = _repack_allowlist_relative(ctx)
-    for script, extra in _ELECTRON_REMOTE_PYTHON.items():
-        if script == "tools/grit/pak_util.py repack" and not repack_remote:
-            continue
-        rule = {
-            "name": "electron/remote-python/" + script.split(" ")[0],
-            "command_prefix": _PYTHON + " ../../" + script,
-            "inputs": [_REMOTE_PYTHON_INPUTS],
-        }
-        rule.update(remote_py)
-        rule.update(extra)
-        step_config["rules"].append(rule)
-    for name, wrapper, action in _ELECTRON_REMOTE_DEVTOOLS_WRAPPED:
-        rule = {
-            "name": "electron/devtools-frontend/" + name,
-            "action": action,
-            "command_prefix": _PYTHON + " ../../third_party/devtools-frontend/src/scripts/build/" + wrapper + ".py",
-            "inputs": [_REMOTE_PYTHON_INPUTS],
-        }
-        rule.update(remote_py)
-        step_config["rules"].append(rule)
-
-    dt = "third_party/devtools-frontend/src/"
-    filegroups[dt + "front_end/third_party/source-map-scopes-codec/package/src:js"] = {
-        "type": "glob",
-        "includes": ["*.js"],
-    }
-    filegroups[dt + "front_end/third_party:sourcemaps"] = {
-        "type": "glob",
-        "includes": ["*.map", "*.ts"],
-    }
-    filegroups[dt + "front_end:esbuild_configs"] = {
-        "type": "glob",
-        "includes": ["tsconfig*.json", "package.json"],
-    }
 
 # Chromium's clang compile rules. clang-coverage/* match the same compiles when
 # coverage_instrumentation_input_file wraps them in clang_code_coverage_wrapper.py
@@ -385,8 +159,6 @@ def init(ctx):
     step_config["rules"].insert(0, tidy_rule)
 
     filegroups = dict(mod.filegroups)
-    if _electron_extras_enabled(ctx, filegroups):
-      _electron_extras(ctx, step_config, filegroups)
     # siso uploads this filegroup as a precomputed subtree and drops other
     # inputs under it, including the clang-tidy input of the rule above.
     # Chromium narrowed its bin/clang-* glob in crrev.com/c/8471431, so add
@@ -400,13 +172,9 @@ def init(ctx):
         "includes": [".clang-tidy"],
     }
 
-    handlers = dict(mod.handlers)
-    handlers["electron_esbuild_sourcemap"] = _esbuild_sourcemap
-    handlers["electron_thin_archive"] = _thin_archive
-
     return module(
       "config",
       step_config = json.encode(step_config),
       filegroups = filegroups,
-      handlers = handlers,
+      handlers = mod.handlers,
     )

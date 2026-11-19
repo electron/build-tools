@@ -48,21 +48,6 @@ export function env(config: ConfigLike): Record<string, string> {
   return Object.assign(base, reclient.helperFlags());
 }
 
-// GC target for the siso process that `e build` runs. In a clean Electron build
-// Go's GC took ~13% of siso's CPU at the default GOGC=100; GOGC=200 cut siso's
-// CPU by ~10% for ~2.4 GB more peak RSS. A GOGC set in the shell or in the
-// config's env wins.
-const DEFAULT_GOGC = '200';
-
-export function buildEnv(
-  config: Pick<SanitizedConfig, 'remoteBuild' | 'env'>,
-  processEnv: NodeJS.ProcessEnv = process.env,
-): Record<string, string> {
-  if (config.remoteBuild !== 'siso') return {};
-  if (processEnv['GOGC'] !== undefined || config.env?.['GOGC'] !== undefined) return {};
-  return { GOGC: DEFAULT_GOGC };
-}
-
 function getStarFile(envVar: string, filename: string): string {
   const envVal = process.env[envVar];
   if (envVal && fs.existsSync(envVal)) {

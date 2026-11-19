@@ -5,13 +5,7 @@ import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { auth, env as reclientEnv } from '../dist/utils/reclient.js';
-import {
-  backendStarlark,
-  buildEnv,
-  ensureBackendStarlark,
-  env,
-  flags,
-} from '../dist/utils/siso.js';
+import { backendStarlark, ensureBackendStarlark, env, flags } from '../dist/utils/siso.js';
 
 const flagValue = (result, name) =>
   result.find((arg) => String(arg).startsWith(`${name}=`))?.slice(name.length + 1);
@@ -125,24 +119,5 @@ describe('ensureBackendStarlark', () => {
   it('uses the default backend config otherwise', async () => {
     await ensureBackendStarlark({ remoteBuild: 'siso', root });
     expect(fs.readFileSync(backendStar(), 'utf8')).toContain('container-image');
-  });
-});
-
-describe('siso build env', () => {
-  it('sets GOGC=200 for siso builds', () => {
-    expect(buildEnv({ remoteBuild: 'siso', env: {} }, {})).toEqual({ GOGC: '200' });
-  });
-
-  it('keeps a GOGC set in the shell', () => {
-    expect(buildEnv({ remoteBuild: 'siso', env: {} }, { GOGC: '100' })).toEqual({});
-  });
-
-  it('keeps a GOGC set in the config env', () => {
-    expect(buildEnv({ remoteBuild: 'siso', env: { GOGC: 'off' } }, {})).toEqual({});
-  });
-
-  it('does nothing for other backends', () => {
-    expect(buildEnv({ remoteBuild: 'reclient', env: {} }, {})).toEqual({});
-    expect(buildEnv({ remoteBuild: 'none', env: {} }, {})).toEqual({});
   });
 });
