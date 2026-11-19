@@ -113,18 +113,14 @@ async function runNinja(
 
   const exec = os.platform() === 'win32' ? `${ninjaName}.bat` : ninjaName;
   const args = [...ninjaArgs, target];
-  // Both apply to every siso build, including --no-remote ones.
-  const env: Record<string, string> = {
-    ...siso.buildEnv(config),
-    ...weightsEnv(config, ninjaArgs),
-  };
-  if (!reclient.usingRemote && config.reclient !== 'none') {
-    env['RBE_remote_disabled'] = 'true';
-  }
   const opts: Partial<depot.DepotOpts> = {
     cwd: path.resolve(config.root, 'src'),
-    env,
+    // Every siso build gets weights, including --no-remote ones.
+    env: weightsEnv(config, ninjaArgs),
   };
+  if (!reclient.usingRemote && config.reclient !== 'none') {
+    opts.env = { ...opts.env, RBE_remote_disabled: 'true' };
+  }
   const result = await depot.spawn(config, exec, args, opts);
   if (result.status === 0 && config.remoteBuild === 'siso') {
     updateLearnedWeights(config);
