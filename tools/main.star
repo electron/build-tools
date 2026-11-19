@@ -1,4 +1,5 @@
 load("@builtin//encoding.star", "json")
+load("@builtin//lib/gn.star", "gn")
 load("@builtin//path.star", "path")
 load("@builtin//runtime.star", "runtime")
 load("@builtin//struct.star", "module")
@@ -20,17 +21,20 @@ ELECTRON_NO_EXTRAS = "electron-no-extras"
 # Chromium rules that Chromium only runs remotely under its "googlechrome" /
 # "default-remote" configs, which Electron's backend doesn't set. Each was run
 # remotely on Electron's RBE and its outputs compared with a local build.
-# Link steps (rust_bin, rust_cdylib, rust_macro, clang links) stay local:
-# electron-rbe has no remote-link support. rust/bindgen stays local because it
-# fails remotely.
+# Each override is merged into Chromium's rule, so Chromium's inputs,
+# indirect_inputs and handlers are kept, and _chromium_local_rules() keeps the
+# conditions under which Chromium keeps these rules local. Link steps
+# (rust_bin, rust_cdylib, rust_macro, clang links) stay local: electron-rbe has
+# no remote-link support. Rules Chromium never runs remotely under
+# "googlechrome" stay local too: rust/bindgen and rust/rust_api_from_cpp parse
+# headers that siso can't know on a clean build (b/356496947), and
+# rust/run_build_script and rust/find_std_rlibs are only remote on cog or with
+# "default-remote".
 _ELECTRON_REMOTE_RULES = {
     # Rust
     "rust_rlib": {},
     "rust_staticlib": {},
-    "rust/run_build_script": {},
-    "rust/find_std_rlibs": {},
     "rust/cpp_api_from_rust": {},
-    "rust/rust_api_from_cpp": {},
     # Chromium lists this one in denylist.star; it only needs the two helper
     # modules it imports declared as inputs.
     "third_party/rust/cxx/chromium_integration/run_cxxbridge.py": {
@@ -119,6 +123,31 @@ def _repack_allowlist_relative(ctx):
         return False
     return _REPACK_ALLOWLIST_FIXED in str(ctx.fs.read(_REPACK_GNI))
 
+# The cases where Chromium's own config keeps a rule in _ELECTRON_REMOTE_RULES
+# local even under "googlechrome" (rust.star, v8.star, blink_all.star,
+# typescript_all.star).
+def _chromium_local_rules(ctx):
+    local = {}
+    if "args.gn" in ctx.metadata:
+        gn_args = gn.args(ctx)
+        target_os = gn_args.get("target_os")
+        # Chromium also allows win targets with its Windows SDK set up; Electron
+        # doesn't cross-build Windows on Linux, so keep it simple.
+        if target_os in ('"mac"', '"ios"', '"win"'):
+            for name in ("rust_rlib", "rust_staticlib", "rust/cpp_api_from_rust"):
+                local[name] = True
+        if gn_args.get("target_cpu", "").strip('"') == "x86":
+            # RBE doesn't support ELF32.
+            local["v8/torque"] = True
+        if gn_args.get("use_javascript_coverage") == "true":
+            # Needs input_root_absolute_path, which Buildbarn doesn't support.
+            local["typescript/ts_definitions"] = True
+    if gn_logs.read(ctx).get("blink_enable_generated_code_formatting") == "true":
+        # crbug.com/461609630
+        local["blink/run_with_pythonpath"] = True
+        local["blink/build_web_idl_database"] = True
+    return local
+
 def _electron_extras(ctx, step_config, filegroups):
     """Remote execution and siso-side steps beyond Chromium's defaults.
 
@@ -126,9 +155,10 @@ def _electron_extras(ctx, step_config, filegroups):
     sha256 of every build output (~149k files) with a fully local build: no
     differences other than files that already differ between two local builds.
     """
+    keep_local = _chromium_local_rules(ctx)
     for rule in step_config["rules"]:
         name = rule["name"]
-        if name in _ELECTRON_REMOTE_RULES:
+        if name in _ELECTRON_REMOTE_RULES and name not in keep_local:
             extra = _ELECTRON_REMOTE_RULES[name]
             rule["remote"] = True
             rule["timeout"] = "10m"
