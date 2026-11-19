@@ -2,6 +2,8 @@ load("@builtin//encoding.star", "json")
 load("@builtin//path.star", "path")
 load("@builtin//runtime.star", "runtime")
 load("@builtin//struct.star", "module")
+# ar.star exists from Chromium M132; build-tools only uses siso where
+# build/config/siso/backend_config exists (M133+).
 load("@config//ar.star", "ar")
 load("@config//main.star", upstream_init = "init")
 load("@config//win_sdk.star", "win_sdk")
@@ -156,7 +158,18 @@ def _electron_extras_enabled(ctx, filegroups):
     # python (crrev.com/c/8160801); older branches keep the previous behavior.
     return runtime.os == "linux" and _REMOTE_PYTHON_INPUTS in filegroups
 
-def _electron_extras(step_config, filegroups):
+# Until electron/electron#55870, repack.gni passed --allowlist as an absolute
+# path, which a remote worker can't open. Keep repack local on Electron
+# checkouts without that fix.
+_REPACK_GNI = "tools/grit/repack.gni"
+_REPACK_ALLOWLIST_FIXED = "rebase_path(invoker.repack_allowlist, root_build_dir)"
+
+def _repack_allowlist_relative(ctx):
+    if not ctx.fs.exists(_REPACK_GNI):
+        return False
+    return _REPACK_ALLOWLIST_FIXED in str(ctx.fs.read(_REPACK_GNI))
+
+def _electron_extras(ctx, step_config, filegroups):
     """Remote execution and siso-side steps beyond Chromium's defaults.
 
     All of it was verified on a clean, warm-cache Linux build by comparing the
@@ -187,7 +200,10 @@ def _electron_extras(step_config, filegroups):
         "remote_command": _REMOTE_PYTHON,
         "timeout": "10m",
     }
+    repack_remote = _repack_allowlist_relative(ctx)
     for script, extra in _ELECTRON_REMOTE_PYTHON.items():
+        if script == "tools/grit/pak_util.py repack" and not repack_remote:
+            continue
         rule = {
             "name": "electron/remote-python/" + script.split(" ")[0],
             "command_prefix": _PYTHON + " ../../" + script,
@@ -370,7 +386,7 @@ def init(ctx):
 
     filegroups = dict(mod.filegroups)
     if _electron_extras_enabled(ctx, filegroups):
-      _electron_extras(step_config, filegroups)
+      _electron_extras(ctx, step_config, filegroups)
     # siso uploads this filegroup as a precomputed subtree and drops other
     # inputs under it, including the clang-tidy input of the rule above.
     # Chromium narrowed its bin/clang-* glob in crrev.com/c/8471431, so add
