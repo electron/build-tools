@@ -229,6 +229,19 @@ build.
 For example, running `e d gn ls out/Testing | grep "//ui/views/"` will list Chromium's `//ui/views`
 targets, and you can then `e build --target ui/views/examples:views_examples_with_content`.
 
+**siso configuration**
+
+`siso` builds load [`tools/main.star`](./tools/main.star) on top of Chromium's siso config. On
+Linux hosts it runs more steps remotely than Chromium's defaults do for Electron's RBE backend
+(Rust libraries, nasm, protoc, V8 Torque, Blink and TypeScript generators, and an allowlist of
+hermetic Python scripts), and writes thin static archives in `siso` instead of
+running `llvm-ar`. Links, `rust/bindgen` and unlisted Python scripts stay local. To build without
+these additions, pass `-config=electron-no-extras` (combine it with other siso configs as
+`-config=remote-link,electron-no-extras`).
+
+`e build` runs `siso` with `GOGC=200` unless `GOGC` is already set, trading about 2.4 GB of extra
+peak memory for about 10% less `siso` CPU time.
+
 When first run, `e build` will try to set up reclient to speed up your builds. The permission prompt
 can look scary because GitHub's UI is less than optimal
 ([related discussion](https://github.com/orgs/community/discussions/37117)). However, Electron only

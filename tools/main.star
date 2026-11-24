@@ -1,7 +1,11 @@
 load("@builtin//encoding.star", "json")
+load("@builtin//lib/gn.star", "gn")
 load("@builtin//path.star", "path")
 load("@builtin//runtime.star", "runtime")
 load("@builtin//struct.star", "module")
+# ar.star exists from Chromium M132; build-tools only uses siso where
+# build/config/siso/backend_config exists (M133+).
+load("@config//ar.star", "ar")
 load("@config//main.star", upstream_init = "init")
 load("@config//win_sdk.star", "win_sdk")
 load("@config//gn_logs.star", "gn_logs")
@@ -9,6 +13,185 @@ load("@config//gn_logs.star", "gn_logs")
 # Installed by src/utils/cross-clang.ts, next to the Linux clang it runs.
 cross_clang_wrapper = "buildtools/reclient_cfgs/chromium-browser-clang/clang_remote_wrapper"
 linux_clang = "third_party/llvm-build/Release+Asserts_linux/bin/clang"
+
+# Opt out of everything in _electron_extras() with `e build -config=electron-no-extras`
+# (it combines with Chromium's own -config values: -config=remote-link,electron-no-extras).
+ELECTRON_NO_EXTRAS = "electron-no-extras"
+
+# Chromium rules that Chromium only runs remotely under its "googlechrome" /
+# "default-remote" configs, which Electron's backend doesn't set. Each was run
+# remotely on Electron's RBE and its outputs compared with a local build.
+# Each override is merged into Chromium's rule, so Chromium's inputs,
+# indirect_inputs and handlers are kept, and _chromium_local_rules() keeps the
+# conditions under which Chromium keeps these rules local. Link steps
+# (rust_bin, rust_cdylib, rust_macro, clang links) stay local: electron-rbe has
+# no remote-link support. Rules Chromium never runs remotely under
+# "googlechrome" stay local too: rust/bindgen and rust/rust_api_from_cpp parse
+# headers that siso can't know on a clean build (b/356496947), and
+# rust/run_build_script and rust/find_std_rlibs are only remote on cog or with
+# "default-remote".
+_ELECTRON_REMOTE_RULES = {
+    # Rust
+    "rust_rlib": {},
+    "rust_staticlib": {},
+    "rust/cpp_api_from_rust": {},
+    # Chromium lists this one in denylist.star; it only needs the two helper
+    # modules it imports declared as inputs.
+    "third_party/rust/cxx/chromium_integration/run_cxxbridge.py": {
+        "inputs": ["build/action_helpers.py", "build/gn_helpers.py"],
+    },
+    # Assembly and code generators
+    "nasm": {},
+    "nasm/clang_x64": {},
+    "proto/protoc_wrapper": {},
+    "v8/torque": {},
+    "blink/run_with_pythonpath": {},
+    "blink/build_web_idl_database": {},
+    "typescript/ts_definitions": {"handler": "typescript_ts_definitions"},
+}
+
+# Python scripts that have no Chromium siso rule and run remotely here. Each
+# was read and found hermetic (it reads only its declared inputs and its own
+# imports; no git, network, environment, absolute paths or clock beyond the
+# copyright year) and then compared with a local build. There is no catch-all:
+# Chromium's "default-python" rule breaks several scripts that read git
+# (third_party/angle/src/commit_id.py writes "unknown hash" remotely) or paths
+# outside their inputs, so anything not listed stays local. Not listed on
+# purpose: tools/json_schema_compiler/compiler.py (--include-rules loads other
+# schemas that aren't GN inputs) and blink's run_with_pythonpath.py (a wrapper
+# that runs arbitrary scripts).
+_ELECTRON_REMOTE_PYTHON = {
+    # script (and leading args): extra rule fields
+    "tools/grit/pak_util.py repack": {},
+    "tools/grit/preprocess_if_expr.py": {},
+    "net/tools/dafsa/make_dafsa.py": {},
+    "third_party/blink/renderer/bindings/scripts/generate_event_interface_names.py": {},
+    "third_party/blink/renderer/bindings/scripts/check_generated_file_list.py": {},
+    "third_party/blink/renderer/bindings/scripts/collect_idl_files.py": {},
+    "third_party/blink/renderer/bindings/scripts/validate_web_idl.py": {},
+    # Writes its args as JSON. v8's metagen.py waits for it at the start of
+    # the build, where it would otherwise queue for a local slot.
+    "v8/tools/testrunner/utils/dump_build_config.py": {},
+}
+
+_PYTHON = "../../third_party/cpython3/host/bin/python3"
+_REMOTE_PYTHON = "../../third_party/cpython3/linux-amd64/bin/python3"
+_REMOTE_PYTHON_INPUTS = "third_party/cpython3/linux-amd64:cpython3"
+
+def _thin_archive(ctx, cmd):
+    # Chromium's lld_thin_archive handler (build/config/siso/clang_all.star)
+    # without its remote-link gate: siso writes the thin archive without symbol
+    # table (llvm-ar -T -S) itself instead of running llvm-ar. The step then
+    # needs neither its accumulated inputs (15-23k objects for some Blink
+    # archives) expanded and flushed to disk nor a local process. The output is
+    # byte-identical to llvm-ar's. Chromium's version mishandles empty
+    # archives and empty rsp tokens; both are handled here. Drop this (and
+    # the handler override in _electron_extras) once Chromium ungates
+    # lld_thin_archive for llvm-ar and fixes those two cases upstream.
+    if not ("-T" in cmd.args[-1] and "-S" in cmd.args[-1]):
+        return
+    inputs = []
+    for line in str(cmd.rspfile_content).split("\n"):
+        for fname in line.split(" "):
+            if fname:
+                inputs.append(ctx.fs.canonpath(fname))
+    if not inputs:
+        # llvm-ar writes only the magic for an empty thin archive.
+        data = bytes("!<thin>\n")
+    else:
+        data = ar.create(ctx, path.dir(cmd.outputs[0]), inputs)
+    ctx.actions.write(cmd.outputs[0], data)
+    ctx.actions.exit(exit_status = 0)
+
+def _electron_extras_enabled(ctx, filegroups):
+    configs = ctx.flags["config"].split(",") if "config" in ctx.flags else []
+    if ELECTRON_NO_EXTRAS in configs:
+        return False
+
+    # Verified on Linux x64 hosts only. Also requires the DEPS-provided Linux
+    # python (crrev.com/c/8160801); older branches keep the previous behavior.
+    return runtime.os == "linux" and _REMOTE_PYTHON_INPUTS in filegroups
+
+# Until electron/electron#55870, repack.gni passed --allowlist as an absolute
+# path, which a remote worker can't open. Keep repack local on Electron
+# checkouts without that fix.
+_REPACK_GNI = "tools/grit/repack.gni"
+_REPACK_ALLOWLIST_FIXED = "rebase_path(invoker.repack_allowlist, root_build_dir)"
+
+def _repack_allowlist_relative(ctx):
+    if not ctx.fs.exists(_REPACK_GNI):
+        return False
+    return _REPACK_ALLOWLIST_FIXED in str(ctx.fs.read(_REPACK_GNI))
+
+# The cases where Chromium's own config keeps a rule in _ELECTRON_REMOTE_RULES
+# local even under "googlechrome" (rust.star, v8.star, blink_all.star,
+# typescript_all.star).
+def _chromium_local_rules(ctx):
+    local = {}
+    if "args.gn" in ctx.metadata:
+        gn_args = gn.args(ctx)
+        target_os = gn_args.get("target_os")
+        # Chromium also allows win targets with its Windows SDK set up; Electron
+        # doesn't cross-build Windows on Linux, so keep it simple.
+        if target_os in ('"mac"', '"ios"', '"win"'):
+            for name in ("rust_rlib", "rust_staticlib", "rust/cpp_api_from_rust"):
+                local[name] = True
+        if gn_args.get("target_cpu", "").strip('"') == "x86":
+            # RBE doesn't support ELF32.
+            local["v8/torque"] = True
+        if gn_args.get("use_javascript_coverage") == "true":
+            # Needs input_root_absolute_path, which Buildbarn doesn't support.
+            local["typescript/ts_definitions"] = True
+    if gn_logs.read(ctx).get("blink_enable_generated_code_formatting") == "true":
+        # crbug.com/461609630
+        local["blink/run_with_pythonpath"] = True
+        local["blink/build_web_idl_database"] = True
+    return local
+
+def _electron_extras(ctx, step_config, filegroups):
+    """Remote execution and siso-side steps beyond Chromium's defaults.
+
+    All of it was verified on a clean, warm-cache Linux build by comparing the
+    sha256 of every build output (~149k files) with a fully local build: no
+    differences other than files that already differ between two local builds.
+    """
+    keep_local = _chromium_local_rules(ctx)
+    for rule in step_config["rules"]:
+        name = rule["name"]
+        if name in _ELECTRON_REMOTE_RULES and name not in keep_local:
+            extra = _ELECTRON_REMOTE_RULES[name]
+            rule["remote"] = True
+            rule["timeout"] = "10m"
+            if "inputs" in extra:
+                rule.setdefault("inputs", []).extend(extra["inputs"])
+            if "handler" in extra:
+                rule["handler"] = extra["handler"]
+            if rule.get("command_prefix", "").startswith(_PYTHON):
+                rule["remote_command"] = _REMOTE_PYTHON
+                inputs = rule.setdefault("inputs", [])
+                if _REMOTE_PYTHON_INPUTS not in inputs:
+                    inputs.append(_REMOTE_PYTHON_INPUTS)
+        elif name == "clang/alink/llvm-ar":
+            rule["handler"] = "electron_thin_archive"
+
+    # Appended, so these only match steps that no Chromium rule claimed.
+    remote_py = {
+        "remote": True,
+        "remote_command": _REMOTE_PYTHON,
+        "timeout": "10m",
+    }
+    repack_remote = _repack_allowlist_relative(ctx)
+    for script, extra in _ELECTRON_REMOTE_PYTHON.items():
+        if script == "tools/grit/pak_util.py repack" and not repack_remote:
+            continue
+        rule = {
+            "name": "electron/remote-python/" + script.split(" ")[0],
+            "command_prefix": _PYTHON + " ../../" + script,
+            "inputs": [_REMOTE_PYTHON_INPUTS],
+        }
+        rule.update(remote_py)
+        rule.update(extra)
+        step_config["rules"].append(rule)
 
 # Chromium's clang compile rules. clang-coverage/* match the same compiles when
 # coverage_instrumentation_input_file wraps them in clang_code_coverage_wrapper.py
@@ -159,6 +342,8 @@ def init(ctx):
     step_config["rules"].insert(0, tidy_rule)
 
     filegroups = dict(mod.filegroups)
+    if _electron_extras_enabled(ctx, filegroups):
+      _electron_extras(ctx, step_config, filegroups)
     # siso uploads this filegroup as a precomputed subtree and drops other
     # inputs under it, including the clang-tidy input of the rule above.
     # Chromium narrowed its bin/clang-* glob in crrev.com/c/8471431, so add
@@ -172,9 +357,12 @@ def init(ctx):
         "includes": [".clang-tidy"],
     }
 
+    handlers = dict(mod.handlers)
+    handlers["electron_thin_archive"] = _thin_archive
+
     return module(
       "config",
       step_config = json.encode(step_config),
       filegroups = filegroups,
-      handlers = mod.handlers,
+      handlers = handlers,
     )
