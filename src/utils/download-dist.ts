@@ -158,12 +158,12 @@ Proceed?`,
   d('fetching artifacts...');
   let artifacts;
   try {
-    const { data } = await octokit.actions.listWorkflowRunArtifacts({
+    artifacts = await octokit.paginate(octokit.actions.listWorkflowRunArtifacts, {
       owner: 'electron',
       repo: 'electron',
       run_id: latestBuildWorkflowRun.id,
+      per_page: 100,
     });
-    artifacts = data.artifacts;
   } catch (error) {
     fatal(`Failed to list artifacts: ${String(error)}`);
   }
